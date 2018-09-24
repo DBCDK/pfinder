@@ -17,7 +17,7 @@
     </parent>
 
     <groupId>dk.dbc</groupId>
-    <artifactId>open-search</artifactId>
+    <artifactId>opensearch</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
