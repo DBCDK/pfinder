@@ -1,18 +1,18 @@
 [
     {
         "query": " \"foo \\\"Mylo\\\" bar\" ",
-        "expected": "{foo \"Mylo\" bar}"
+        "expected": "{=[]:default, foo \"Mylo\" bar}"
     },
     {
         "query": "\"*\"",
-        "expected": "{[, *, ]}"
+        "expected": "{=[]:default, [, *, ]}"
     },
     {
         "query": "\"\\*\"",
-        "expected": "{*}"
+        "expected": "{=[]:default, *}"
     },
     {
         "query": "\"*?\"",
-        "expected": "{[, *?, ]}"
+        "expected": "{=[]:default, [, *?, ]}"
     }
 ]

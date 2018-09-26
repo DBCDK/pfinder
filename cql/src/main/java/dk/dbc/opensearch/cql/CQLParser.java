@@ -139,7 +139,7 @@ public class CQLParser {
             return new Query.Search(term.getContent(), relation.getName(), modifiers, text.getText());
         } else if (take(TEXT)) {
             Text text = (Text) get(1);
-            return new Query.DefaultSearch(text.getText());
+            return new Query.Search(text.getText());
         } else {
             throw expected("seach term or parenthesis");
         }

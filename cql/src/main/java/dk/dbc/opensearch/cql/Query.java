@@ -22,6 +22,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
+import static java.util.Collections.EMPTY_MAP;
+
 /**
  *
  * @author DBC {@literal <dbc.dk>}
@@ -29,35 +31,11 @@ import java.util.stream.Collectors;
 public interface Query {
 
     enum Type {
-        DEFAULT_SEARCH,
         SEARCH,
         BOOLEAN
     }
 
     Type getType();
-
-    public static class DefaultSearch implements Query {
-
-        private final SearchTerm searchTerm;
-
-        public DefaultSearch(String searchTerm) {
-            this.searchTerm = new SearchTerm(searchTerm);
-        }
-
-        @Override
-        public Type getType() {
-            return Type.DEFAULT_SEARCH;
-        }
-
-        public SearchTerm getSearchTerm() {
-            return searchTerm;
-        }
-
-        @Override
-        public String toString() {
-            return "{" + searchTerm + "}";
-        }
-    }
 
     public static class Search implements Query {
 
@@ -65,6 +43,10 @@ public interface Query {
         private final String operator;
         private final Map<String, Modifier> modifiers;
         private final SearchTerm searchTerm;
+
+        public Search(String searchTerm) {
+            this("default", "=", EMPTY_MAP, searchTerm);
+        }
 
         public Search(String index, String operator, Map<String, Modifier> modifiers, String searchTerm) {
             this.index = index;
