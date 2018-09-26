@@ -18,6 +18,7 @@
  */
 package dk.dbc.opensearch.cql;
 
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
@@ -42,7 +43,7 @@ public interface Query {
         private final String index;
         private final String operator;
         private final Map<String, Modifier> modifiers;
-        private final SearchTerm searchTerm;
+        private final String searchTerm;
 
         public Search(String searchTerm) {
             this("default", "=", EMPTY_MAP, searchTerm);
@@ -52,7 +53,7 @@ public interface Query {
             this.index = index;
             this.operator = operator;
             this.modifiers = modifiers;
-            this.searchTerm = new SearchTerm(searchTerm);
+            this.searchTerm = searchTerm;
         }
 
         public String getIndex() {
@@ -63,8 +64,16 @@ public interface Query {
             return operator;
         }
 
-        public SearchTerm getSearchTerm() {
+        public String getSearchTerm() {
             return searchTerm;
+        }
+
+        public Iterator<String> parts() {
+            return new SearchTerm.Parts(index);
+        }
+
+        public Iterator<Iterator<String>> words() {
+            return new SearchTerm.Words(index);
         }
 
         public Map<String, Modifier> getModifiers() {

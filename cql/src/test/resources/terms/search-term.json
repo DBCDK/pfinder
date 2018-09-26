@@ -1,0 +1,22 @@
+[
+    {
+        "term": " foo \\\"Mylo\\\" bar ",
+        "parts": "[ foo \"Mylo\" bar ]",
+        "words": "[[foo], [\"Mylo\"], [bar]]"
+    },
+    {
+        "term": "*",
+        "parts": "[, *, ]",
+        "words": "[[, *, ]]"
+    },
+    {
+        "term": "\\*",
+        "parts": "[*]",
+        "words": "[[*]]"
+    },
+    {
+        "term": "*?",
+        "parts": "[, *?, ]",
+        "words": "[[, *?, ]]"
+    }
+]
