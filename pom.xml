@@ -22,6 +22,7 @@
     <packaging>pom</packaging>
 
     <modules>
+        <module>cql</module>
     </modules>
 
     <dependencies>

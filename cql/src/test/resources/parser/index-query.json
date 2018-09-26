@@ -1,0 +1,22 @@
+[
+    {
+        "query": "term.index = \"foo\"",
+        "expected": "{=[]:term.index, foo}"
+    },
+    {
+        "query": "term.index any foo",
+        "expected": "{any[]:term.index, foo}"
+    },
+    {
+        "query": "term.index encloses foo",
+        "exception": "term.index --->encloses foo"
+    },
+    {
+        "query": "term.index == foo",
+        "exception": "term.index --->== foo"
+    },
+    {
+        "query": "term.index prox foo",
+        "exception": "Unsupported boolean operator"
+    }
+]

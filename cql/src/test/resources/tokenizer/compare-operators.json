@@ -1,0 +1,14 @@
+[
+    {
+        "query": "< <= = >= >",
+        "expected": "[Token.CompareOp{<}, Token.CompareOp{<=}, Token.CompareOp{=}, Token.CompareOp{>=}, Token.CompareOp{>}, Token.EOL{}]"
+    },
+    {
+        "query": "<>",
+        "expected": "[Token.CompareOp{<>}, Token.EOL{}]"
+    },
+    {
+        "query": "==",
+        "expected": "[Token.CompareOp{==}, Token.EOL{}]"
+    }
+]

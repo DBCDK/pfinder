@@ -1,0 +1,27 @@
+[
+    {
+        "query": "foo oR bar",
+        "expected": "{or[]:{foo}, {bar}}"
+    },
+    {
+        "query": "foo and/preferred bar",
+        "exception": "Modifiers not supported for 'and'"
+    },
+    {
+        "query": "foo prox bar",
+        "exception": "Unsupported boolean operator"
+    },
+    {
+        "query": "foo not bar",
+        "expected": "{not[]:{foo}, {bar}}"
+    },
+    {
+        "query": "foo not bar or blop",
+        "expected": "{not[]:{foo}, {or[]:{bar}, {blop}}}"
+    },
+    {
+        "query": "(foo not bar) or blop",
+        "expected": "{or[]:{not[]:{foo}, {bar}}, {blop}}"
+    }
+    
+]

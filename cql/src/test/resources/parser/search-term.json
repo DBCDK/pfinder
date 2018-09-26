@@ -1,0 +1,18 @@
+[
+    {
+        "query": " \"foo \\\"Mylo\\\" bar\" ",
+        "expected": "{foo \"Mylo\" bar}"
+    },
+    {
+        "query": "\"*\"",
+        "expected": "{[, *, ]}"
+    },
+    {
+        "query": "\"\\*\"",
+        "expected": "{*}"
+    },
+    {
+        "query": "\"*?\"",
+        "expected": "{[, *?, ]}"
+    }
+]

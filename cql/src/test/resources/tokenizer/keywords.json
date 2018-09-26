@@ -1,0 +1,10 @@
+[
+    {
+        "query": "or and not prox",
+        "expected": "[Token.BooleanOp{or}, Token.BooleanOp{and}, Token.BooleanOp{not}, Token.BooleanOp{prox}, Token.EOL{}]"
+    },
+    {
+        "query": "all within encloses any adj",
+        "expected": "[Token.Relation{name=all}, Token.Relation{name=within}, Token.Relation{name=encloses}, Token.Relation{name=any}, Token.Relation{name=adj}, Token.EOL{}]"
+    }
+]

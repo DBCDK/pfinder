@@ -1,0 +1,31 @@
+[
+    {
+        "query": "\"foo\"",
+        "expected": "{foo}"
+    },
+    {
+        "query": "foo",
+        "expected": "{foo}"
+    },
+    {
+        "query": "(foo)",
+        "expected": "{foo}"
+    },
+    {
+        "query": "( foo )",
+        "expected": "{foo}"
+    },
+    {
+        "query": "sortby",
+        "expected": "{sortby}"
+    },
+    {
+        "query": "and",
+        "expected": "{and}"
+    },
+    {
+        "query": "'and other'",
+        "expected": "{and other}"
+    }
+
+]
