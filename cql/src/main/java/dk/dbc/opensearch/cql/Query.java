@@ -41,7 +41,7 @@ public interface Query {
     public static class Search implements Query {
 
         private final String index;
-        private final String operator;
+        private final String relation;
         private final Map<String, Modifier> modifiers;
         private final String searchTerm;
 
@@ -49,9 +49,9 @@ public interface Query {
             this("default", "=", EMPTY_MAP, searchTerm);
         }
 
-        public Search(String index, String operator, Map<String, Modifier> modifiers, String searchTerm) {
+        public Search(String index, String relation, Map<String, Modifier> modifiers, String searchTerm) {
             this.index = index;
-            this.operator = operator;
+            this.relation = relation;
             this.modifiers = modifiers;
             this.searchTerm = searchTerm;
         }
@@ -60,8 +60,8 @@ public interface Query {
             return index;
         }
 
-        public String getOperator() {
-            return operator;
+        public String getRelation() {
+            return relation;
         }
 
         public String getSearchTerm() {
@@ -91,7 +91,7 @@ public interface Query {
                     .sorted(Entry.comparingByKey())
                     .map(Entry::getValue)
                     .collect(Collectors.toList()).toString();
-            return "{" + operator + modText + ":" + index + ", " + searchTerm + "}";
+            return "{" + relation + modText + ":" + index + ", " + searchTerm + "}";
         }
     }
 

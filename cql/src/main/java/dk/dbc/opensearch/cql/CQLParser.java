@@ -53,8 +53,12 @@ public class CQLParser {
         this(query, DEFAULT_RELATIONS);
     }
 
-    public CQLParser(String query, Map<String, Function<Map<String, Modifier>, String>> compares) {
-        this(query, compares, DEFAULT_BOOLEANS);
+    public CQLParser(String query, Map<String, Function<Map<String, Modifier>, String>> relations) {
+        this(query, relations, DEFAULT_BOOLEANS, TokenList.BOOLEAN_NAMES);
+    }
+
+    public CQLParser(String query, Map<String, Function<Map<String, Modifier>, String>> relations, Map<String, Function<Map<String, Modifier>, String>> booleans) {
+        this(query, relations, booleans, TokenList.BOOLEAN_NAMES);
     }
 
     /**
@@ -74,12 +78,13 @@ public class CQLParser {
      * @param query the query string
      * @param relations the rules for compl
      * @param booleans
+     * @param booleanNameMap
      */
-    public CQLParser(String query, Map<String, Function<Map<String, Modifier>, String>> relations, Map<String, Function<Map<String, Modifier>, String>> booleans) {
+    public CQLParser(String query, Map<String, Function<Map<String, Modifier>, String>> relations, Map<String, Function<Map<String, Modifier>, String>> booleans, Map<String, BooleanOpName> booleanNameMap) {
         this.queryString = query;
         this.relations = relations;
         this.booleans = booleans;
-        this.tokens = new TokenList(query, relations.keySet());
+        this.tokens = new TokenList(query, relations.keySet(), booleanNameMap);
         this.taken = new ArrayList<>(5);
     }
 

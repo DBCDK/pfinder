@@ -19,6 +19,7 @@
 package dk.dbc.opensearch.cql.token;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
@@ -32,7 +33,8 @@ import java.util.Set;
  */
 public class TokenList {
 
-    private static final Map<String, BooleanOpName> BOOLEAN_OP = makeBooleanOpMap();
+    public static final Map<String, BooleanOpName> BOOLEAN_NAMES = Collections.unmodifiableMap(makeBooleanNameMap());
+    public static final Map<String, BooleanOpName> BOOLEAN_NAMES_DK = Collections.unmodifiableMap(makeBooleanNameMapDk());
 
     private final char[] query;
     private final Set<String> relations;
@@ -41,14 +43,16 @@ public class TokenList {
 
     private final ArrayList<Token> tokens;
     private int pos;
+    private final Map<String, BooleanOpName> booleanNameMap;
 
-    public TokenList(String query, Set<String> relations) {
+    public TokenList(String query, Set<String> relations, Map<String, BooleanOpName> booleanNameMap) {
         this.query = query.toCharArray();
         this.chPos = 0;
         this.at = 0;
         this.relations = relations;
         this.tokens = new ArrayList<>();
         this.pos = 0;
+        this.booleanNameMap = booleanNameMap;
         tokneize();
     }
 
@@ -185,8 +189,8 @@ public class TokenList {
         if (content.equalsIgnoreCase("sortby")) {
             return new SortBy(content, at);
         }
-        if (BOOLEAN_OP.containsKey(key)) {
-            return new BooleanOp(BOOLEAN_OP.get(key), content, at);
+        if (BOOLEAN_NAMES.containsKey(key)) {
+            return new BooleanOp(booleanNameMap.get(key), content, at);
         }
         if (relations.contains(content.toLowerCase(Locale.ROOT))) {
             return new Relation(content, at);
@@ -194,12 +198,20 @@ public class TokenList {
         return new Term(content, at);
     }
 
-    private static Map<String, BooleanOpName> makeBooleanOpMap() {
+    private static HashMap<String, BooleanOpName> makeBooleanNameMap() {
         HashMap<String, BooleanOpName> map = new HashMap<>();
         map.put("and", BooleanOpName.AND);
         map.put("or", BooleanOpName.OR);
         map.put("not", BooleanOpName.NOT);
         map.put("prox", BooleanOpName.PROX);
+        return map;
+    }
+
+    private static HashMap<String, BooleanOpName> makeBooleanNameMapDk() {
+        HashMap<String, BooleanOpName> map = makeBooleanNameMap();
+        map.put("og", BooleanOpName.AND);
+        map.put("eller", BooleanOpName.OR);
+        map.put("ikke", BooleanOpName.NOT);
         return map;
     }
 
