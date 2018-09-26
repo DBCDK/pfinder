@@ -88,7 +88,7 @@ public class CQLParserTest {
     }
 
     private static  HashMap<String, Function<Map<String, Modifier>, String>> makeValidators() {
-        HashMap<String, Function<Map<String, Modifier>, String>> validators = new HashMap<>(CQLParser.DEFAULT_COMPARES);
+        HashMap<String, Function<Map<String, Modifier>, String>> validators = new HashMap<>(CQLParser.DEFAULT_RELATIONS);
         validators.put("test1", m -> null);
         validators.put("test2", m -> null);
         return validators;

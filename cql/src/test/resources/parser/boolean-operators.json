@@ -17,6 +17,14 @@
     },
     {
         "query": "foo not bar or blop",
+        "expected": "{or[]:{not[]:{=[]:default, foo}, {=[]:default, bar}}, {=[]:default, blop}}"
+    },
+    {
+        "query": "foo and bar or blop",
+        "expected": "{or[]:{and[]:{=[]:default, foo}, {=[]:default, bar}}, {=[]:default, blop}}"
+    },
+    {
+        "query": "foo not (bar or blop)",
         "expected": "{not[]:{=[]:default, foo}, {or[]:{=[]:default, bar}, {=[]:default, blop}}}"
     },
     {
