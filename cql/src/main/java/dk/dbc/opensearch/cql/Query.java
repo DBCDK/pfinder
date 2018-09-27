@@ -83,14 +83,14 @@ public interface Query {
         }
     }
 
-    public static class BooleanOp implements Query {
+    public static class Bool implements Query {
 
         private final Query left;
         private final String operator;
         private final Map<String, Modifier> modifiers;
         private final Query right;
 
-        public BooleanOp(Query left, String operator, Map<String, Modifier> modifiers, Query right) {
+        public Bool(Query left, String operator, Map<String, Modifier> modifiers, Query right) {
             this.left = left;
             this.operator = operator;
             this.modifiers = modifiers;

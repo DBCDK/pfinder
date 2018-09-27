@@ -114,7 +114,7 @@ public class CQLParser {
             }
             Map<String, Modifier> modifiers = modifiers(validator);
             Query right = parseSearch();
-            left = new Query.BooleanOp(left, op.getName(), modifiers, right);
+            left = new Query.Bool(left, op.getName(), modifiers, right);
         }
         return left;
     }
