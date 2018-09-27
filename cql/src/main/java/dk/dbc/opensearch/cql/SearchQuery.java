@@ -19,7 +19,6 @@
 package dk.dbc.opensearch.cql;
 
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.stream.Collectors;
 

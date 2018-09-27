@@ -20,7 +20,6 @@ package dk.dbc.opensearch.cql;
 
 import dk.dbc.opensearch.cql.token.*;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -251,7 +250,7 @@ public class CQLParser {
         map.put("prox", null);
         map.put("encloses", null);
         map.put("within", null);
-        return Collections.unmodifiableMap(map);
+        return unmodifiableMap(map);
     }
 
     private static Map<String, Function<Map<String, Modifier>, String>> makeDefaultBooleans() {
@@ -260,7 +259,7 @@ public class CQLParser {
         map.put("or", m -> "Modifiers not supported for 'or'");
         map.put("not", m -> "Modifiers not supported for 'not'");
         map.put("prox", null);
-        return Collections.unmodifiableMap(map);
+        return unmodifiableMap(map);
     }
 
 }
