@@ -31,13 +31,6 @@ import static java.util.Collections.EMPTY_MAP;
  */
 public interface Query {
 
-    enum Type {
-        SEARCH,
-        BOOLEAN
-    }
-
-    Type getType();
-
     public static class Search implements Query {
 
         private final String index;
@@ -81,11 +74,6 @@ public interface Query {
         }
 
         @Override
-        public Type getType() {
-            return Type.SEARCH;
-        }
-
-        @Override
         public String toString() {
             String modText = modifiers.entrySet().stream()
                     .sorted(Entry.comparingByKey())
@@ -123,11 +111,6 @@ public interface Query {
 
         public Map<String, Modifier> getModifiers() {
             return modifiers;
-        }
-
-        @Override
-        public Type getType() {
-            return Type.BOOLEAN;
         }
 
         @Override
