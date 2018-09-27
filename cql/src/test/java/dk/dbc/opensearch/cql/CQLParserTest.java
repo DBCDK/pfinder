@@ -68,7 +68,7 @@ public class CQLParserTest {
     public void testCase() throws Exception {
         System.out.println(name);
         try {
-            QueryNode result = new CQLParser(query, VALIDATORS).parse();
+            QueryNode result = CQLParser.parse(query, VALIDATORS);
             String actual = result.toString();
             System.out.println("actual = " + actual);
             System.out.println("expected = " + expected);

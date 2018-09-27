@@ -43,23 +43,27 @@ public class CQLParser {
     public static final Map<String, Function<Map<String, Modifier>, String>> DEFAULT_RELATIONS = makeDefaultRelations();
     public static final Map<String, Function<Map<String, Modifier>, String>> DEFAULT_BOOLEANS = makeDefaultBooleans();
 
+    public static QueryNode parse(String query) {
+        return new CQLParser(query, DEFAULT_RELATIONS, DEFAULT_BOOLEANS, TokenList.BOOLEAN_NAMES).parse();
+    }
+
+    public static QueryNode parse(String query, Map<String, Function<Map<String, Modifier>, String>> relations) {
+        return new CQLParser(query, relations, DEFAULT_BOOLEANS, TokenList.BOOLEAN_NAMES).parse();
+    }
+
+    public static QueryNode parse(String query, Map<String, Function<Map<String, Modifier>, String>> relations, Map<String, Function<Map<String, Modifier>, String>> booleans) {
+        return new CQLParser(query, relations, booleans, TokenList.BOOLEAN_NAMES).parse();
+    }
+
+    public static QueryNode parse(String query, Map<String, Function<Map<String, Modifier>, String>> relations, Map<String, Function<Map<String, Modifier>, String>> booleans, Map<String, BooleanOpName> booleanNameMap) {
+        return new CQLParser(query, relations, booleans, booleanNameMap).parse();
+    }
+
     private final TokenList tokens;
     private final ArrayList<Token> taken;
     private final String queryString;
     private final Map<String, Function<Map<String, Modifier>, String>> relations;
     private final Map<String, Function<Map<String, Modifier>, String>> booleans;
-
-    public CQLParser(String query) {
-        this(query, DEFAULT_RELATIONS);
-    }
-
-    public CQLParser(String query, Map<String, Function<Map<String, Modifier>, String>> relations) {
-        this(query, relations, DEFAULT_BOOLEANS, TokenList.BOOLEAN_NAMES);
-    }
-
-    public CQLParser(String query, Map<String, Function<Map<String, Modifier>, String>> relations, Map<String, Function<Map<String, Modifier>, String>> booleans) {
-        this(query, relations, booleans, TokenList.BOOLEAN_NAMES);
-    }
 
     /**
      * Make a CQL parser for a given string
@@ -75,12 +79,12 @@ public class CQLParser {
      * <p>
      * The function return the error message, or null if no error occurred
      *
-     * @param query the query string
-     * @param relations the rules for compl
+     * @param query          the query string
+     * @param relations      the rules for compl
      * @param booleans
      * @param booleanNameMap
      */
-    public CQLParser(String query, Map<String, Function<Map<String, Modifier>, String>> relations, Map<String, Function<Map<String, Modifier>, String>> booleans, Map<String, BooleanOpName> booleanNameMap) {
+    private CQLParser(String query, Map<String, Function<Map<String, Modifier>, String>> relations, Map<String, Function<Map<String, Modifier>, String>> booleans, Map<String, BooleanOpName> booleanNameMap) {
         this.queryString = query;
         this.relations = relations;
         this.booleans = booleans;
@@ -88,7 +92,7 @@ public class CQLParser {
         this.taken = new ArrayList<>(5);
     }
 
-    public QueryNode parse() {
+    private QueryNode parse() {
         QueryNode query = parseBoolean();
         if (take(EOL)) {
             return query;
