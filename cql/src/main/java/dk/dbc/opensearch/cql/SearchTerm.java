@@ -28,7 +28,15 @@ import java.util.Iterator;
  *
  * @author DBC {@literal <dbc.dk>}
  */
-class SearchTerm {
+public class SearchTerm {
+
+    public static Iterator<Iterator<String>> wordsFrom(String term) {
+        return new Words(term);
+    }
+
+    public static Iterator<String> partsFrom(String term) {
+        return new Parts(term);
+    }
 
     static class Words implements Iterator<Iterator<String>> {
 

@@ -57,14 +57,6 @@ public class SearchQuery implements QueryNode {
         return searchTerm;
     }
 
-    public Iterator<String> parts() {
-        return new SearchTerm.Parts(searchTerm);
-    }
-
-    public Iterator<Iterator<String>> words() {
-        return new SearchTerm.Words(searchTerm);
-    }
-
     public Map<String, Modifier> getModifiers() {
         return modifiers;
     }
