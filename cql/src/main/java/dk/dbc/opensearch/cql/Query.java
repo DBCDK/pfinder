@@ -62,11 +62,11 @@ public interface Query {
         }
 
         public Iterator<String> parts() {
-            return new SearchTerm.Parts(index);
+            return new SearchTerm.Parts(searchTerm);
         }
 
         public Iterator<Iterator<String>> words() {
-            return new SearchTerm.Words(index);
+            return new SearchTerm.Words(searchTerm);
         }
 
         public Map<String, Modifier> getModifiers() {
