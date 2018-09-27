@@ -88,8 +88,8 @@ public class CQLParser {
         this.taken = new ArrayList<>(5);
     }
 
-    public Query parse() {
-        Query query = parseBoolean();
+    public QueryNode parse() {
+        QueryNode query = parseBoolean();
         if (take(EOL)) {
             return query;
         }
@@ -104,8 +104,8 @@ public class CQLParser {
         throw expected("EOL");
     }
 
-    private Query parseBoolean() { // LEFT PRECEDENCE
-        Query left = parseSearch();
+    private QueryNode parseBoolean() { // LEFT PRECEDENCE
+        QueryNode left = parseSearch();
         while (take(BOOLEAN)) {
             BooleanOp op = (BooleanOp) get(1);
             Function<Map<String, Modifier>, String> validator = booleans.get(op.getName());
@@ -113,15 +113,15 @@ public class CQLParser {
                 throw new CQLException(pos(op.getInputPosition()), "Unsupported boolean operator");
             }
             Map<String, Modifier> modifiers = modifiers(validator);
-            Query right = parseSearch();
-            left = new Query.Bool(left, op.getName(), modifiers, right);
+            QueryNode right = parseSearch();
+            left = new BoolQuery(left, op.getName(), modifiers, right);
         }
         return left;
     }
 
-    private Query parseSearch() {
+    private QueryNode parseSearch() {
         if (take(PAR_L)) {
-            Query query = parseBoolean();
+            QueryNode query = parseBoolean();
             if (!take(PAR_R)) {
                 throw expected(")");
             }
@@ -138,10 +138,10 @@ public class CQLParser {
                 throw expected("search term");
             }
             Text text = (Text) get(1);
-            return new Query.Search(term.getContent(), relation.getName(), modifiers, text.getText());
+            return new SearchQuery(term.getContent(), relation.getName(), modifiers, text.getText());
         } else if (take(TEXT)) {
             Text text = (Text) get(1);
-            return new Query.Search(text.getText());
+            return new SearchQuery(text.getText());
         } else {
             throw expected("seach term or parenthesis");
         }
