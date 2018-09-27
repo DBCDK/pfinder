@@ -96,7 +96,7 @@ public class CQLParserTest {
 
     @Parameterized.Parameters(name = "{0}")
     public static List<Object[]> tests() throws Exception {
-        URL base = TokenListTest.class.getClassLoader().getResource("parser");
+        URL base = CQLParserTest.class.getClassLoader().getResource("parser");
         return Arrays.stream(new File(base.toURI()).listFiles())
                 .filter(f -> f.getName().endsWith(".json"))
                 .sorted()

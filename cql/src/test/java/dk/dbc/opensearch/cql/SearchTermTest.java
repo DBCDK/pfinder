@@ -100,7 +100,7 @@ public class SearchTermTest {
 
     @Parameterized.Parameters(name = "{0}")
     public static List<Object[]> tests() throws Exception {
-        URL base = TokenListTest.class.getClassLoader().getResource("terms");
+        URL base = SearchTermTest.class.getClassLoader().getResource("terms");
         return Arrays.stream(new File(base.toURI()).listFiles())
                 .filter(f -> f.getName().endsWith(".json"))
                 .sorted()
