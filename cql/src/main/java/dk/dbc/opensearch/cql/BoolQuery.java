@@ -27,10 +27,10 @@ import java.util.stream.Collectors;
  */
 public class BoolQuery implements QueryNode {
 
-    private final QueryNode left;
+    private QueryNode left;
     private final String operator;
     private final Map<String, Modifier> modifiers;
-    private final QueryNode right;
+    private QueryNode right;
 
     public BoolQuery(QueryNode left, String operator, Map<String, Modifier> modifiers, QueryNode right) {
         this.left = left;
@@ -43,12 +43,20 @@ public class BoolQuery implements QueryNode {
         return left;
     }
 
+    public void setLeft(QueryNode left) {
+        this.left = left;
+    }
+
     public String getOperator() {
         return operator;
     }
 
     public QueryNode getRight() {
         return right;
+    }
+
+    public void setRight(QueryNode right) {
+        this.right = right;
     }
 
     public Map<String, Modifier> getModifiers() {
