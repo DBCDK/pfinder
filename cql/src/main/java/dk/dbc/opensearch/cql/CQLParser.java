@@ -137,6 +137,9 @@ public class CQLParser {
                 throw new CQLException(CQLError.UNSUPPORTED_RELATION, pos(relation.getInputPosition()), "Unsupported relation operator");
             }
             Map<String, Modifier> modifiers = modifiers(validator);
+            if (take(PAR_L)) {
+                return parseSearchCCLExtensionGroup(term.getContent(), relation.getName(), modifiers);
+            }
             if (!take(TEXT)) {
                 throw expected(CQLError.QUERY_SYNTAX_ERROR, "search term");
             }
@@ -147,6 +150,33 @@ public class CQLParser {
             return new SearchQuery(text.getText());
         } else {
             throw expected(CQLError.QUERY_SYNTAX_ERROR, "seach term or parenthesis");
+        }
+    }
+
+    private QueryNode parseSearchCCLExtensionGroup(String term, String relation, Map<String, Modifier> modifiers) {
+        QueryNode left = parseSearchCCLExtenstionValue(term, relation, modifiers);
+        while (take(BOOLEAN)) {
+            BooleanOp bool = (BooleanOp) get(1);
+            if (bool.getOperator() == BooleanOpName.PROX) {
+                throw new CQLException(CQLError.PROXIMITY_NOT_SUPPORTED, pos(), "Unsupported operator prox");
+            }
+            QueryNode right = parseSearchCCLExtenstionValue(term, relation, modifiers);
+            left = new BoolQuery(left, bool.getName(), EMPTY_MAP, right);
+        }
+        if (!take(PAR_R)) {
+            throw expected(CQLError.INVALID_OR_UNSUPPORTED_USE_OF_PARENTHESES, ")");
+        }
+        return left;
+    }
+
+    private QueryNode parseSearchCCLExtenstionValue(String term, String relation, Map<String, Modifier> modifiers) {
+        if (take(PAR_L)) {
+            return parseSearchCCLExtensionGroup(term, relation, modifiers);
+        } else if (take(TEXT)) {
+            Text text = (Text) get(1);
+            return new SearchQuery(term, relation, modifiers, text.getText());
+        } else {
+            throw expected(CQLError.QUERY_SYNTAX_ERROR, "search term");
         }
     }
 
