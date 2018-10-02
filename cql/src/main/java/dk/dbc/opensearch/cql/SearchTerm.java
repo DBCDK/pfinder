@@ -38,6 +38,47 @@ public class SearchTerm {
         return new Parts(term);
     }
 
+    public static boolean containsMultipleWords(String term) {
+        try {
+            StringReader reader = new StringReader(term);
+            for (;;) {
+                int c = reader.read();
+                if (c == -1) {
+                    break;
+                }
+                if (c == '\\') {
+                    reader.read();
+                    continue;
+                }
+                if(Character.isWhitespace(c)) {
+                    return true;
+                }
+            }
+            return false;
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+    public static boolean containsMaskingOrTruncation(String term) {
+        try {
+            StringReader reader = new StringReader(term);
+            for (;;) {
+                int c = reader.read();
+                if (c == -1) {
+                    break;
+                }
+                if (c == '\\') {
+                    reader.read();
+                } else if (c == '?' || c == '*') {
+                    return true;
+                }
+            }
+            return false;
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
     static class Words implements Iterator<Iterator<String>> {
 
         private final PushbackReader reader;

@@ -1,22 +1,10 @@
 [
     {
-        "query": "term.index = \"foo\"",
-        "expected": "{=[]:term.index, foo}"
+        "query": "term.index = ( \"foo\" OR \"bar\" )",
+        "expected": "{or[]:{=[]:term.index, foo}, {=[]:term.index, bar}}"
     },
     {
-        "query": "term.index any foo",
-        "expected": "{any[]:term.index, foo}"
-    },
-    {
-        "query": "term.index encloses foo",
-        "exception": "term.index --->encloses foo"
-    },
-    {
-        "query": "term.index == foo",
-        "exception": "term.index --->== foo"
-    },
-    {
-        "query": "term.index prox foo",
-        "exception": "Unsupported boolean operator"
+        "query": "term.index = ( \"foo\" OR \"bar\" AND blop )",
+        "expected": "{and[]:{or[]:{=[]:term.index, foo}, {=[]:term.index, bar}}, {=[]:term.index, blop}}"
     }
 ]

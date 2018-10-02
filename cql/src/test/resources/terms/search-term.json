@@ -1,22 +1,93 @@
 [
     {
-        "term": " foo \\\"Mylo\\\" bar ",
+        "term": " \"foo\" ",
+        "parts": "[foo]",
+        "words": "[[foo]]",
+        "multiword": false,
+        "masking": false
+    },
+    {
+        "term": " \"f*o\" ",
+        "parts": "[f, *, o]",
+        "words": "[[f, *, o]]",
+        "multiword": false,
+        "masking": true
+    },
+    {
+        "term": " \"f\\*o\" ",
+        "parts": "[f*o]",
+        "words": "[[f*o]]",
+        "multiword": false,
+        "masking": false
+    },
+    {
+        "term": " \"f?o\" ",
+        "parts": "[f, ?, o]",
+        "words": "[[f, ?, o]]",
+        "multiword": false,
+        "masking": true
+    },
+    {
+        "term": " \"f\\?o\" ",
+        "parts": "[f?o]",
+        "words": "[[f?o]]",
+        "multiword": false,
+        "masking": false
+    },
+    {
+        "term": " \"f o\" ",
+        "parts": "[f o]",
+        "words": "[[f], [o]]",
+        "multiword": true,
+        "masking": false
+    },
+    {
+        "term": " \"f\\ o\" ",
+        "parts": "[f o]",
+        "words": "[[f o]]",
+        "multiword": false,
+        "masking": false
+    },
+    {
+        "term": " \" foo \\\"Mylo\\\" bar \" ",
         "parts": "[ foo \"Mylo\" bar ]",
-        "words": "[[foo], [\"Mylo\"], [bar]]"
+        "words": "[[foo], [\"Mylo\"], [bar]]",
+        "multiword": true,
+        "masking": false
     },
     {
         "term": "*",
         "parts": "[, *, ]",
-        "words": "[[, *, ]]"
+        "words": "[[, *, ]]",
+        "multiword": false,
+        "masking": true
     },
     {
         "term": "\\*",
         "parts": "[*]",
-        "words": "[[*]]"
+        "words": "[[*]]",
+        "multiword": false,
+        "masking": false
     },
     {
         "term": "*?",
         "parts": "[, *?, ]",
-        "words": "[[, *?, ]]"
+        "words": "[[, *?, ]]",
+        "multiword": false,
+        "masking": true
+    },
+    {
+        "term": " \"one two three\" ",
+        "parts": "[one two three]",
+        "words": "[[one], [two], [three]]",
+        "multiword": true,
+        "masking": false
+    },
+    {
+        "term": " 'one two three' ",
+        "parts": "[one two three]",
+        "words": "[[one], [two], [three]]",
+        "multiword": true,
+        "masking": false
     }
 ]
