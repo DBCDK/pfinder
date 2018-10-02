@@ -21,7 +21,6 @@ package dk.dbc.opensearch.cql;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import dk.dbc.opensearch.cql.token.TokenListTest;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;

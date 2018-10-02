@@ -245,7 +245,7 @@ public class CQLParser {
         map.put("<", m -> "Modifiers not supported for <");
         map.put(">=", m -> "Modifiers not supported for >=");
         map.put("<=", m -> "Modifiers not supported for <=");
-        map.put("<>", m -> "Modifiers not supported for <>");
+        map.put("<>", null);
         map.put("==", null);
         map.put("prox", null);
         map.put("encloses", null);
