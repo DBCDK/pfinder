@@ -42,10 +42,35 @@ public class CQLException extends RuntimeException {
         }
     }
 
+    private static final Position UNKNOWN_POSITION = new Position("", 0) {
+        @Override
+        public String toString() {
+            return "UNSPECIFIED POSITION";
+        }
+    };
+
     protected final Position position;
+    protected final CQLError cqlError;
 
     public CQLException(Position position, String message) {
+        this(CQLError.GENERAL_SYSTEM_ERROR, position, message);
+    }
+
+    public CQLException(CQLError cqlError, Position position) {
+        this(cqlError, position, cqlError.getMsg());
+    }
+
+    public CQLException(CQLError cqlError) {
+        this(cqlError, UNKNOWN_POSITION, cqlError.getMsg());
+    }
+
+    public CQLException(CQLError cqlError, String message) {
+        this(cqlError, UNKNOWN_POSITION, message);
+    }
+
+    public CQLException(CQLError cqlError, Position position, String message) {
         super(message);
+        this.cqlError = cqlError;
         this.position = position;
     }
 
@@ -56,6 +81,10 @@ public class CQLException extends RuntimeException {
     @Override
     public String getMessage() {
         return super.getMessage() + " at: " + position;
+    }
+
+    public CQLError getCqlError() {
+        return cqlError;
     }
 
 }

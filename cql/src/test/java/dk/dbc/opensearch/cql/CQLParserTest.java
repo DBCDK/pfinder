@@ -49,7 +49,7 @@ import static org.junit.Assert.*;
 public class CQLParserTest {
 
     private static final ObjectMapper O = new ObjectMapper();
-    private static final HashMap<String, Function<Map<String, Modifier>, String>> VALIDATORS = makeValidators();
+    private static final HashMap<String, Function<Map<String, Modifier>, CQLError>> VALIDATORS = makeValidators();
 
     private final String name;
     private final String query;
@@ -86,8 +86,8 @@ public class CQLParserTest {
         }
     }
 
-    private static  HashMap<String, Function<Map<String, Modifier>, String>> makeValidators() {
-        HashMap<String, Function<Map<String, Modifier>, String>> validators = new HashMap<>(CQLParser.DEFAULT_RELATIONS);
+    private static  HashMap<String, Function<Map<String, Modifier>, CQLError>> makeValidators() {
+        HashMap<String, Function<Map<String, Modifier>, CQLError>> validators = new HashMap<>(CQLParser.DEFAULT_RELATIONS);
         validators.put("test1", m -> null);
         validators.put("test2", m -> null);
         return validators;

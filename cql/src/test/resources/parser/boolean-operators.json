@@ -5,7 +5,7 @@
     },
     {
         "query": "foo and/preferred bar",
-        "exception": "Modifiers not supported for 'and'"
+        "exception": "Unsupported boolean modifier"
     },
     {
         "query": "foo prox bar",

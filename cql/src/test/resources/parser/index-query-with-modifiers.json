@@ -13,11 +13,11 @@
     },
     {
         "query": "term.index =/string/word foo",
-        "exception": "cannot have both 'string' and 'word'"
+        "exception": "Unsupported combination of relation modifers"
     },
     {
         "query": "term.index =/string=1 foo",
-        "exception": "Modifier 'string' does not take an operator"
+        "exception": "Unsupported relation modifier"
     }
     
 ]

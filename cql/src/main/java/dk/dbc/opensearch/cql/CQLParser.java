@@ -39,30 +39,30 @@ import static java.util.Collections.*;
  */
 public class CQLParser {
 
-    public static final Map<String, Function<Map<String, Modifier>, String>> DEFAULT_RELATIONS = makeDefaultRelations();
-    public static final Map<String, Function<Map<String, Modifier>, String>> DEFAULT_BOOLEANS = makeDefaultBooleans();
+    public static final Map<String, Function<Map<String, Modifier>, CQLError>> DEFAULT_RELATIONS = makeDefaultRelations();
+    public static final Map<String, Function<Map<String, Modifier>, CQLError>> DEFAULT_BOOLEANS = makeDefaultBooleans();
 
-    public static QueryNode parse(String query) {
+    public static QueryNode parse(String query) throws CQLException {
         return new CQLParser(query, DEFAULT_RELATIONS, DEFAULT_BOOLEANS, TokenList.BOOLEAN_NAMES).parse();
     }
 
-    public static QueryNode parse(String query, Map<String, Function<Map<String, Modifier>, String>> relations) {
+    public static QueryNode parse(String query, Map<String, Function<Map<String, Modifier>, CQLError>> relations) throws CQLException {
         return new CQLParser(query, relations, DEFAULT_BOOLEANS, TokenList.BOOLEAN_NAMES).parse();
     }
 
-    public static QueryNode parse(String query, Map<String, Function<Map<String, Modifier>, String>> relations, Map<String, Function<Map<String, Modifier>, String>> booleans) {
+    public static QueryNode parse(String query, Map<String, Function<Map<String, Modifier>, CQLError>> relations, Map<String, Function<Map<String, Modifier>, CQLError>> booleans) throws CQLException {
         return new CQLParser(query, relations, booleans, TokenList.BOOLEAN_NAMES).parse();
     }
 
-    public static QueryNode parse(String query, Map<String, Function<Map<String, Modifier>, String>> relations, Map<String, Function<Map<String, Modifier>, String>> booleans, Map<String, BooleanOpName> booleanNameMap) {
+    public static QueryNode parse(String query, Map<String, Function<Map<String, Modifier>, CQLError>> relations, Map<String, Function<Map<String, Modifier>, CQLError>> booleans, Map<String, BooleanOpName> booleanNameMap) throws CQLException {
         return new CQLParser(query, relations, booleans, booleanNameMap).parse();
     }
 
     private final TokenList tokens;
     private final ArrayList<Token> taken;
     private final String queryString;
-    private final Map<String, Function<Map<String, Modifier>, String>> relations;
-    private final Map<String, Function<Map<String, Modifier>, String>> booleans;
+    private final Map<String, Function<Map<String, Modifier>, CQLError>> relations;
+    private final Map<String, Function<Map<String, Modifier>, CQLError>> booleans;
 
     /**
      * Make a CQL parser for a given string
@@ -83,7 +83,7 @@ public class CQLParser {
      * @param booleans
      * @param booleanNameMap
      */
-    private CQLParser(String query, Map<String, Function<Map<String, Modifier>, String>> relations, Map<String, Function<Map<String, Modifier>, String>> booleans, Map<String, BooleanOpName> booleanNameMap) {
+    private CQLParser(String query, Map<String, Function<Map<String, Modifier>, CQLError>> relations, Map<String, Function<Map<String, Modifier>, CQLError>> booleans, Map<String, BooleanOpName> booleanNameMap) {
         this.queryString = query;
         this.relations = relations;
         this.booleans = booleans;
@@ -98,22 +98,22 @@ public class CQLParser {
         }
         if (take(SORTBY)) {
             int at = get(1).getInputPosition();
-            throw new CQLException(pos(at), "SortBy is not supported");
+            throw new CQLException(CQLError.SORT_NOT_SUPPORTED, pos(at), "SortBy is not supported");
         }
         if (take(TERM)) {
             int at = get(1).getInputPosition();
-            throw new CQLException(pos(at), "Illegal operator");
+            throw new CQLException(CQLError.QUERY_SYNTAX_ERROR, pos(at), "Illegal operator");
         }
-        throw expected("EOL");
+        throw expected(CQLError.QUERY_SYNTAX_ERROR, "EOL");
     }
 
     private QueryNode parseBoolean() { // LEFT PRECEDENCE
         QueryNode left = parseSearch();
         while (take(BOOLEAN)) {
             BooleanOp op = (BooleanOp) get(1);
-            Function<Map<String, Modifier>, String> validator = booleans.get(op.getName());
+            Function<Map<String, Modifier>, CQLError> validator = booleans.get(op.getName());
             if (validator == null) {
-                throw new CQLException(pos(op.getInputPosition()), "Unsupported boolean operator");
+                throw new CQLException(CQLError.UNSUPPORTED_BOOLEAN_OPERATOR, pos(op.getInputPosition()), "Unsupported boolean operator");
             }
             Map<String, Modifier> modifiers = modifiers(validator);
             QueryNode right = parseSearch();
@@ -126,19 +126,19 @@ public class CQLParser {
         if (take(PAR_L)) {
             QueryNode query = parseBoolean();
             if (!take(PAR_R)) {
-                throw expected(")");
+                throw expected(CQLError.INVALID_OR_UNSUPPORTED_USE_OF_PARENTHESES, ")");
             }
             return query;
         } else if (take(TERM, RELATION)) {
             Term term = (Term) get(1);
             Keyword relation = (Keyword) get(2);
-            Function<Map<String, Modifier>, String> validator = relations.get(relation.getName());
+            Function<Map<String, Modifier>, CQLError> validator = relations.get(relation.getName());
             if (validator == null) {
-                throw new CQLException(pos(relation.getInputPosition()), "Unsupported relation operator");
+                throw new CQLException(CQLError.UNSUPPORTED_RELATION, pos(relation.getInputPosition()), "Unsupported relation operator");
             }
             Map<String, Modifier> modifiers = modifiers(validator);
             if (!take(TEXT)) {
-                throw expected("search term");
+                throw expected(CQLError.QUERY_SYNTAX_ERROR, "search term");
             }
             Text text = (Text) get(1);
             return new SearchQuery(term.getContent(), relation.getName(), modifiers, text.getText());
@@ -146,11 +146,11 @@ public class CQLParser {
             Text text = (Text) get(1);
             return new SearchQuery(text.getText());
         } else {
-            throw expected("seach term or parenthesis");
+            throw expected(CQLError.QUERY_SYNTAX_ERROR, "seach term or parenthesis");
         }
     }
 
-    private Map<String, Modifier> modifiers(Function<Map<String, Modifier>, String> validator) {
+    private Map<String, Modifier> modifiers(Function<Map<String, Modifier>, CQLError> validator) {
         int at = tokens.at();
         if (take(SLASH, TERM)) {
             HashMap<String, Modifier> modifiers = new HashMap<>();
@@ -159,8 +159,7 @@ public class CQLParser {
                 String modifier = term.getContent();
                 String key = modifier.toLowerCase(Locale.ROOT);
                 if (modifiers.containsKey(key)) {
-
-                    throw new CQLException(pos(at), "Modifier " + modifier.toLowerCase(Locale.ROOT) + " is repeated");
+                    throw new CQLException(CQLError.QUERY_SYNTAX_ERROR, pos(at), "Modifier " + modifier.toLowerCase(Locale.ROOT) + " is repeated");
                 }
                 if (take(COMPARE, TERM)) {
                     CompareOp cmp = (CompareOp) get(1);
@@ -172,9 +171,9 @@ public class CQLParser {
                                   new Modifier(modifier));
                 }
             } while (take(SLASH, TERM));
-            String error = validator.apply(modifiers);
+            CQLError error = validator.apply(modifiers);
             if (error != null) {
-                throw new CQLException(pos(at), error);
+                throw new CQLException(error, pos(at));
             }
             return modifiers;
         }
@@ -209,26 +208,26 @@ public class CQLParser {
         return new CQLException.Position(queryString, at);
     }
 
-    private CQLException expected(String content) {
-        return new CQLException(pos(), "Expected " + content);
+    private CQLException expected(CQLError error, String content) {
+        return new CQLException(error, pos(), "Expected " + content);
     }
 
-    private static Map<String, Function<Map<String, Modifier>, String>> makeDefaultRelations() {
-        Map<String, Function<Map<String, Modifier>, String>> map = new HashMap();
-        map.put("adj", m -> "Modifiers not supported for 'adj'");
-        map.put("any", m -> "Modifiers not supported for 'any'");
-        map.put("all", m -> "Modifiers not supported for 'all'");
+    private static Map<String, Function<Map<String, Modifier>, CQLError>> makeDefaultRelations() {
+        Map<String, Function<Map<String, Modifier>, CQLError>> map = new HashMap();
+        map.put("adj", m -> CQLError.UNSUPPORTED_RELATION_MODIFIER);
+        map.put("any", m -> CQLError.UNSUPPORTED_RELATION_MODIFIER);
+        map.put("all", m -> CQLError.UNSUPPORTED_RELATION_MODIFIER);
         map.put("=", m -> {
             Modifier string = m.get("string");
             Modifier word = m.get("word");
             if (string != null && word != null) {
-                return "Illegal modifiers, cannot have both 'string' and 'word'";
+                return CQLError.UNSUPPORTED_COMBINATION_OF_RELATION_MODIFERS;
             }
             if (string != null && !string.isFlag()) {
-                return "Modifier 'string' does not take an operator";
+                return CQLError.UNSUPPORTED_RELATION_MODIFIER;
             }
             if (word != null && !word.isFlag()) {
-                return "Modifier 'word' does not take an operator";
+                return CQLError.UNSUPPORTED_RELATION_MODIFIER;
             }
             for (String key : m.keySet()) {
                 switch (key) {
@@ -236,15 +235,15 @@ public class CQLParser {
                     case "word":
                         break;
                     default:
-                        return "Unsupported modifier '" + key + "' does not take an operator";
+                        return CQLError.UNSUPPORTED_RELATION_MODIFIER;
                 }
             }
             return null;
         });
-        map.put(">", m -> "Modifiers not supported for >");
-        map.put("<", m -> "Modifiers not supported for <");
-        map.put(">=", m -> "Modifiers not supported for >=");
-        map.put("<=", m -> "Modifiers not supported for <=");
+        map.put(">", m -> CQLError.UNSUPPORTED_RELATION_MODIFIER);
+        map.put("<", m -> CQLError.UNSUPPORTED_RELATION_MODIFIER);
+        map.put(">=", m -> CQLError.UNSUPPORTED_RELATION_MODIFIER);
+        map.put("<=", m -> CQLError.UNSUPPORTED_RELATION_MODIFIER);
         map.put("<>", null);
         map.put("==", null);
         map.put("prox", null);
@@ -253,11 +252,11 @@ public class CQLParser {
         return unmodifiableMap(map);
     }
 
-    private static Map<String, Function<Map<String, Modifier>, String>> makeDefaultBooleans() {
-        Map<String, Function<Map<String, Modifier>, String>> map = new HashMap();
-        map.put("and", m -> "Modifiers not supported for 'and'");
-        map.put("or", m -> "Modifiers not supported for 'or'");
-        map.put("not", m -> "Modifiers not supported for 'not'");
+    private static Map<String, Function<Map<String, Modifier>, CQLError>> makeDefaultBooleans() {
+        Map<String, Function<Map<String, Modifier>, CQLError>> map = new HashMap();
+        map.put("and", m -> CQLError.UNSUPPORTED_BOOLEAN_MODIFIER);
+        map.put("or", m -> CQLError.UNSUPPORTED_BOOLEAN_MODIFIER);
+        map.put("not", m -> CQLError.UNSUPPORTED_BOOLEAN_MODIFIER);
         map.put("prox", null);
         return unmodifiableMap(map);
     }
