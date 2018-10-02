@@ -18,26 +18,30 @@
  */
 package dk.dbc.opensearch.cql;
 
+import dk.dbc.opensearch.cql.CQLException.Position;
+
 /**
  *
  * @author DBC {@literal <dbc.dk>}
  */
 public class Modifier {
 
+    private final Position pos;
     private final String name;
     private final String symbol;
     private final String value;
     private final boolean flag;
 
-    public Modifier(String name) {
-        this(name, null, null, true);
+    public Modifier(Position pos, String name) {
+        this(pos, name, null, null, true);
     }
 
-    public Modifier(String name, String symbol, String value) {
-        this(name, symbol, value, false);
+    public Modifier(Position pos, String name, String symbol, String value) {
+        this(pos, name, symbol, value, false);
     }
 
-    private Modifier(String name, String symbol, String value, boolean flag) {
+    private Modifier(Position pos, String name, String symbol, String value, boolean flag) {
+        this.pos = pos;
         this.name = name;
         this.symbol = symbol;
         this.value = value;
@@ -58,6 +62,10 @@ public class Modifier {
 
     public boolean isFlag() {
         return flag;
+    }
+
+    public Position getPos() {
+        return pos;
     }
 
     @Override

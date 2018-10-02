@@ -110,14 +110,14 @@ public class CQLParser {
     private QueryNode parseBoolean() { // LEFT PRECEDENCE
         QueryNode left = parseSearch();
         while (take(BOOLEAN)) {
-            BooleanOp op = (BooleanOp) get(1);
-            Function<Map<String, Modifier>, CQLError> validator = booleans.get(op.getName());
+            BooleanOp bool = (BooleanOp) get(1);
+            Function<Map<String, Modifier>, CQLError> validator = booleans.get(bool.getName());
             if (validator == null) {
-                throw new CQLException(CQLError.UNSUPPORTED_BOOLEAN_OPERATOR, pos(op.getInputPosition()), "Unsupported boolean operator");
+                throw new CQLException(CQLError.UNSUPPORTED_BOOLEAN_OPERATOR, pos(bool.getInputPosition()), "Unsupported boolean operator");
             }
             Map<String, Modifier> modifiers = modifiers(validator);
             QueryNode right = parseSearch();
-            left = new BoolQuery(left, op.getName(), modifiers, right);
+            left = new BoolQuery(left, pos(bool), bool.getName(), modifiers, right);
         }
         return left;
     }
@@ -144,10 +144,10 @@ public class CQLParser {
                 throw expected(CQLError.QUERY_SYNTAX_ERROR, "search term");
             }
             Text text = (Text) get(1);
-            return new SearchQuery(term.getContent(), relation.getName(), modifiers, text.getText());
+            return new SearchQuery(pos(term), term.getContent(), relation.getName(), modifiers, text.getText());
         } else if (take(TEXT)) {
             Text text = (Text) get(1);
-            return new SearchQuery(text.getText());
+            return new SearchQuery(pos(text), text.getText());
         } else {
             throw expected(CQLError.QUERY_SYNTAX_ERROR, "seach term or parenthesis");
         }
@@ -161,7 +161,7 @@ public class CQLParser {
                 throw new CQLException(CQLError.PROXIMITY_NOT_SUPPORTED, pos(), "Unsupported operator prox");
             }
             QueryNode right = parseSearchCCLExtenstionValue(term, relation, modifiers);
-            left = new BoolQuery(left, bool.getName(), EMPTY_MAP, right);
+            left = new BoolQuery(left, pos(bool), bool.getName(), EMPTY_MAP, right);
         }
         if (!take(PAR_R)) {
             throw expected(CQLError.INVALID_OR_UNSUPPORTED_USE_OF_PARENTHESES, ")");
@@ -174,7 +174,7 @@ public class CQLParser {
             return parseSearchCCLExtensionGroup(term, relation, modifiers);
         } else if (take(TEXT)) {
             Text text = (Text) get(1);
-            return new SearchQuery(term, relation, modifiers, text.getText());
+            return new SearchQuery(pos(text), term, relation, modifiers, text.getText());
         } else {
             throw expected(CQLError.QUERY_SYNTAX_ERROR, "search term");
         }
@@ -195,10 +195,10 @@ public class CQLParser {
                     CompareOp cmp = (CompareOp) get(1);
                     Term value = (Term) get(2);
                     modifiers.put(modifier.toLowerCase(Locale.ROOT),
-                                  new Modifier(modifier, cmp.getName(), value.getContent()));
+                                  new Modifier(pos(term), modifier, cmp.getName(), value.getContent()));
                 } else {
                     modifiers.put(modifier.toLowerCase(Locale.ROOT),
-                                  new Modifier(modifier));
+                                  new Modifier(pos(term), modifier));
                 }
             } while (take(SLASH, TERM));
             CQLError error = validator.apply(modifiers);
@@ -234,6 +234,9 @@ public class CQLParser {
         return pos(tokens.at());
     }
 
+    private CQLException.Position pos(Token token) {
+        return pos(token.getInputPosition());
+    }
     private CQLException.Position pos(int at) {
         return new CQLException.Position(queryString, at);
     }

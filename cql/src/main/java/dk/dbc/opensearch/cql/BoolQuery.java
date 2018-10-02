@@ -18,6 +18,7 @@
  */
 package dk.dbc.opensearch.cql;
 
+import dk.dbc.opensearch.cql.CQLException.Position;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -29,11 +30,13 @@ public class BoolQuery implements QueryNode {
 
     private QueryNode left;
     private final String operator;
+    private final Position pos;
     private final Map<String, Modifier> modifiers;
     private QueryNode right;
 
-    public BoolQuery(QueryNode left, String operator, Map<String, Modifier> modifiers, QueryNode right) {
+    public BoolQuery(QueryNode left, Position pos, String operator, Map<String, Modifier> modifiers, QueryNode right) {
         this.left = left;
+        this.pos = pos;
         this.operator = operator;
         this.modifiers = modifiers;
         this.right = right;
@@ -45,6 +48,10 @@ public class BoolQuery implements QueryNode {
 
     public void setLeft(QueryNode left) {
         this.left = left;
+    }
+
+    public Position getPos() {
+        return pos;
     }
 
     public String getOperator() {

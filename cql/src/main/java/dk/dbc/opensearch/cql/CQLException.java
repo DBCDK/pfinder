@@ -42,13 +42,6 @@ public class CQLException extends RuntimeException {
         }
     }
 
-    private static final Position UNKNOWN_POSITION = new Position("", 0) {
-        @Override
-        public String toString() {
-            return "UNSPECIFIED POSITION";
-        }
-    };
-
     protected final Position position;
     protected final CQLError cqlError;
 
@@ -58,14 +51,6 @@ public class CQLException extends RuntimeException {
 
     public CQLException(CQLError cqlError, Position position) {
         this(cqlError, position, cqlError.getMsg());
-    }
-
-    public CQLException(CQLError cqlError) {
-        this(cqlError, UNKNOWN_POSITION, cqlError.getMsg());
-    }
-
-    public CQLException(CQLError cqlError, String message) {
-        this(cqlError, UNKNOWN_POSITION, message);
     }
 
     public CQLException(CQLError cqlError, Position position, String message) {
