@@ -19,7 +19,6 @@
 package dk.dbc.opensearch.cql;
 
 import dk.dbc.opensearch.cql.CQLException.Position;
-import java.util.Collections;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -31,15 +30,15 @@ public class SearchQuery implements QueryNode {
 
     private final String index;
     private final String relation;
-    private final Map<String, Modifier> modifiers;
+    private final ModifierCollection modifiers;
     private final String searchTerm;
     private final Position pos;
 
     public SearchQuery(Position pos, String searchTerm) {
-        this(pos, "default", "=", Collections.EMPTY_MAP, searchTerm);
+        this(pos, "default", "=", ModifierCollection.EMPTY, searchTerm);
     }
 
-    public SearchQuery(Position pos, String index, String relation, Map<String, Modifier> modifiers, String searchTerm) {
+    public SearchQuery(Position pos, String index, String relation, ModifierCollection modifiers, String searchTerm) {
         this.pos = pos;
         this.index = index;
         this.relation = relation;
@@ -59,7 +58,7 @@ public class SearchQuery implements QueryNode {
         return searchTerm;
     }
 
-    public Map<String, Modifier> getModifiers() {
+    public ModifierCollection getModifiers() {
         return modifiers;
     }
 

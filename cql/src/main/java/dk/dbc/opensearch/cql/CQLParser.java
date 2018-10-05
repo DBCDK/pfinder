@@ -39,30 +39,30 @@ import static java.util.Collections.*;
  */
 public class CQLParser {
 
-    public static final Map<String, Function<Map<String, Modifier>, CQLError>> DEFAULT_RELATIONS = makeDefaultRelations();
-    public static final Map<String, Function<Map<String, Modifier>, CQLError>> DEFAULT_BOOLEANS = makeDefaultBooleans();
+    public static final Map<String, Function<ModifierCollection, CQLError>> DEFAULT_RELATIONS = makeDefaultRelations();
+    public static final Map<String, Function<ModifierCollection, CQLError>> DEFAULT_BOOLEANS = makeDefaultBooleans();
 
     public static QueryNode parse(String query) throws CQLException {
         return new CQLParser(query, DEFAULT_RELATIONS, DEFAULT_BOOLEANS, TokenList.BOOLEAN_NAMES).parse();
     }
 
-    public static QueryNode parse(String query, Map<String, Function<Map<String, Modifier>, CQLError>> relations) throws CQLException {
+    public static QueryNode parse(String query, Map<String, Function<ModifierCollection, CQLError>> relations) throws CQLException {
         return new CQLParser(query, relations, DEFAULT_BOOLEANS, TokenList.BOOLEAN_NAMES).parse();
     }
 
-    public static QueryNode parse(String query, Map<String, Function<Map<String, Modifier>, CQLError>> relations, Map<String, Function<Map<String, Modifier>, CQLError>> booleans) throws CQLException {
+    public static QueryNode parse(String query, Map<String, Function<ModifierCollection, CQLError>> relations, Map<String, Function<ModifierCollection, CQLError>> booleans) throws CQLException {
         return new CQLParser(query, relations, booleans, TokenList.BOOLEAN_NAMES).parse();
     }
 
-    public static QueryNode parse(String query, Map<String, Function<Map<String, Modifier>, CQLError>> relations, Map<String, Function<Map<String, Modifier>, CQLError>> booleans, Map<String, BooleanOpName> booleanNameMap) throws CQLException {
+    public static QueryNode parse(String query, Map<String, Function<ModifierCollection, CQLError>> relations, Map<String, Function<ModifierCollection, CQLError>> booleans, Map<String, BooleanOpName> booleanNameMap) throws CQLException {
         return new CQLParser(query, relations, booleans, booleanNameMap).parse();
     }
 
     private final TokenList tokens;
     private final ArrayList<Token> taken;
     private final String queryString;
-    private final Map<String, Function<Map<String, Modifier>, CQLError>> relations;
-    private final Map<String, Function<Map<String, Modifier>, CQLError>> booleans;
+    private final Map<String, Function<ModifierCollection, CQLError>> relations;
+    private final Map<String, Function<ModifierCollection, CQLError>> booleans;
 
     /**
      * Make a CQL parser for a given string
@@ -83,7 +83,7 @@ public class CQLParser {
      * @param booleans
      * @param booleanNameMap
      */
-    private CQLParser(String query, Map<String, Function<Map<String, Modifier>, CQLError>> relations, Map<String, Function<Map<String, Modifier>, CQLError>> booleans, Map<String, BooleanOpName> booleanNameMap) {
+    private CQLParser(String query, Map<String, Function<ModifierCollection, CQLError>> relations, Map<String, Function<ModifierCollection, CQLError>> booleans, Map<String, BooleanOpName> booleanNameMap) {
         this.queryString = query;
         this.relations = relations;
         this.booleans = booleans;
@@ -111,11 +111,11 @@ public class CQLParser {
         QueryNode left = parseSearch();
         while (take(BOOLEAN)) {
             BooleanOp bool = (BooleanOp) get(1);
-            Function<Map<String, Modifier>, CQLError> validator = booleans.get(bool.getName());
+            Function<ModifierCollection, CQLError> validator = booleans.get(bool.getName());
             if (validator == null) {
                 throw new CQLException(CQLError.UNSUPPORTED_BOOLEAN_OPERATOR, pos(bool.getInputPosition()), "Unsupported boolean operator");
             }
-            Map<String, Modifier> modifiers = modifiers(validator);
+            ModifierCollection modifiers = modifiers(validator);
             QueryNode right = parseSearch();
             left = new BoolQuery(left, pos(bool), bool.getName(), modifiers, right);
         }
@@ -132,11 +132,11 @@ public class CQLParser {
         } else if (take(TERM, RELATION)) {
             Term term = (Term) get(1);
             Keyword relation = (Keyword) get(2);
-            Function<Map<String, Modifier>, CQLError> validator = relations.get(relation.getName());
+            Function<ModifierCollection, CQLError> validator = relations.get(relation.getName());
             if (validator == null) {
                 throw new CQLException(CQLError.UNSUPPORTED_RELATION, pos(relation.getInputPosition()), "Unsupported relation operator");
             }
-            Map<String, Modifier> modifiers = modifiers(validator);
+            ModifierCollection modifiers = modifiers(validator);
             if (take(PAR_L)) {
                 return parseSearchCCLExtensionGroup(term.getContent(), relation.getName(), modifiers);
             }
@@ -153,7 +153,7 @@ public class CQLParser {
         }
     }
 
-    private QueryNode parseSearchCCLExtensionGroup(String term, String relation, Map<String, Modifier> modifiers) {
+    private QueryNode parseSearchCCLExtensionGroup(String term, String relation, ModifierCollection modifiers) {
         QueryNode left = parseSearchCCLExtenstionValue(term, relation, modifiers);
         while (take(BOOLEAN)) {
             BooleanOp bool = (BooleanOp) get(1);
@@ -161,7 +161,7 @@ public class CQLParser {
                 throw new CQLException(CQLError.PROXIMITY_NOT_SUPPORTED, pos(), "Unsupported operator prox");
             }
             QueryNode right = parseSearchCCLExtenstionValue(term, relation, modifiers);
-            left = new BoolQuery(left, pos(bool), bool.getName(), EMPTY_MAP, right);
+            left = new BoolQuery(left, pos(bool), bool.getName(), ModifierCollection.EMPTY, right);
         }
         if (!take(PAR_R)) {
             throw expected(CQLError.INVALID_OR_UNSUPPORTED_USE_OF_PARENTHESES, ")");
@@ -169,7 +169,7 @@ public class CQLParser {
         return left;
     }
 
-    private QueryNode parseSearchCCLExtenstionValue(String term, String relation, Map<String, Modifier> modifiers) {
+    private QueryNode parseSearchCCLExtenstionValue(String term, String relation, ModifierCollection modifiers) {
         if (take(PAR_L)) {
             return parseSearchCCLExtensionGroup(term, relation, modifiers);
         } else if (take(TEXT)) {
@@ -180,16 +180,16 @@ public class CQLParser {
         }
     }
 
-    private Map<String, Modifier> modifiers(Function<Map<String, Modifier>, CQLError> validator) {
+    private ModifierCollection modifiers(Function<ModifierCollection, CQLError> validator) {
         int at = tokens.at();
         if (take(SLASH, TERM)) {
-            HashMap<String, Modifier> modifiers = new HashMap<>();
+            ModifierCollection modifiers = new ModifierCollection();
             do {
                 Term term = (Term) get(2);
                 String modifier = term.getContent();
                 String key = modifier.toLowerCase(Locale.ROOT);
                 if (modifiers.containsKey(key)) {
-                    throw new CQLException(CQLError.QUERY_SYNTAX_ERROR, pos(at), "Modifier " + modifier.toLowerCase(Locale.ROOT) + " is repeated");
+                    throw new CQLException(CQLError.QUERY_SYNTAX_ERROR, pos(at), "Modifier " + key + " is repeated");
                 }
                 if (take(COMPARE, TERM)) {
                     CompareOp cmp = (CompareOp) get(1);
@@ -207,7 +207,7 @@ public class CQLParser {
             }
             return modifiers;
         }
-        return EMPTY_MAP;
+        return ModifierCollection.EMPTY;
     }
 
     /**
@@ -245,8 +245,8 @@ public class CQLParser {
         return new CQLException(error, pos(), "Expected " + content);
     }
 
-    private static Map<String, Function<Map<String, Modifier>, CQLError>> makeDefaultRelations() {
-        Map<String, Function<Map<String, Modifier>, CQLError>> map = new HashMap();
+    private static Map<String, Function<ModifierCollection, CQLError>> makeDefaultRelations() {
+        Map<String, Function<ModifierCollection, CQLError>> map = new HashMap();
         map.put("adj", m -> CQLError.UNSUPPORTED_RELATION_MODIFIER);
         map.put("any", m -> CQLError.UNSUPPORTED_RELATION_MODIFIER);
         map.put("all", m -> CQLError.UNSUPPORTED_RELATION_MODIFIER);
@@ -285,8 +285,8 @@ public class CQLParser {
         return unmodifiableMap(map);
     }
 
-    private static Map<String, Function<Map<String, Modifier>, CQLError>> makeDefaultBooleans() {
-        Map<String, Function<Map<String, Modifier>, CQLError>> map = new HashMap();
+    private static Map<String, Function<ModifierCollection, CQLError>> makeDefaultBooleans() {
+        Map<String, Function<ModifierCollection, CQLError>> map = new HashMap();
         map.put("and", m -> CQLError.UNSUPPORTED_BOOLEAN_MODIFIER);
         map.put("or", m -> CQLError.UNSUPPORTED_BOOLEAN_MODIFIER);
         map.put("not", m -> CQLError.UNSUPPORTED_BOOLEAN_MODIFIER);

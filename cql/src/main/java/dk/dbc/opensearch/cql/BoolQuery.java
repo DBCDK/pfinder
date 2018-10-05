@@ -31,10 +31,10 @@ public class BoolQuery implements QueryNode {
     private QueryNode left;
     private final String operator;
     private final Position pos;
-    private final Map<String, Modifier> modifiers;
+    private final ModifierCollection modifiers;
     private QueryNode right;
 
-    public BoolQuery(QueryNode left, Position pos, String operator, Map<String, Modifier> modifiers, QueryNode right) {
+    public BoolQuery(QueryNode left, Position pos, String operator, ModifierCollection modifiers, QueryNode right) {
         this.left = left;
         this.pos = pos;
         this.operator = operator;
@@ -66,7 +66,7 @@ public class BoolQuery implements QueryNode {
         this.right = right;
     }
 
-    public Map<String, Modifier> getModifiers() {
+    public ModifierCollection getModifiers() {
         return modifiers;
     }
 

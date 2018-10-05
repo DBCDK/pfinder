@@ -38,7 +38,7 @@ public class TokenList {
 
     private final char[] query;
     private final Set<String> relations;
-    private int at;
+    private int tokenStartingAt;
     private int chPos;
 
     private final ArrayList<Token> tokens;
@@ -48,7 +48,7 @@ public class TokenList {
     public TokenList(String query, Set<String> relations, Map<String, BooleanOpName> booleanNameMap) {
         this.query = query.toCharArray();
         this.chPos = 0;
-        this.at = 0;
+        this.tokenStartingAt = 0;
         this.relations = relations;
         this.tokens = new ArrayList<>();
         this.pos = 0;
@@ -77,30 +77,30 @@ public class TokenList {
         return chPos >= query.length;
     }
 
-    private char getch() {
+    private char read() {
         return query[chPos++];
     }
 
-    private void ungetch() {
+    private void unread() {
         --chPos;
     }
 
     private void tokneize() {
         while (!eof()) {
-            at = chPos;
-            char c = getch();
+            tokenStartingAt = chPos;
+            char c = read();
             if (Character.isWhitespace(c)) {
                 continue;
             }
             switch (c) {
                 case '(':
-                    tokens.add(new ParL(at));
+                    tokens.add(new ParL(tokenStartingAt));
                     break;
                 case ')':
-                    tokens.add(new ParR(at));
+                    tokens.add(new ParR(tokenStartingAt));
                     break;
                 case '/':
-                    tokens.add(new Slash(at));
+                    tokens.add(new Slash(tokenStartingAt));
                     break;
                 case '=':
                 case '<':
@@ -116,34 +116,34 @@ public class TokenList {
                     break;
             }
         }
-        tokens.add(new EOL(at));
+        tokens.add(new EOL(tokenStartingAt));
     }
 
     private Token readBoolean(char first) {
         if (!eof()) {
-            char second = getch();
+            char second = read();
             if (first == '=' && second == '=') {
-                return new CompareOp(CompareOpName.EXACT, "==", at);
+                return new CompareOp(CompareOpName.EXACT, "==", tokenStartingAt);
             }
             if (first == '<' && second == '=') {
-                return new CompareOp(CompareOpName.LE, "<=", at);
+                return new CompareOp(CompareOpName.LE, "<=", tokenStartingAt);
             }
             if (first == '>' && second == '=') {
-                return new CompareOp(CompareOpName.GE, ">=", at);
+                return new CompareOp(CompareOpName.GE, ">=", tokenStartingAt);
             }
             if (first == '<' && second == '>') {
-                return new CompareOp(CompareOpName.NE, "<>", at);
+                return new CompareOp(CompareOpName.NE, "<>", tokenStartingAt);
             }
-            ungetch();
+            unread();
         }
         if (first == '=') {
-            return new CompareOp(CompareOpName.EQ, "=", at);
+            return new CompareOp(CompareOpName.EQ, "=", tokenStartingAt);
         }
         if (first == '<') {
-            return new CompareOp(CompareOpName.LT, "<", at);
+            return new CompareOp(CompareOpName.LT, "<", tokenStartingAt);
         }
         if (first == '>') {
-            return new CompareOp(CompareOpName.GT, ">", at);
+            return new CompareOp(CompareOpName.GT, ">", tokenStartingAt);
         }
         throw new IllegalStateException("Internal Logic Error");
     }
@@ -152,9 +152,9 @@ public class TokenList {
         int start = chPos;
         for (;;) {
             if (eof()) {
-                throw new IllegalStateException("Unterminated quote starting at: " + at);
+                throw new IllegalStateException("Unterminated quote starting at: " + tokenStartingAt);
             }
-            char c = getch();
+            char c = read();
             if (c == closingChar) {
                 break;
             }
@@ -162,11 +162,11 @@ public class TokenList {
                 if (eof()) {
                     throw new IllegalStateException("Dangling backslash at end of input");
                 }
-                getch();
+                read();
             }
         }
-        return new Term(new String(query, at, chPos - at),
-                        new String(query, start, chPos - 1 - start), at);
+        return new Term(new String(query, tokenStartingAt, chPos - tokenStartingAt),
+                        new String(query, start, chPos - 1 - start), tokenStartingAt);
     }
 
     private Token readUnquoted() {
@@ -175,27 +175,27 @@ public class TokenList {
             if (eof()) {
                 break;
             }
-            char c = getch();
+            char c = read();
             if (Character.isWhitespace(c) ||
                 c == '(' || c == ')' ||
                 c == '=' || c == '<' || c == '>' ||
                 c == '/') {
-                ungetch();
+                unread();
                 break;
             }
         }
         String content = new String(query, start, chPos - start);
         String key = content.toLowerCase(Locale.ROOT);
         if (content.equalsIgnoreCase("sortby")) {
-            return new SortBy(content, at);
+            return new SortBy(content, tokenStartingAt);
         }
         if (BOOLEAN_NAMES.containsKey(key)) {
-            return new BooleanOp(booleanNameMap.get(key), content, at);
+            return new BooleanOp(booleanNameMap.get(key), content, tokenStartingAt);
         }
-        if (relations.contains(content.toLowerCase(Locale.ROOT))) {
-            return new Relation(content, at);
+        if (relations.contains(key)) {
+            return new Relation(content, tokenStartingAt);
         }
-        return new Term(content, at);
+        return new Term(content, tokenStartingAt);
     }
 
     private static HashMap<String, BooleanOpName> makeBooleanNameMap() {

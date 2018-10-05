@@ -29,7 +29,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -49,7 +48,7 @@ import static org.junit.Assert.*;
 public class CQLParserTest {
 
     private static final ObjectMapper O = new ObjectMapper();
-    private static final HashMap<String, Function<Map<String, Modifier>, CQLError>> VALIDATORS = makeValidators();
+    private static final HashMap<String, Function<ModifierCollection, CQLError>> VALIDATORS = makeValidators();
 
     private final String name;
     private final String query;
@@ -86,8 +85,8 @@ public class CQLParserTest {
         }
     }
 
-    private static  HashMap<String, Function<Map<String, Modifier>, CQLError>> makeValidators() {
-        HashMap<String, Function<Map<String, Modifier>, CQLError>> validators = new HashMap<>(CQLParser.DEFAULT_RELATIONS);
+    private static HashMap<String, Function<ModifierCollection, CQLError>> makeValidators() {
+        HashMap<String, Function<ModifierCollection, CQLError>> validators = new HashMap<>(CQLParser.DEFAULT_RELATIONS);
         validators.put("test1", m -> null);
         validators.put("test2", m -> null);
         return validators;
