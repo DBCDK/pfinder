@@ -10,6 +10,14 @@
     {
         "query": " 'one two three' ",
         "expected": "[Token.Term{'one two three'}, Token.EOL{}]"
+    },
+    {
+        "query" : " 'asdasdas ",
+        "exception": "Unterminated quote"
+    },
+    {
+        "query" : " \"asdasdas ",
+        "exception": "Unterminated quote"
     }
 ]
 

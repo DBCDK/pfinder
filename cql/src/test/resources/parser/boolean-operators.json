@@ -30,6 +30,30 @@
     {
         "query": "(foo not bar) or blop",
         "expected": "{or[]:{not[]:{=[]:default, foo}, {=[]:default, bar}}, {=[]:default, blop}}"
+    },
+    {
+        "query": "foo and",
+        "exception": "Expected seach term or parenthesis"
+    },
+    {
+        "query": "foo not",
+        "exception": "Expected seach term or parenthesis"
+    },
+    {
+        "query": "foo or",
+        "exception": "Expected seach term or parenthesis"
+    },
+    {
+        "query": "foo or (",
+        "exception": "Expected seach term or parenthesis"
+    },
+    {
+        "query": "foo or ( b",
+        "exception": "Expected )"
+    },
+    {
+        "query": "foo or ( b and",
+        "exception": "Expected seach term or parenthesis"
     }
     
 ]
