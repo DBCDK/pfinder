@@ -1,0 +1,60 @@
+[
+    {
+        "query": "foo and bar",
+        "expected": [
+            "{AND [foo, bar], NOT []}"
+        ]
+    },
+    {
+        "title": "all nodes are nested",
+        "query": "h.a = me",
+        "expected": [
+            "{AND [{!parent which=\"t:m\" v=$q1}], NOT []}",
+            "{AND [=;t:h, =;holdingsitem.agencyId:me], NOT []}"
+        ]
+    },
+    {
+        "query": "h.a = me or h.i = 1234",
+        "expected": [
+            "{OR [{!parent which=\"t:m\" v=$q1}]}",
+            "{AND [=;t:h, {OR [=;holdingsitem.agencyId:me, =;holdingsitem.itemId:1234]}], NOT []}"
+        ]
+    },
+    {
+        "query": "foo and (h.a = me and (h.i = 1234 or h.i = 2345 or h.i = 3456))",
+        "expected": [
+            "{AND [foo, {!parent which=\"t:m\" v=$q1}], NOT []}",
+            "{AND [=;t:h, =;holdingsitem.agencyId:me, {OR [=;holdingsitem.itemId:1234, =;holdingsitem.itemId:2345, =;holdingsitem.itemId:3456]}], NOT []}"
+        ]
+    },
+    {
+        "title": "deep node first",
+        "query": "foo and ((h.i = 1234 or h.i = 2345 or h.i = 3456) and h.a = me)",
+        "expected": [
+            "{AND [foo, {!parent which=\"t:m\" v=$q1}], NOT []}", 
+            "{AND [=;t:h, =;holdingsitem.agencyId:me, {OR [=;holdingsitem.itemId:1234, =;holdingsitem.itemId:2345, =;holdingsitem.itemId:3456]}], NOT []}"
+        ]
+    },
+    {
+        "query": "foo and ((h.a = me and (h.i = 1234 or h.i = 2345 or h.i = 3456)) or (h.a = you and (h.i = 4321 or h.i = 5432 or h.i = 6543)))",
+        "expected": [
+            "{AND [foo, {OR [{AND [{!parent which=\"t:m\" v=$q1}], NOT []}, {AND [{!parent which=\"t:m\" v=$q2}], NOT []}]}], NOT []}",
+            "{AND [=;t:h, =;holdingsitem.agencyId:me, {OR [=;holdingsitem.itemId:1234, =;holdingsitem.itemId:2345, =;holdingsitem.itemId:3456]}], NOT []}",
+            "{AND [=;t:h, =;holdingsitem.agencyId:you, {OR [=;holdingsitem.itemId:4321, =;holdingsitem.itemId:5432, =;holdingsitem.itemId:6543]}], NOT []}"
+        ]
+    },
+    {
+        "title": "Fail because of nested or with not nested",
+        "query": "foo and (h.a = me and (h.i = 1234 or bar))",
+        "exception": "Unsupported combination of indexes"
+    },
+    {
+        "query": "foo and h.a=me and b.foo=bar",
+        "expected": [
+            "{AND [foo, {!parent which=\"t:m\" v=$q1}, {!parent which=\"t:m\" v=$q2}], NOT []}",
+            "{AND [=;t:h, =;holdingsitem.agencyId:me], NOT []}",
+            "{AND [=;special-b.foo:bar], NOT []}"
+        ]
+    }
+
+]

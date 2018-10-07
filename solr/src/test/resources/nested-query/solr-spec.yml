@@ -1,0 +1,27 @@
+
+fields:
+    default:
+        solrName: ""
+    h.a:
+        solrName: holdingsitem.agencyId
+        type: NUMBER
+    h.i:
+        solrName: holdingsitem.itemId
+    h.s:
+        solrName: holdingsitem.status
+    h.:
+        nestedGroup: holdings
+        type: text
+    t:
+        internal: true
+    b.:
+        nestedGroup: other
+        solrName: special-b.
+
+nested:
+    holdings:
+        query: '{!parent which="t:m" v=$q%d}'
+        cql: 't=h'
+    other:
+        query: '{!parent which="t:m" v=$q%d}'
+
