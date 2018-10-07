@@ -1,0 +1,16 @@
+[
+
+    {
+        "query": "h.a = bar or h.b = foo",
+        "expected": [
+            [
+                "*:*",
+                "t:h AND (h.agencyId:bar OR h.b:foo)"
+            ],
+            [
+                "{!parent which=\"t:m\" v=$q1}"
+            ]
+        ]
+    }
+
+]
