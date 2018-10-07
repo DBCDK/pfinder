@@ -189,7 +189,7 @@ public class TokenList {
         if (content.equalsIgnoreCase("sortby")) {
             return new SortBy(content, tokenStartingAt);
         }
-        if (BOOLEAN_NAMES.containsKey(key)) {
+        if (booleanNameMap.containsKey(key)) {
             return new BooleanOp(booleanNameMap.get(key), content, tokenStartingAt);
         }
         if (relations.contains(key)) {

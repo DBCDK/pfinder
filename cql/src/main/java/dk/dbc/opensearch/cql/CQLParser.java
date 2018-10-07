@@ -117,7 +117,7 @@ public class CQLParser {
             }
             ModifierCollection modifiers = modifiers(validator);
             QueryNode right = parseSearch();
-            left = new BoolQuery(left, pos(bool), bool.getName(), modifiers, right);
+            left = new BoolQuery(left, pos(bool), bool.getOperator(), modifiers, right);
         }
         return left;
     }
@@ -161,7 +161,7 @@ public class CQLParser {
                 throw new CQLException(CQLError.PROXIMITY_NOT_SUPPORTED, pos(), "Unsupported operator prox");
             }
             QueryNode right = parseSearchCCLExtenstionValue(term, relation, modifiers);
-            left = new BoolQuery(left, pos(bool), bool.getName(), ModifierCollection.EMPTY, right);
+            left = new BoolQuery(left, pos(bool), bool.getOperator(), ModifierCollection.EMPTY, right);
         }
         if (!take(PAR_R)) {
             throw expected(CQLError.INVALID_OR_UNSUPPORTED_USE_OF_PARENTHESES, ")");

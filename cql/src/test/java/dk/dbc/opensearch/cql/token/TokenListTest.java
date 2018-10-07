@@ -64,7 +64,7 @@ public class TokenListTest {
     public void testCase() throws Exception {
         System.out.println(name);
         try {
-            TokenList tokens = new TokenList(query, new HashSet<>(Arrays.asList("any", "all", "within", "encloses", "adj")), TokenList.BOOLEAN_NAMES);
+            TokenList tokens = new TokenList(query, new HashSet<>(Arrays.asList("any", "all", "within", "encloses", "adj")), TokenList.BOOLEAN_NAMES_DK);
             String actual = tokens.toString();
             System.out.println("actual = " + actual);
             System.out.println("expected = " + expected);

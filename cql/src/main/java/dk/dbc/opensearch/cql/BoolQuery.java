@@ -19,6 +19,7 @@
 package dk.dbc.opensearch.cql;
 
 import dk.dbc.opensearch.cql.CQLException.Position;
+import dk.dbc.opensearch.cql.token.BooleanOpName;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -29,12 +30,12 @@ import java.util.stream.Collectors;
 public class BoolQuery implements QueryNode {
 
     private QueryNode left;
-    private final String operator;
+    private final BooleanOpName operator;
     private final Position pos;
     private final ModifierCollection modifiers;
     private QueryNode right;
 
-    public BoolQuery(QueryNode left, Position pos, String operator, ModifierCollection modifiers, QueryNode right) {
+    public BoolQuery(QueryNode left, Position pos, BooleanOpName operator, ModifierCollection modifiers, QueryNode right) {
         this.left = left;
         this.pos = pos;
         this.operator = operator;
@@ -54,7 +55,7 @@ public class BoolQuery implements QueryNode {
         return pos;
     }
 
-    public String getOperator() {
+    public BooleanOpName getOperator() {
         return operator;
     }
 

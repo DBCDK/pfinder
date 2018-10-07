@@ -1,7 +1,7 @@
 [
     {
         "query": "foo oR bar",
-        "expected": "{or[]:{=[]:default, foo}, {=[]:default, bar}}"
+        "expected": "{OR[]:{=[]:default, foo}, {=[]:default, bar}}"
     },
     {
         "query": "foo and/preferred bar",
@@ -13,23 +13,23 @@
     },
     {
         "query": "foo not bar",
-        "expected": "{not[]:{=[]:default, foo}, {=[]:default, bar}}"
+        "expected": "{NOT[]:{=[]:default, foo}, {=[]:default, bar}}"
     },
     {
         "query": "foo not bar or blop",
-        "expected": "{or[]:{not[]:{=[]:default, foo}, {=[]:default, bar}}, {=[]:default, blop}}"
+        "expected": "{OR[]:{NOT[]:{=[]:default, foo}, {=[]:default, bar}}, {=[]:default, blop}}"
     },
     {
         "query": "foo and bar or blop",
-        "expected": "{or[]:{and[]:{=[]:default, foo}, {=[]:default, bar}}, {=[]:default, blop}}"
+        "expected": "{OR[]:{AND[]:{=[]:default, foo}, {=[]:default, bar}}, {=[]:default, blop}}"
     },
     {
         "query": "foo not (bar or blop)",
-        "expected": "{not[]:{=[]:default, foo}, {or[]:{=[]:default, bar}, {=[]:default, blop}}}"
+        "expected": "{NOT[]:{=[]:default, foo}, {OR[]:{=[]:default, bar}, {=[]:default, blop}}}"
     },
     {
         "query": "(foo not bar) or blop",
-        "expected": "{or[]:{not[]:{=[]:default, foo}, {=[]:default, bar}}, {=[]:default, blop}}"
+        "expected": "{OR[]:{NOT[]:{=[]:default, foo}, {=[]:default, bar}}, {=[]:default, blop}}"
     },
     {
         "query": "foo and",
