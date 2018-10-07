@@ -1,0 +1,18 @@
+[
+    {
+        "query": "p = 'foo\\? bar'",
+        "expected": "phrase:foo\\?\\ bar"
+    },
+    {
+        "query": "p = 'foo? bar'",
+        "expected": "phrase:foo?\\ bar"
+    },
+    {
+        "query": "t = 'foo\\? bar'",
+        "expected": "term:\"foo\\?\\ bar\"~9999"
+    },
+    {
+        "query": "t = 'foo? bar'",
+        "expected": "term:(foo? AND bar)"
+    }
+]

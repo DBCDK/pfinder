@@ -1,0 +1,26 @@
+[
+    {
+        "query": "p = 'one'",
+        "expected": "phrase:one"
+    },
+    {
+        "query": "p = 'one two three'",
+        "expected": "phrase:one\\ two\\ three"
+    },
+    {
+        "query": "p =/string 'one'",
+        "exception": "Unsupported relation modifier"
+    },
+    {
+        "query": "p =/string 'one two three'",
+        "exception": "Unsupported relation modifier"
+    },
+    {
+        "query": "p =/word 'one'",
+        "exception": "Unsupported relation modifier"
+    },
+    {
+        "query": "p =/word 'one two three'",
+        "exception": "Unsupported relation modifier"
+    }
+]

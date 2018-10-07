@@ -1,0 +1,18 @@
+[
+    {
+        "query": "i>10",
+        "expected": "int:{10 TO *]"
+    },
+    {
+        "query": "i>=10",
+        "expected": "int:[10 TO *]"
+    },
+    {
+        "query": "i<10",
+        "expected": "int:[* TO 10}"
+    },
+    {
+        "query": "i<=10",
+        "expected": "int:[* TO 10]"
+    }
+]

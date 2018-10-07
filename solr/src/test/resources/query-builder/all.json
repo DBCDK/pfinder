@@ -1,0 +1,10 @@
+[
+    {
+        "query": "t all 'one two three'",
+        "expected": "term:(one AND two AND three)"
+    },
+    {
+        "query": "p all 'one two three'",
+        "exception": "Unsupported combination of relation and index"
+    }
+]
