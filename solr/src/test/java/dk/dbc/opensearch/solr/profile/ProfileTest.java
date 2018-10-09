@@ -21,6 +21,7 @@ package dk.dbc.opensearch.solr.profile;
 import dk.dbc.opensearch.solr.QueryBuilder;
 import dk.dbc.opensearch.solr.SolrRules;
 import java.io.InputStream;
+import java.util.Arrays;
 import org.junit.Test;
 
 import static dk.dbc.testutil.JsonTester.solrRules;
@@ -44,32 +45,83 @@ public class ProfileTest {
         System.out.println("testRelationNames");
         try (InputStream is = getClass().getClassLoader().getResourceAsStream("profiles/777777.json")) {
             Profiles profiles = Profiles.from(solrRules, is);
-            Profile profile = profiles.getProfile("opac");
-            System.out.println("profile = " + profile);
+            Profile profileA = profiles.getProfile(Arrays.asList("a"));
+            System.out.println("profileA = " + profileA);
+            Profile profileB = profiles.getProfile(Arrays.asList("b"));
+            System.out.println("profileB = " + profileB);
+            Profile profileAB = profiles.getProfile(Arrays.asList("a", "b"));
+            System.out.println("profileAB = " + profileAB);
 
-            assertThat(profile.hasRelation("870971-anmeld", "dbcaddi:isReviewOf"), is(true));
-            assertThat(profile.hasRelation("870971-anmeld", "dbcaddi:hasReviewOf"), is(false));
+            assertThat(profileA.hasRelation("100000", "dbcaddi:isSomething"), is(true));
+            assertThat(profileA.hasRelation("100000", "dbcaddi:isSomethingElse"), is(false));
+            assertThat(profileA.hasRelation("100000", "dbcaddi:hasSomethingElse"), is(false));
+
+            assertThat(profileB.hasRelation("100000", "dbcaddi:isSomething"), is(false));
+            assertThat(profileB.hasRelation("100000", "dbcaddi:isSomethingElse"), is(true));
+            assertThat(profileB.hasRelation("100000", "dbcaddi:hasSomethingElse"), is(false));
+
+            assertThat(profileAB.hasRelation("100000", "dbcaddi:isSomething"), is(true));
+            assertThat(profileAB.hasRelation("100000", "dbcaddi:isSomethingElse"), is(true));
+            assertThat(profileAB.hasRelation("100000", "dbcaddi:hasSomethingElse"), is(false));
         }
     }
 
     @Test(timeout = 1_000L)
-    public void testRelations() throws Exception {
-        System.out.println("testRelations");
+    public void testFilterQueriesProfileA() throws Exception {
+        System.out.println("testFilterQueriesProfileA");
         try (InputStream is = getClass().getClassLoader().getResourceAsStream("profiles/777777.json")) {
             Profiles profiles = Profiles.from(solrRules, is);
-            Profile profile = profiles.getProfile("example");
-            System.out.println("profile = " + profile);
-
+            Profile profile = profiles.getProfile(Arrays.asList("a"));
             String searchFilter = QueryBuilder.queryFrom(profile.getSearchFilterQuery());
-            String relationFilter = QueryBuilder.queryFrom(profile.getRelationFilterQuery());
             System.out.println("searchFilter = " + searchFilter);
+            String relationFilter = QueryBuilder.queryFrom(profile.getRelationFilterQuery());
             System.out.println("relationFilter = " + relationFilter);
 
-            assertThat(searchFilter, containsString("100001\\-a"));
-            assertThat(searchFilter, not(containsString("100001\\-b")));
-            assertThat(searchFilter, not(is(profile.getRelationFilterQuery())));
-            assertThat(relationFilter, containsString("100002\\-b"));
+            assertThat(searchFilter, containsString(":100001\\-a"));
+            assertThat(searchFilter, not(containsString(":100000")));
+
+            assertThat(relationFilter, containsString(":100001\\-a"));
+            assertThat(relationFilter, containsString(":100000"));
         }
     }
 
+    @Test(timeout = 1_000L)
+    public void testFilterQueriesProfileB() throws Exception {
+        System.out.println("testFilterQueriesProfileB");
+        try (InputStream is = getClass().getClassLoader().getResourceAsStream("profiles/777777.json")) {
+            Profiles profiles = Profiles.from(solrRules, is);
+            Profile profile = profiles.getProfile(Arrays.asList("b"));
+            String searchFilter = QueryBuilder.queryFrom(profile.getSearchFilterQuery());
+            System.out.println("searchFilter = " + searchFilter);
+            String relationFilter = QueryBuilder.queryFrom(profile.getRelationFilterQuery());
+            System.out.println("relationFilter = " + relationFilter);
+
+            assertThat(searchFilter, containsString(":100001\\-b"));
+            assertThat(searchFilter, not(containsString(":100000")));
+
+            assertThat(relationFilter, containsString(":100001\\-b"));
+            assertThat(relationFilter, containsString(":100000"));
+        }
+    }
+
+    @Test(timeout = 1_000L)
+    public void testFilterQueriesProfileAB() throws Exception {
+        System.out.println("testFilterQueriesProfileAB");
+        try (InputStream is = getClass().getClassLoader().getResourceAsStream("profiles/777777.json")) {
+            Profiles profiles = Profiles.from(solrRules, is);
+            Profile profile = profiles.getProfile(Arrays.asList("a", "b"));
+            String searchFilter = QueryBuilder.queryFrom(profile.getSearchFilterQuery());
+            System.out.println("searchFilter = " + searchFilter);
+            String relationFilter = QueryBuilder.queryFrom(profile.getRelationFilterQuery());
+            System.out.println("relationFilter = " + relationFilter);
+
+            assertThat(searchFilter, containsString(":100001\\-a"));
+            assertThat(searchFilter, containsString(":100001\\-b"));
+            assertThat(searchFilter, not(containsString(":100000")));
+
+            assertThat(relationFilter, containsString(":100001\\-a"));
+            assertThat(relationFilter, containsString(":100001\\-b"));
+            assertThat(relationFilter, containsString(":100000"));
+        }
+    }
 }
