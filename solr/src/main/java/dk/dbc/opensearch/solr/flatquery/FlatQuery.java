@@ -30,7 +30,7 @@ import dk.dbc.opensearch.solr.SolrRules;
  *
  * @author DBC {@literal <dbc.dk>}
  */
-public abstract class FlatQuery {
+public abstract class  FlatQuery {
 
     /**
      * Map a Query Tree to a Flat tree given a set of rules
@@ -44,7 +44,6 @@ public abstract class FlatQuery {
         if (flat instanceof FlatQuerySearch) {
             flat = new FlatQueryAndNot(flat);
         }
-
         return flat;
     }
 
@@ -57,7 +56,7 @@ public abstract class FlatQuery {
     public abstract boolean allAreNestedOfType(FieldSpec spec);
 
     /**
-     * Tell if all nested queries can be put into same nested query
+     * Tell if any nested query can be put into same nested query
      *
      * @param spec the nested query spec wanted
      * @return true/false
@@ -75,129 +74,121 @@ public abstract class FlatQuery {
 
     private static class Flattener {
 
-        private final SolrRules solrRules;
+    private final SolrRules solrRules;
 
-        Flattener(SolrRules solrRules) {
-            this.solrRules = solrRules;
-        }
+    Flattener(SolrRules solrRules) {
+        this.solrRules = solrRules;
+    }
 
-        /**
-         * Collapse a tree node into a flat node
-         *
-         * @param node tree type node
-         * @return a flat node representing same query
-         */
-        private FlatQuery flatten(QueryNode node) {
-            if (node instanceof BoolQuery) {
-                BoolQuery bool = (BoolQuery) node;
-                if (bool.getOperator() == BooleanOpName.OR) {
-                    FlatQueryOr flat = new FlatQueryOr();
-                    flattenOr(bool, flat);
-                    return flat;
-                } else {
-                    FlatQueryAndNot flat = new FlatQueryAndNot();
-                    flattenAndNot(bool, flat);
-                    return flat;
-                }
-            } else if (node instanceof SearchQuery) {
-                SearchQuery search = (SearchQuery) node;
-                return flattenSearch(search);
-            }
-            throw new IllegalStateException("Cannot handle node type: " + node.getClass().getCanonicalName());
-        }
-
-        /**
-         * Create a flat query node from a search query
-         *
-         * @param search tree type node
-         * @return search node
-         */
-        private FlatQuery flattenSearch(SearchQuery search) {
-            return new FlatQuerySearch(solrRules, search);
-        }
-
-        /**
-         * Fill in a And/Not type flat node from a tree
-         * <p>
-         * Extract all AND and NOT nodes and put then into the flat query, if an
-         * OR node is encountered add it to the flat query as a flatquery or
-         * node.
-         *
-         * @param tree tree the query tree (and/not type)
-         * @param flat target flat node
-         */
-        private void flattenAndNot(BoolQuery tree, FlatQueryAndNot flat) {
-            QueryNode left = tree.getLeft();
-            if (left instanceof SearchQuery) {
-                flat.addAnd(flattenSearch((SearchQuery) left));
-            } else if (left instanceof BoolQuery) {
-                if (( (BoolQuery) left ).getOperator() == BooleanOpName.OR) {
-                    flat.addAnd(flatten(left));
-                } else {
-                    flattenAndNot((BoolQuery) left, flat);
-                }
+    /**
+     * Collapse a tree node into a flat node
+     *
+     * @param node tree type node
+     * @return a flat node representing same query
+     */
+    FlatQuery flatten(QueryNode node) {
+        if (node instanceof BoolQuery) {
+            BoolQuery bool = (BoolQuery) node;
+            if (bool.getOperator() == BooleanOpName.OR) {
+                FlatQueryOr flat = new FlatQueryOr();
+                flattenOr(bool, flat);
+                return flat;
             } else {
-                throw new IllegalStateException("Cannot handle node type: " + left.getClass().getCanonicalName());
+                FlatQueryAndNot flat = new FlatQueryAndNot();
+                flattenAndNot(bool, flat);
+                return flat;
             }
+        } else if (node instanceof SearchQuery) {
+            SearchQuery search = (SearchQuery) node;
+            return flattenSearch(search);
+        }
+        throw new IllegalStateException("Cannot handle node type: " + node.getClass().getCanonicalName());
+    }
 
-            boolean not = tree.getOperator() == BooleanOpName.NOT;
+    /**
+     * Create a flat query node from a search query
+     *
+     * @param search tree type node
+     * @return search node
+     */
+    private FlatQuery flattenSearch(SearchQuery search) {
+        return new FlatQuerySearch(solrRules, search);
+    }
 
-            QueryNode right = tree.getRight();
-            if (right instanceof SearchQuery) {
+    /**
+     * Fill in a And/Not type flat node from a tree
+     * <p>
+     * Extract all AND and NOT nodes and put then into the flat query, if an
+     * OR node is encountered add it to the flat query as a flatquery or
+     * node.
+     *
+     * @param tree tree the query tree (and/not type)
+     * @param flat target flat node
+     */
+    private void flattenAndNot(BoolQuery tree, FlatQueryAndNot flat) {
+        QueryNode left = tree.getLeft();
+        if (left instanceof SearchQuery) {
+            flat.addAnd(flattenSearch((SearchQuery) left));
+        } else if (left instanceof BoolQuery) {
+            if (( (BoolQuery) left ).getOperator() == BooleanOpName.OR) {
+                flat.addAnd(flatten(left));
+            } else {
+                flattenAndNot((BoolQuery) left, flat);
+            }
+        } else {
+            throw new IllegalStateException("Cannot handle node type: " + left.getClass().getCanonicalName());
+        }
+
+        boolean not = tree.getOperator() == BooleanOpName.NOT;
+
+        QueryNode right = tree.getRight();
+        if (right instanceof SearchQuery) {
+            if (not) {
+                flat.addNot(flattenSearch((SearchQuery) right));
+            } else {
+                flat.addAnd(flattenSearch((SearchQuery) right));
+            }
+        } else if (right instanceof BoolQuery) {
+            if (( (BoolQuery) right ).getOperator() == BooleanOpName.OR) {
                 if (not) {
-                    flat.addNot(flattenSearch((SearchQuery) right));
+                    flat.addNot(flatten(right));
                 } else {
-                    flat.addAnd(flattenSearch((SearchQuery) right));
-                }
-            } else if (right instanceof BoolQuery) {
-                if (( (BoolQuery) right ).getOperator() == BooleanOpName.OR) {
-                    if (not) {
-                        flat.addNot(flatten(right));
-                    } else {
-                        flat.addAnd(flatten(right));
-                    }
-                } else {
-                    flattenAndNot((BoolQuery) right, flat);
+                    flat.addAnd(flatten(right));
                 }
             } else {
-                throw new IllegalStateException("Cannot handle node type: " + right.getClass().getCanonicalName());
+                flattenAndNot((BoolQuery) right, flat);
             }
-        }
-
-        /**
-         * Fill in an or type flat node from a query tree
-         * <p>
-         * If other than searchTerm nodes and or nodes are encountered, build a
-         * And/Not type flat node and use it
-         *
-         * @param tree the query tree (or type)
-         * @param flat the target or type flat node
-         */
-        private void flattenOr(BoolQuery tree, FlatQueryOr flat) {
-            QueryNode left = tree.getLeft();
-            if (left instanceof SearchQuery) {
-                flat.addOr(flattenSearch((SearchQuery) left));
-            } else if (left instanceof BoolQuery) {
-                if (( (BoolQuery) left ).getOperator() == BooleanOpName.OR) {
-                    flattenOr((BoolQuery) left, flat);
-                } else {
-                    flat.addOr(flatten(left));
-                }
-            } else {
-                throw new IllegalStateException("Cannot handle node type: " + left.getClass().getCanonicalName());
-            }
-            QueryNode right = tree.getRight();
-            if (right instanceof SearchQuery) {
-                flat.addOr(flattenSearch((SearchQuery) right));
-            } else if (right instanceof BoolQuery) {
-                if (( (BoolQuery) right ).getOperator() == BooleanOpName.OR) {
-                    flattenOr((BoolQuery) right, flat);
-                } else {
-                    flat.addOr(flatten(right));
-                }
-            } else {
-                throw new IllegalStateException("Cannot handle node type: " + right.getClass().getCanonicalName());
-            }
+        } else {
+            throw new IllegalStateException("Cannot handle node type: " + right.getClass().getCanonicalName());
         }
     }
+
+    /**
+     * Fill in an or type flat node from a query tree
+     * <p>
+     * If other than searchTerm nodes and or nodes are encountered, build a
+     * And/Not type flat node and use it
+     *
+     * @param tree the query tree (or type)
+     * @param flat the target or type flat node
+     */
+    private void flattenOr(BoolQuery tree, FlatQueryOr flat) {
+        flattenOrChild(tree.getLeft(), flat);
+        flattenOrChild(tree.getRight(), flat);
+    }
+
+    private void flattenOrChild(QueryNode child, FlatQueryOr flat) throws IllegalStateException {
+        if (child instanceof SearchQuery) {
+            flat.addOr(flattenSearch((SearchQuery) child));
+        } else if (child instanceof BoolQuery) {
+            if (( (BoolQuery) child ).getOperator() == BooleanOpName.OR) {
+                flattenOr((BoolQuery) child, flat);
+            } else {
+                flat.addOr(flatten(child));
+            }
+        } else {
+            throw new IllegalStateException("Cannot handle node type: " + child.getClass().getCanonicalName());
+        }
+    }
+}
 }
