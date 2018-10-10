@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>dk.dbc</groupId>
+        <artifactId>opensearch</artifactId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+    <artifactId>opensearch-service</artifactId>
+    <packaging>jar</packaging>
+
+    <dependencies>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest-all</artifactId>
+            <scope>test</scope>
+            <type>jar</type>
+        </dependency>
+    </dependencies>
+
+    <properties>
+        <generated.sources.directory>${project.build.directory}/generated-sources/dbc</generated.sources.directory>
+    </properties>
+    
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <!--<version>1.6.0</version>-->
+                <executions>
+                    <execution>
+                        <id>generate-xml-output</id>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <phase>generate-sources</phase>
+                        <configuration>
+                            <executable>bash</executable>
+                            <workingDirectory>${basedir}</workingDirectory>
+                            <arguments>
+                                <argument>-ec</argument>
+                                <argument>echo "$@" | bash -es</argument>
+                                <argument>-</argument>
+                                <argument><![CDATA[
+for input in ${basedir}/src/dynamic/*.java; do
+    package=( $(grep -P '^\s*package\s+' $input | head -n 1 | sed -e 's/package//' -e 's/;.*//' ) )
+    folder="${generated.sources.directory}/${package//.//}"
+    mkdir -p "$folder"
+    file="${input/*\//}"
+    perl -e 'while($_=<>){if(m/^__SHELL__/){$t=""; open(SHELL, "|bash -es"); while($_=<>){last if(m/^\s*$/); print(SHELL $_)} close(SHELL) } else {print $_}}' $input > "$folder"/"$file"
+done
+]]></argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <!--<version>3.0.0</version>-->
+                <executions>
+                    <execution>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>add-source</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>${generated.sources.directory}</source>
+                            </sources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>

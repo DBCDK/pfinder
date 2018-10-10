@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE s [
+<!ENTITY x "hello">
+]>
+<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns="http://oss.dbc.dk/ns/opensearch">
+  <SOAP-ENV:Body>
+    <searchRequest>
+      <query><![CDATA[danmark]]> and &x;</query>
+      <!-- query=danmark and hello, -->
+      <agency>100200</agency>
+      <profile>test</profile>
+      <start>1</start>
+      <stepValue>10</stepValue>
+      <callback>cb</callback>
+      <collectionType>work-1</collectionType>
+      <!-- collectionType=WORK1 -->
+    </searchRequest>
+  </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>
+
