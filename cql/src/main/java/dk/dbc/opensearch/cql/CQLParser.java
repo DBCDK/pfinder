@@ -39,6 +39,7 @@ import static java.util.Collections.*;
  */
 public class CQLParser {
 
+    private static final int MAX_BOOLEAN_OPERATORS = 200;
     public static final Map<String, Function<ModifierCollection, CQLError>> DEFAULT_RELATIONS = makeDefaultRelations();
     public static final Map<String, Function<ModifierCollection, CQLError>> DEFAULT_BOOLEANS = makeDefaultBooleans();
 
@@ -63,6 +64,7 @@ public class CQLParser {
     private final String queryString;
     private final Map<String, Function<ModifierCollection, CQLError>> relations;
     private final Map<String, Function<ModifierCollection, CQLError>> booleans;
+    private int booleanOperatorCount;
 
     /**
      * Make a CQL parser for a given string
@@ -89,6 +91,12 @@ public class CQLParser {
         this.booleans = booleans;
         this.tokens = new TokenList(query, relations.keySet(), booleanNameMap);
         this.taken = new ArrayList<>(5);
+        this.booleanOperatorCount = 0;
+    }
+
+    private void countBooleanOperator(Token at) {
+        if(++this.booleanOperatorCount >= MAX_BOOLEAN_OPERATORS)
+            throw new CQLException(CQLError.TOO_MANY_BOOLEAN_OPERATORS_IN_QUERY, pos(at), "Too complex query");
     }
 
     private QueryNode parse() {
@@ -111,6 +119,7 @@ public class CQLParser {
         QueryNode left = parseSearch();
         while (take(BOOLEAN)) {
             BooleanOp bool = (BooleanOp) get(1);
+            countBooleanOperator(bool);
             Function<ModifierCollection, CQLError> validator = booleans.get(bool.getName());
             if (validator == null) {
                 throw new CQLException(CQLError.UNSUPPORTED_BOOLEAN_OPERATOR, pos(bool.getInputPosition()), "Unsupported boolean operator");
@@ -157,6 +166,7 @@ public class CQLParser {
         QueryNode left = parseSearchCCLExtenstionValue(term, relation, modifiers);
         while (take(BOOLEAN)) {
             BooleanOp bool = (BooleanOp) get(1);
+            countBooleanOperator(bool);
             if (bool.getOperator() == BooleanOpName.PROX) {
                 throw new CQLException(CQLError.PROXIMITY_NOT_SUPPORTED, pos(), "Unsupported operator prox");
             }

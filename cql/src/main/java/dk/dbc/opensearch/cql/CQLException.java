@@ -38,7 +38,19 @@ public class CQLException extends RuntimeException {
 
         @Override
         public String toString() {
-            return query.substring(0, pos) + "--->" + query.substring(pos);
+            StringBuilder buffer = new StringBuilder();
+            if (pos > 55) {
+                buffer.append("...").append(query.substring(pos - 50, pos));
+            } else {
+                buffer.append(query.substring(0, pos));
+            }
+            buffer.append("--->");
+            if (query.length() - pos > 55) {
+                buffer.append(query.substring(pos, pos + 50)).append("...");
+            } else {
+                buffer.append(query.substring(pos));
+            }
+            return buffer.toString();
         }
     }
 
