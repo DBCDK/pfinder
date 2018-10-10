@@ -114,7 +114,7 @@ public class FieldSpec {
     /**
      * Should this field be preferred as a filter query
      *
-     * @return true/false
+     * @return name of filter-query group or null if not in a filter-query group
      */
     public String getFilterQueryName() {
         return filterQuery;

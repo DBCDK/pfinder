@@ -67,7 +67,8 @@ public abstract class FlatQuery {
     /**
      * Tell if all subtree nodes can be put into a filterquery
      *
-     * @param filterQueryName
+     * @param filterQueryName the filter query name, that should be matched from
+     *                        the FieldSpec
      * @return true/false
      */
     public abstract boolean allAreFilterQuery(String filterQueryName);
