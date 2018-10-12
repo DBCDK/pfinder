@@ -6,7 +6,7 @@
         <artifactId>opensearch</artifactId>
         <version>1.0-SNAPSHOT</version>
     </parent>
-    <artifactId>opensearch-service</artifactId>
+    <artifactId>opensearch-web-api</artifactId>
     <packaging>jar</packaging>
 
     <dependencies>
