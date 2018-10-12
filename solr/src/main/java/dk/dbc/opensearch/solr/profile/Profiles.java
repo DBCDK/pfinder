@@ -27,9 +27,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -81,7 +79,6 @@ public class Profiles {
                 .collect(Collectors.toMap(profile -> profile.profileName,
                                           this::makeProfileEntry));
         this.profiles = new HashMap<>();
-        System.out.println("profileSpecs = " + profileSpecs);
     }
 
     private Entry makeProfileEntry(OAProfile profile) {
