@@ -1,0 +1,34 @@
+[
+    {
+        "query": "foo",
+        "expected": "{AND [foo], NOT []}"
+    },
+    {
+        "query": "foo and bar",
+        "expected": "{AND [foo, bar], NOT []}"
+    },
+    {
+        "query": "foo and bar and blop",
+        "expected": "{AND [foo, bar, blop], NOT []}"
+    },
+    {
+        "query": "(foo and bar) and blop",
+        "expected": "{AND [foo, bar, blop], NOT []}"
+    },
+    {
+        "query": "foo and (bar and blop)",
+        "expected": "{AND [foo, bar, blop], NOT []}"
+    },
+    {
+        "query": "foo and (bar) and blop",
+        "expected": "{AND [foo, bar, blop], NOT []}"
+    },
+    {
+        "query": "foo not blop and bar",
+        "expected": "{AND [foo, bar], NOT [blop]}"
+    },
+    {
+        "query": "foo not blop and bar not what",
+        "expected": "{AND [foo, bar], NOT [blop, what]}"
+    }
+]

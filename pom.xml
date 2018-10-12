@@ -28,6 +28,7 @@
 
     <modules>
         <module>cql</module>
+        <module>solr</module>
     </modules>
 
     <dependencies>
