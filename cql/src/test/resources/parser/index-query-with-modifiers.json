@@ -1,0 +1,23 @@
+[
+    {
+        "query": "term.index test1/foo=bar/bar foo",
+        "expected": "{test1[[bar], [foo, =, bar]]:term.index, foo}"
+    },
+    {
+        "query": "term.index =/word foo",
+        "expected": "{=[[word]]:term.index, foo}"
+    },
+    {
+        "query": "term.index =/string foo",
+        "expected": "{=[[string]]:term.index, foo}"
+    },
+    {
+        "query": "term.index =/string/word foo",
+        "exception": "Unsupported combination of relation modifers"
+    },
+    {
+        "query": "term.index =/string=1 foo",
+        "exception": "Unsupported relation modifier"
+    }
+    
+]

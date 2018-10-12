@@ -1,0 +1,6 @@
+[
+    {
+        "query": "foo oR bar = yes sortby blop",
+        "exception": "SortBy is not supported"
+    }
+]

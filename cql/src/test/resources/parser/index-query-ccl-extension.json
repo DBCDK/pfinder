@@ -1,0 +1,10 @@
+[
+    {
+        "query": "term.index = ( \"foo\" OR \"bar\" )",
+        "expected": "{OR[]:{=[]:term.index, foo}, {=[]:term.index, bar}}"
+    },
+    {
+        "query": "term.index = ( \"foo\" OR \"bar\" AND blop )",
+        "expected": "{AND[]:{OR[]:{=[]:term.index, foo}, {=[]:term.index, bar}}, {=[]:term.index, blop}}"
+    }
+]

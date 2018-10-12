@@ -1,0 +1,59 @@
+[
+    {
+        "query": "foo oR bar",
+        "expected": "{OR[]:{=[]:default, foo}, {=[]:default, bar}}"
+    },
+    {
+        "query": "foo and/preferred bar",
+        "exception": "Unsupported boolean modifier"
+    },
+    {
+        "query": "foo prox bar",
+        "exception": "Unsupported boolean operator"
+    },
+    {
+        "query": "foo not bar",
+        "expected": "{NOT[]:{=[]:default, foo}, {=[]:default, bar}}"
+    },
+    {
+        "query": "foo not bar or blop",
+        "expected": "{OR[]:{NOT[]:{=[]:default, foo}, {=[]:default, bar}}, {=[]:default, blop}}"
+    },
+    {
+        "query": "foo and bar or blop",
+        "expected": "{OR[]:{AND[]:{=[]:default, foo}, {=[]:default, bar}}, {=[]:default, blop}}"
+    },
+    {
+        "query": "foo not (bar or blop)",
+        "expected": "{NOT[]:{=[]:default, foo}, {OR[]:{=[]:default, bar}, {=[]:default, blop}}}"
+    },
+    {
+        "query": "(foo not bar) or blop",
+        "expected": "{OR[]:{NOT[]:{=[]:default, foo}, {=[]:default, bar}}, {=[]:default, blop}}"
+    },
+    {
+        "query": "foo and",
+        "exception": "Expected seach term or parenthesis"
+    },
+    {
+        "query": "foo not",
+        "exception": "Expected seach term or parenthesis"
+    },
+    {
+        "query": "foo or",
+        "exception": "Expected seach term or parenthesis"
+    },
+    {
+        "query": "foo or (",
+        "exception": "Expected seach term or parenthesis"
+    },
+    {
+        "query": "foo or ( b",
+        "exception": "Expected )"
+    },
+    {
+        "query": "foo or ( b and",
+        "exception": "Expected seach term or parenthesis"
+    }
+    
+]

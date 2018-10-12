@@ -1,0 +1,30 @@
+[
+    {
+        "query": "\"foo\"",
+        "expected": "{=[]:default, foo}"
+    },
+    {
+        "query": "foo",
+        "expected": "{=[]:default, foo}"
+    },
+    {
+        "query": "(foo)",
+        "expected": "{=[]:default, foo}"
+    },
+    {
+        "query": "( foo )",
+        "expected": "{=[]:default, foo}"
+    },
+    {
+        "query": "sortby",
+        "expected": "{=[]:default, sortby}"
+    },
+    {
+        "query": "and",
+        "expected": "{=[]:default, and}"
+    },
+    {
+        "query": "'and other'",
+        "expected": "{=[]:default, and other}"
+    }
+]
