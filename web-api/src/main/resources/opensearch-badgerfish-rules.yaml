@@ -1,0 +1,15 @@
+all:
+ns:
+    "http://schemas.xmlsoap.org/soap/envelope/":
+        Envelope:
+            - Body
+        Body:
+            - searchResponse
+    "http://oss.dbc.dk/ns/opensearch":
+        searchResponse:
+            - result
+        result:
+            - resultPosition
+            - agency
+            - callback
+            - hitCount

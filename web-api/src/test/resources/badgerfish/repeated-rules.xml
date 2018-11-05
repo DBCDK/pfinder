@@ -1,0 +1,9 @@
+<xml xmlns="info:v1">
+    <foo>
+        <s1>abc</s1>
+        <bar>123</bar>
+        <que>a</que>
+        <que>b</que>
+        <woot>1</woot>
+    </foo>
+</xml>

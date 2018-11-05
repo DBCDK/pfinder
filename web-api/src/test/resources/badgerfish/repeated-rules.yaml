@@ -1,0 +1,6 @@
+all:
+    - s1
+ns:
+    "info:v1":
+        foo:
+            - woot
