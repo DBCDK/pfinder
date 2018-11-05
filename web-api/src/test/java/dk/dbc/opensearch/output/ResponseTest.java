@@ -51,7 +51,7 @@ public class ResponseTest {
         XMLEventReader reader = I.createXMLEventReader(is);
 
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-        XmlOutput x = new XmlOutput(os);
+        EventOutput x = new EventOutput(os);
         x.soapEnvelopeSearchResponse(() -> {
             x.result(() -> {
                 x.resultPosition(1);

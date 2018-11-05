@@ -34,7 +34,7 @@ import static java.util.Collections.EMPTY_LIST;
  *
  * @author DBC {@literal <dbc.dk>}
  */
-public class XmlOutput implements AutoCloseable {
+public class EventOutput implements AutoCloseable {
 
     @FunctionalInterface
     public interface WriteEvents {
@@ -57,11 +57,13 @@ public class XmlOutput implements AutoCloseable {
         }
     }
 
-    private final OutputStream os;
     private final XMLEventWriter writer;
 
-    public XmlOutput(OutputStream os) throws XMLStreamException {
-        this.os = os;
+    public EventOutput(XMLEventWriter writer) {
+        this.writer = writer;
+    }
+
+    public EventOutput(OutputStream os) throws XMLStreamException {
         this.writer = O.createXMLEventWriter(os, "UTF-8");
     }
     /**
@@ -97,12 +99,6 @@ public class XmlOutput implements AutoCloseable {
         writer.add(EVENT.SEARCH_RESPONSE_OPEN_NS);
         content.output();
         writer.add(EVENT.SEARCH_RESPONSE_CLOSE);
-    }
-
-    public OutputStream getOutputStream() throws XMLStreamException {
-        writer.add(EVENT.EMPTY_SPACE);
-        writer.flush();
-        return os;
     }
 
     public XMLEventWriter getXMLEventWriter() {
@@ -158,7 +154,6 @@ agencyAndLocalIdentifier authentication collection cqlIndex facet facetResult fa
         private static final XMLEvent SOAP_BODY_CLOSE = soapElementClose("Body");
         private static final XMLEvent SOAP_ENV_CLOSE = soapElementClose("Envelope");
         private static final XMLEvent SEARCH_RESPONSE_OPEN_NS = elementOpen("searchResponse", OS_NS);
-        private static final XMLEvent EMPTY_SPACE = E.createCharacters("");
 
 __SHELL__
 perl -e 'for$tag(sort@ARGV){$name=$tag;$name=~s{(?<=[a-z])(?=[A-Z])}{_}g;$name=uc$name;print("private static final XMLEvent ${name}_OPEN = elementOpen(\"${tag}\");\nprivate static final XMLEvent ${name}_CLOSE = elementClose(\"${tag}\");\n")}' \
