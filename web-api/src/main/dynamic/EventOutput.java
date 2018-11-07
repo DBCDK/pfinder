@@ -64,7 +64,7 @@ public class EventOutput implements AutoCloseable {
         this.writer = writer;
     }
 
-    public EventOutput(OutputStream os) throws XMLStreamException, IOException {
+    public EventOutput(OutputStream os) throws XMLStreamException {
         this.writer = O.createXMLEventWriter(os, "UTF-8");
     }
 
@@ -74,14 +74,14 @@ public class EventOutput implements AutoCloseable {
      * If your last output was a element-start, it might not have been completed
      * (send empty text first)
      *
-     * @throws XMLStreamException, IOException
+     * @throws XMLStreamException
      */
-    public void flush() throws XMLStreamException, IOException {
+    public void flush() throws XMLStreamException {
         writer.flush();
     }
 
     @Override
-    public void close() throws XMLStreamException, IOException {
+    public void close() throws XMLStreamException {
         writer.close();
     }
 
