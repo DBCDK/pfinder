@@ -31,7 +31,7 @@ import static dk.dbc.opensearch.input.RequestHelpers.*;
  *
  * @author DBC {@literal <dbc.dk>}
  */
-public class SearchRequest {
+public class SearchRequest extends CommonRequest {
 
     private static final Function<String, String> COLLECTION_TYPES = makeTrimOneOf("collectionType", "work", "work-1", "manifestation");
     private static final Function<String, String> OUTPUT_TYPES = makeTrimOneOf("outputType", "xml", "json");
@@ -44,38 +44,26 @@ public class SearchRequest {
 
     private String query = null;
     private String queryLanguage = null;
-    private Integer agency = null;
-    private final List<String> profile = new ArrayList<>();
-    private Integer showAgency = null;
     private Boolean allObjects = null;
-    private Authentication authentication = null;
-    private String callback = null;
     private CollectionType collectionType;
     private List<Facets> facets = null;
-    private Boolean includeHoldingsCount = null;
     private Integer collapseHitsThreshold = null;
     private final List<String> objectFormat = new ArrayList<>();
-    private OutputType outputType = null;
-    private RelationDataType relationData = null;
-    private String repository = null;
     private Integer start = null;
     private Integer stepValue = null;
     private List<UserDefinedRanking> userDefinedRanking = null;
     private List<String> sort = null;
     private List<UserDefinedBoost> userDefinedBoost = null;
     private Boolean queryDebug = null;
-    private String trackingId = null;
 
     public SearchRequest() {
     }
 
+    @Override
     public void validate() throws XMLStreamException {
+        super.validate();
         if (query == null)
             throw new XMLStreamException("property 'query' is required in a searchRequest");
-        if (agency == null)
-            throw new XMLStreamException("property 'agency' is required in a searchRequest");
-        if (profile.isEmpty())
-            throw new XMLStreamException("property 'profile' is required in a searchRequest");
     }
 
     //
@@ -88,31 +76,6 @@ public class SearchRequest {
 
     public Boolean getAllObjects() {
         return allObjects;
-    }
-
-    public void setAgency(String content, Location location) throws XMLStreamException {
-        agency = get("agency", agency, content, location,
-                     s -> Integer.parseUnsignedInt(trimNotEmpty(s), 10));
-    }
-
-    public Integer getAgency() {
-        return agency;
-    }
-
-    public void setAuthentication(Authentication content, Location location) throws XMLStreamException {
-        authentication = get("authentication", authentication, content, location);
-    }
-
-    public Authentication getAuthentication() {
-        return authentication;
-    }
-
-    public void setCallback(String content, Location location) throws XMLStreamException {
-        callback = get("callback", callback, content, location);
-    }
-
-    public String getCallback() {
-        return callback;
     }
 
     public void setCollapseHitsThreshold(String content, Location location) throws XMLStreamException {
@@ -144,40 +107,12 @@ public class SearchRequest {
         return facets;
     }
 
-    public void setIncludeHoldingsCount(String content, Location location) throws XMLStreamException {
-        includeHoldingsCount = get("includeHoldingsCount", includeHoldingsCount, content, location,
-                                   s -> Boolean.parseBoolean(trimNotEmpty(s)));
-    }
-
-    public Boolean getIncludeHoldingsCount() {
-        return includeHoldingsCount;
-    }
-
     public void addObjectFormat(String content, Location location) throws XMLStreamException {
         objectFormat.add(get("objectFormat", content, location, OBJECT_FORMATS));
     }
 
     public List<String> getObjectFormats() {
         return objectFormat.isEmpty() ? Arrays.asList("marcxchange") : objectFormat;
-    }
-
-    public void setOutputType(String content, Location location) throws XMLStreamException {
-        outputType = OutputType.from(
-                get("outputType", nullOrString(outputType), content, location,
-                    OUTPUT_TYPES));
-    }
-
-    public OutputType getOutputType() {
-        return outputType;
-    }
-
-    public void addProfile(String content, Location location) throws XMLStreamException {
-        profile.add(get("profile", content, location,
-                        s -> trimNotEmptyOneWord(s)));
-    }
-
-    public List<String> getProfiles() {
-        return profile;
     }
 
     public void setQuery(String content, Location location) throws XMLStreamException {
@@ -205,34 +140,6 @@ public class SearchRequest {
 
     public String getQueryLanguage() {
         return queryLanguage;
-    }
-
-    public void setRepository(String content, Location location) throws XMLStreamException {
-        repository = get("repository", repository, content, location,
-                         s -> trimNotEmptyOneWord(s));
-    }
-
-    public String getRepository() {
-        return repository;
-    }
-
-    public void setRelationData(String content, Location location) throws XMLStreamException {
-        relationData = RelationDataType.from(
-                get("relationData", nullOrString(relationData), content, location,
-                    RELATION_DATAS));
-    }
-
-    public RelationDataType getRelationData() {
-        return relationData;
-    }
-
-    public void setShowAgency(String content, Location location) throws XMLStreamException {
-        showAgency = get("showAgency", showAgency, content, location,
-                         s -> Integer.parseUnsignedInt(trimNotEmpty(s), 10));
-    }
-
-    public Integer getShowAgency() {
-        return showAgency;
     }
 
     public void addSort(String content, Location location) throws XMLStreamException {
@@ -265,14 +172,6 @@ public class SearchRequest {
         return stepValue == null ? 10 : stepValue;
     }
 
-    public void setTrackingId(String content, Location location) throws XMLStreamException {
-        trackingId = get("trackingId", trackingId, content, location);
-    }
-
-    public String getTrackingId() {
-        return trackingId;
-    }
-
     void addUserDefinedBoost(UserDefinedBoost content, Location location) {
         if (userDefinedBoost == null)
             userDefinedBoost = new ArrayList<>();
@@ -289,7 +188,8 @@ public class SearchRequest {
 
     @Override
     public String toString() {
-        return "SearchRequest{" + "query=" + query + ", queryLanguage=" + queryLanguage + ", agency=" + agency + ", profile=" + profile + ", showAgency=" + showAgency + ", allObjects=" + allObjects + ", authentication=" + authentication + ", callback=" + callback + ", collectionType=" + collectionType + ", facets=" + facets + ", includeHoldingsCount=" + includeHoldingsCount + ", collapseHitsThreshold=" + collapseHitsThreshold + ", objectFormat=" + objectFormat + ", outputType=" + outputType + ", relationData=" + relationData + ", repository=" + repository + ", start=" + start + ", stepValue=" + stepValue + ", userDefinedRanking=" + userDefinedRanking + ", sort=" + sort + ", userDefinedBoost=" + userDefinedBoost + ", queryDebug=" + queryDebug + ", trackingId=" + trackingId + '}';
+        String s = super.toString();
+        return "SearchRequest{" + s.substring(s.indexOf('{') + 1, s.lastIndexOf('}')) + ",query=" + query + ", queryLanguage=" + queryLanguage + ", allObjects=" + allObjects + ", collectionType=" + collectionType + ", facets=" + facets + ", collapseHitsThreshold=" + collapseHitsThreshold + ", objectFormat=" + objectFormat + ", start=" + start + ", stepValue=" + stepValue + ", userDefinedRanking=" + userDefinedRanking + ", sort=" + sort + ", userDefinedBoost=" + userDefinedBoost + ", queryDebug=" + queryDebug + '}';
     }
 
 }

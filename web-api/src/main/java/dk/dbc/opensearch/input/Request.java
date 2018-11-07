@@ -19,6 +19,7 @@
 package dk.dbc.opensearch.input;
 
 import java.io.InputStream;
+import java.util.UUID;
 import javax.xml.namespace.QName;
 import javax.xml.stream.Location;
 import javax.xml.stream.XMLEventReader;
@@ -45,7 +46,7 @@ public class Request {
     private static final String SOAP_URI = "http://schemas.xmlsoap.org/soap/envelope/";
 
     private final XMLEventReader reader;
-    private Object request;
+    private CommonRequest request;
 
     public Request(InputStream is) throws XMLStreamException {
         this.reader = I.createFilteredReader(
@@ -63,6 +64,10 @@ public class Request {
         return (SearchRequest) request;
     }
 
+    public CommonRequest asCommonRequest() {
+        return request;
+    }
+
     private void readOuterMost() throws XMLStreamException {
         XMLEvent event = reader.nextEvent();
         if (!event.isStartElement()) {
@@ -70,8 +75,25 @@ public class Request {
         }
         if (isOpen(event, SOAP_URI, "Envelope")) {
             readSoapEnvelope();
+            setDefaultOutputType(OutputType.SOAP);
         } else {
             readRequest(event);
+            setDefaultOutputType(OutputType.XML);
+        }
+        setDefaultTrackingId();
+    }
+
+    private void setDefaultOutputType(OutputType type) {
+        OutputType outputType = request.getOutputType();
+        if (outputType == null) {
+            request.setOutputType(type);
+        }
+    }
+
+    private void setDefaultTrackingId() {
+        String trackingId = request.getTrackingId();
+        if (trackingId == null) {
+            request.setTrackingId(UUID.randomUUID().toString());
         }
     }
 
