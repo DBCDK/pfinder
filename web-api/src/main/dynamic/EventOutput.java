@@ -18,6 +18,7 @@
  */
 package dk.dbc.opensearch.output;
 
+import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.Locale;
@@ -39,7 +40,7 @@ public class EventOutput implements AutoCloseable {
     @FunctionalInterface
     public interface WriteEvents {
 
-        void output() throws XMLStreamException;
+        void output() throws XMLStreamException, IOException;
     }
 
     private static final XMLEventFactory E = makeXMLEventFactory();
@@ -63,39 +64,42 @@ public class EventOutput implements AutoCloseable {
         this.writer = writer;
     }
 
-    public EventOutput(OutputStream os) throws XMLStreamException {
+    public EventOutput(OutputStream os) throws XMLStreamException, IOException {
         this.writer = O.createXMLEventWriter(os, "UTF-8");
     }
+
     /**
      * Flush output.
      * <p>
      * If your last output was a element-start, it might not have been completed
      * (send empty text first)
      *
-     * @throws XMLStreamException
+     * @throws XMLStreamException, IOException
      */
-    public void flush() throws XMLStreamException {
+    public void flush() throws XMLStreamException, IOException {
         writer.flush();
     }
 
     @Override
-    public void close() throws XMLStreamException {
+    public void close() throws XMLStreamException, IOException {
         writer.close();
     }
 
-    public void soapEnvelopeSearchResponse(WriteEvents content) throws XMLStreamException {
+    public void soapEnvelope(WriteEvents content) throws XMLStreamException, IOException {
         writer.add(EVENT.START_DOCUMENT);
         writer.add(EVENT.SOAP_ENV_OPEN);
         writer.add(EVENT.SOAP_BODY_OPEN);
-        writer.add(EVENT.SEARCH_RESPONSE_OPEN);
         content.output();
-        writer.add(EVENT.SEARCH_RESPONSE_CLOSE);
         writer.add(EVENT.SOAP_BODY_CLOSE);
         writer.add(EVENT.SOAP_ENV_CLOSE);
     }
 
-    public void searchResponse(WriteEvents content) throws XMLStreamException {
+    public void xmlEnvelope(WriteEvents content) throws XMLStreamException, IOException {
         writer.add(EVENT.START_DOCUMENT);
+        content.output();
+    }
+
+    public void searchResponse(WriteEvents content) throws XMLStreamException, IOException {
         writer.add(EVENT.SEARCH_RESPONSE_OPEN_NS);
         content.output();
         writer.add(EVENT.SEARCH_RESPONSE_CLOSE);
@@ -105,18 +109,20 @@ public class EventOutput implements AutoCloseable {
         return writer;
     }
 
-    public void stream(XMLEventReader reader) throws XMLStreamException {
+    public void stream(XMLEventReader reader) throws XMLStreamException, IOException {
         writer.add(reader);
     }
 
-    public void agency(int content) throws XMLStreamException {
+    public void agency(int content) throws XMLStreamException, IOException {
         agency(String.format(Locale.ROOT, "%06d", content));
     }
 
 __SHELL__
-perl -e 'for(sort@ARGV){($tag,$type)=split("=",$_,2);$name=$tag;$name=~s{(?<=[a-z])(?=[A-Z])}{_}g;$name=uc$name;print("public void $tag($type content) throws XMLStreamException {writer.add(EVENT.${name}_OPEN);writer.add(E.createCharacters(String.valueOf(content)));writer.add(EVENT.${name}_CLOSE);}\n")}'  \
+perl -e 'for(sort@ARGV){($tag,$type)=split("=",$_,2);$name=$tag;$name=~s{(?<=[a-z])(?=[A-Z])}{_}g;$name=uc$name;print("public void $tag($type content) throws XMLStreamException, IOException {writer.add(EVENT.${name}_OPEN);writer.add(E.createCharacters(String.valueOf(content)));writer.add(EVENT.${name}_CLOSE);}\n")}'  \
 accessType=String access=String agency=String allObjects=boolean callback=String collapseHitsThreshold=String collectionCount=int collectionType=String cqlIndexDoc=String creationDate=String defaultRepository=String error=String facetMinCount=int facetName=String facetOffset=int facetSort=String fedoraRecordsCached=int fedoraRecordsRead=int fieldName=String fieldType=String fieldValue=String format=String frequence=int groupIdAut=String hitCount=int holdingsCount=int identifier=String includeHoldingsCount=boolean includeMarcXchange=boolean indexName=String indexSlop=int internalType=String lendingLibraries=int linkCollectionIdentifier=String linkTo=String localIdentifier=String more=boolean numberOfObjects=int numberOfTerms=int objectFormat=String outputType=String parsedQueryString=String parsedQuery=String passwordAut=String prefix=String primaryObjectIdentifier=String profile=String queryDebug=boolean queryLanguage=String queryResultExplanation=String queryString=String query=String rawQueryString=String recordStatus=String relationData=String relationType=String relationUri=String repository=String resultPosition=int searchCollectionIdentifier=String searchCollectionIsSearched=boolean searchCollectionName=String showAgency=String sort=String sortUsed=String source=String start=int stepValue=int term=String tieValue=double time=double trackingId=String uri=String userIdAut=String weight=double
-perl -e 'for(sort@ARGV){($tag,$type)=split("=",$_,2);$name=$tag;$name=~s{(?<=[a-z])(?=[A-Z])}{_}g;$name=uc$name;print("public void ${tag}(WriteEvents content) throws XMLStreamException {writer.add(EVENT.${name}_OPEN);content.output();writer.add(EVENT.${name}_CLOSE);}\n")}' \
+
+__SHELL__
+perl -e 'for(sort@ARGV){($tag,$type)=split("=",$_,2);$name=$tag;$name=~s{(?<=[a-z])(?=[A-Z])}{_}g;$name=uc$name;print("public void ${tag}(WriteEvents content) throws XMLStreamException, IOException {writer.add(EVENT.${name}_OPEN);content.output();writer.add(EVENT.${name}_CLOSE);}\n")}' \
 agencyAndLocalIdentifier authentication collection cqlIndex facet facetResult facets facetTerm fieldNameAndWeight formatsAvailable formattedCollection getObjectRequest indexAlias infoGeneral infoNameSpace infoNameSpaces infoObjectFormats infoRepositories infoRepository infoRequest infoResponse infoSearchProfile infoSort infoSorts linkObject object objectsAvailable phrase queryDebugResult rankDetails rankField rankFrequency relation relationObject relations relationTypes result searchCollection searchRequest searchResult sortDetails statInfo userDefinedBoost userDefinedRanking word
 
     private static class EVENT {

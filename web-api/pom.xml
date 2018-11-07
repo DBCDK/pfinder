@@ -72,7 +72,7 @@
                                 <argument>echo "$@" | bash -es</argument>
                                 <argument>-</argument>
                                 <argument><![CDATA[
-for input in ${basedir}/src/dynamic/*.java; do
+for input in ${basedir}/src/main/dynamic/*.java; do
     package=( $(grep -P '^\s*package\s+' $input | head -n 1 | sed -e 's/package//' -e 's/;.*//' ) )
     folder="${generated.sources.directory}/${package//.//}"
     mkdir -p "$folder"

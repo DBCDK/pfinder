@@ -1,4 +1,4 @@
-/*
+ /*
  * Copyright (C) 2018 DBC A/S (http://dbc.dk/)
  *
  * This is part of opensearch-web-api
@@ -52,21 +52,22 @@ public class ResponseTest {
 
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         EventOutput x = new EventOutput(os);
-        x.soapEnvelopeSearchResponse(() -> {
-            x.result(() -> {
-                x.resultPosition(1);
-                x.agency(100);
-                x.callback("my_cb");
-                x.hitCount(10);
-                x.formattedCollection(() -> {
-                    x.stream(I.createFilteredReader(
-                            reader,
-                            e -> ( EVENT_FILTER & ( 1 << e.getEventType() ) ) == 0
-                    ));
+        x.soapEnvelope(() -> {
+            x.searchResponse(() -> {
+                x.result(() -> {
+                    x.resultPosition(1);
+                    x.agency(100);
+                    x.callback("my_cb");
+                    x.hitCount(10);
+                    x.formattedCollection(() -> {
+                        x.stream(I.createFilteredReader(
+                                reader,
+                                e -> ( EVENT_FILTER & ( 1 << e.getEventType() ) ) == 0
+                        ));
+                    });
+                    x.identifier("foo-bar:bug");
                 });
-                x.identifier("foo-bar:bug");
             });
-
         });
 
         String string = new String(os.toByteArray(), StandardCharsets.UTF_8);
