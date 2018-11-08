@@ -97,6 +97,17 @@ public class FilterQuery {
         }
     }
 
+    /**
+     * The group that this filter query should be added to
+     * <p>
+     * Filterqueries are grouped by a symbolic name.
+     * It's called filterQuery in solr-spec.yaml.
+     * It's basically all these nodes are related, and together they form a
+     * meaningful limiting query
+     *
+     * @param query the querynode that could be moved to a filterquery block
+     * @return group (filterQueryName) or null if not valid for filterquery
+     */
     private static String findFilterQueryName(FlatQuery query) {
         if (query instanceof FlatQueryNested) {
             return ( (FlatQueryNested) query ).getFilterQueryName();
@@ -106,13 +117,14 @@ public class FilterQuery {
             Iterator<FlatQuery> i = ( (FlatQueryOr) query ).ors().iterator();
             return allTheSameFilter(i);
         } else if (query instanceof FlatQueryAndNot) {
-            Iterator<FlatQuery> i = ( (FlatQueryAndNot) query ).ands().iterator();
+            FlatQueryAndNot queryAndNot = (FlatQueryAndNot) query;
+            Iterator<FlatQuery> i = queryAndNot.ands().iterator();
             if (i.hasNext()) {
                 String andName = allTheSameFilter(i);
                 if (andName == null) {
                     return null;
                 }
-                i = ( (FlatQueryAndNot) query ).nots().iterator();
+                i = queryAndNot.nots().iterator();
                 if (!i.hasNext()) {
                     return andName;
                 }
@@ -121,15 +133,21 @@ public class FilterQuery {
                     return andName;
                 }
             } else {
-                i = ( (FlatQueryAndNot) query ).nots().iterator();
+                i = queryAndNot.nots().iterator();
                 return allTheSameFilter(i);
             }
             return null;
         }
-
         return null;
     }
 
+    /**
+     * Ensure all querynodes in a collection, can be grouped into same
+     * filterquery
+     *
+     * @param i iterator over collection
+     * @return name of group or null, if some can't be grouped
+     */
     private static String allTheSameFilter(Iterator<FlatQuery> i) {
         if (!i.hasNext()) {
             return null;
