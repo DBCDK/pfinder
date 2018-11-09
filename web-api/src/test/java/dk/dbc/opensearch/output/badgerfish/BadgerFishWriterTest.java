@@ -114,9 +114,9 @@ public class BadgerFishWriterTest {
 
             XMLEventReader reader = I.createXMLEventReader(fisXml);
             try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
-                try (BadgerFishWriter writer = new BadgerFishWriter(bos, repeated)) {
-                    writer.add(reader);
-                }
+                BadgerFishWriter writer = new BadgerFishWriter(bos, repeated);
+                writer.add(reader);
+                writer.close();
                 System.out.println(bos);
                 ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
                 actual = O.writeValueAsString(O.readTree(bis));

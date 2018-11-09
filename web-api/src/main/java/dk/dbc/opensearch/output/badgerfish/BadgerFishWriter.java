@@ -36,7 +36,7 @@ import static javax.xml.stream.XMLStreamConstants.*;
  *
  * @author DBC {@literal <dbc.dk>}
  */
-public class BadgerFishWriter implements XMLEventWriter, AutoCloseable {
+public class BadgerFishWriter implements XMLEventWriter {
 
     private static final JsonFactory JSON_FACTORY = new JsonFactory();
 
