@@ -34,13 +34,11 @@ import static dk.dbc.opensearch.input.RequestHelpers.*;
 public class SearchRequest extends CommonRequest {
 
     private static final Function<String, String> COLLECTION_TYPES = makeTrimOneOf("collectionType", "work", "work-1", "manifestation");
-    private static final Function<String, String> OUTPUT_TYPES = makeTrimOneOf("outputType", "xml", "json");
     private static final Function<String, String> QUERY_LANGUAGES = makeTrimOneOf("queryLanguage", "cqleng", "bestMatch");
     private static final Function<String, String> OBJECT_FORMATS = makeTrimOneOf("objectFormat",
                                                                                  "dkabm", "docbook", "marcxchange", "opensearchobject", "briefWorkDisplay",
                                                                                  "bibliotekdkWorkDisplay", "briefDisplayHtml", "fullDisplayHtml",
                                                                                  "workDisplayHtml", "briefDisplay", "fullDisplay", "refWorks", "ris");
-    private static final Function<String, String> RELATION_DATAS = makeTrimOneOf("relationData", "type", "uri", "full");
 
     private String query = null;
     private String queryLanguage = null;

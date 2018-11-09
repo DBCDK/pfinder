@@ -25,7 +25,6 @@ import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamException;
 
 import static dk.dbc.opensearch.input.RequestHelpers.*;
-import static java.util.Arrays.sort;
 
 /**
  *
@@ -33,7 +32,7 @@ import static java.util.Arrays.sort;
  */
 public class CommonRequest {
 
-    private static final Function<String, String> OUTPUT_TYPES = makeTrimOneOf("outputType", "xml", "json");
+    private static final Function<String, String> OUTPUT_TYPES = makeTrimOneOf("outputType", "xml", "json", "soap");
     private static final Function<String, String> RELATION_DATAS = makeTrimOneOf("relationData", "type", "uri", "full");
 
     private Integer agency = null;

@@ -1,4 +1,4 @@
- /*
+/*
  * Copyright (C) 2018 DBC A/S (http://dbc.dk/)
  *
  * This is part of opensearch-web-api
@@ -18,14 +18,18 @@
  */
 package dk.dbc.opensearch.output;
 
+import dk.dbc.opensearch.output.badgerfish.BadgerFishSingle;
+import dk.dbc.opensearch.output.badgerfish.BadgerFishWriter;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Date;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamException;
 import org.junit.Test;
 
-import static javax.xml.stream.XMLStreamConstants.*;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
@@ -37,45 +41,77 @@ public class ResponseTest {
 
     private static final XMLInputFactory I = makeXMLInputFactory();
 
-    private static final int EVENT_FILTER = ( 1 << PROCESSING_INSTRUCTION ) | ( 1 << COMMENT ) | ( 1 << SPACE ) |
-                                            ( 1 << START_DOCUMENT ) | ( 1 << END_DOCUMENT ) |
-                                            ( 1 << ENTITY_REFERENCE ) | ( 1 << ATTRIBUTE ) |
-                                            ( 1 << DTD ) | ( 1 << NAMESPACE ) | ( 1 << NOTATION_DECLARATION ) |
-                                            ( 1 << ENTITY_DECLARATION );
-
-    @Test(timeout = 2_000L)
-    public void testOutput() throws Exception {
-        System.out.println("testOutput");
-        ByteArrayInputStream is = new ByteArrayInputStream(
-                "<myrecord></myrecord>".getBytes(StandardCharsets.UTF_8));
-        XMLEventReader reader = I.createXMLEventReader(is);
+    @Test(timeout = 1_000L)
+    public void soap() throws Exception {
+        System.out.println("soap");
 
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-        EventOutput x = new EventOutput(os);
-        x.soapEnvelope(() -> {
-            x.searchResponse(() -> {
-                x.result(() -> {
-                    x.resultPosition(1);
-                    x.agency(100);
-                    x.callback("my_cb");
-                    x.hitCount(10);
-                    x.formattedCollection(() -> {
-                        x.stream(I.createFilteredReader(
-                                reader,
-                                e -> ( EVENT_FILTER & ( 1 << e.getEventType() ) ) == 0
-                        ));
-                    });
-                    x.identifier("foo-bar:bug");
-                });
-            });
-        });
+        new Root(os).soapEnvelope(this::outputBuilder);
 
         String string = new String(os.toByteArray(), StandardCharsets.UTF_8);
         System.out.println("string = " + string);
-
-        assertThat(string, containsString("formattedCollection><myrecord></myrecord></"));
+        assertThat(string, containsString("<xs:Envelope xmlns:xs=\"http://www.w3.org/2001/XMLSchema\"><xs:Body><"));
+        assertThat(string, containsString("more>false</"));
+        assertThat(string, containsString("object><myrecord></myrecord><"));
         assertThat(string, containsString("identifier>foo-bar:bug</"));
-        assertThat(string, containsString("agency>000100</"));
+    }
+
+    @Test(timeout = 1_000L)
+    public void xml() throws Exception {
+        System.out.println("xml");
+
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        new Root(os).xmlEnvelope(this::outputBuilder);
+
+        String string = new String(os.toByteArray(), StandardCharsets.UTF_8);
+        System.out.println("string = " + string);
+        assertThat(string, not(containsString("<xs:Envelope xmlns:xs=\"http://www.w3.org/2001/XMLSchema\"><xs:Body><")));
+        assertThat(string, containsString("more>false</"));
+        assertThat(string, containsString("object><myrecord></myrecord><"));
+        assertThat(string, containsString("identifier>foo-bar:bug</"));
+    }
+
+    @Test(timeout = 1_000L)
+    public void json() throws Exception {
+        System.out.println("json");
+
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        BadgerFishWriter w = new BadgerFishWriter(os, new BadgerFishSingle());
+        new Root(w).noEnvelope(this::outputBuilder);
+
+        String string = new String(os.toByteArray(), StandardCharsets.UTF_8);
+        System.out.println("string = " + string);
+        assertThat(string, not(containsString("Envelope")));
+        assertThat(string, containsString("\"more\":[{\"$\":\"false\""));
+        assertThat(string, containsString("\"myrecord\":[{\"$\":\""));
+        assertThat(string, containsString("\"identifier\":[{\"$\":\"foo-bar:bug\""));
+    }
+
+    private void outputBuilder(Root.EntryPoint e) throws XMLStreamException, IOException {
+        e.searchResponse(searchResponse -> searchResponse
+                .result(result -> result
+                        .hitCount(10)
+                        .collectionCount(-1)
+                        .more(false)
+                        .searchResult(searchResult -> searchResult
+                                .collection(collection -> collection
+                                        .resultPosition(1)
+                                        .numberOfObjects(1)
+                                        .object(object -> object
+                                                ._any(record())
+                                                .identifier("foo-bar:bug")
+                                                .creationDate(new Date())
+                                        )
+                                )
+                        )
+                )
+        );
+    }
+
+    private XMLEventReader record() throws XMLStreamException {
+        ByteArrayInputStream is = new ByteArrayInputStream(
+                "<myrecord></myrecord>".getBytes(StandardCharsets.UTF_8));
+        return I.createXMLEventReader(is);
     }
 
     private static XMLInputFactory makeXMLInputFactory() {

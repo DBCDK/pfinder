@@ -54,52 +54,23 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>exec-maven-plugin</artifactId>
-                <!--<version>1.6.0</version>-->
+                <groupId>${project.groupId}</groupId>
+                <artifactId>opensearch-xsd-maven-plugin</artifactId>
+                <version>${project.version}</version>
                 <executions>
                     <execution>
-                        <id>generate-xml-output</id>
+                        <id>build-xsd-streaming-output</id>
                         <goals>
-                            <goal>exec</goal>
+                            <goal>xsd-to-source</goal>
                         </goals>
                         <phase>generate-sources</phase>
                         <configuration>
-                            <executable>bash</executable>
-                            <workingDirectory>${basedir}</workingDirectory>
-                            <arguments>
-                                <argument>-ec</argument>
-                                <argument>echo "$@" | bash -es</argument>
-                                <argument>-</argument>
-                                <argument><![CDATA[
-for input in ${basedir}/src/main/dynamic/*.java; do
-    package=( $(grep -P '^\s*package\s+' $input | head -n 1 | sed -e 's/package//' -e 's/;.*//' ) )
-    folder="${generated.sources.directory}/${package//.//}"
-    mkdir -p "$folder"
-    file="${input/*\//}"
-    perl -e 'while($_=<>){if(m/^__SHELL__/){$t=""; open(SHELL, "|bash -es"); while($_=<>){last if(m/^\s*$/); print(SHELL $_)} close(SHELL) } else {print $_}}' $input > "$folder"/"$file"
-done
-]]></argument>
-                            </arguments>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>build-helper-maven-plugin</artifactId>
-                <!--<version>3.0.0</version>-->
-                <executions>
-                    <execution>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>add-source</goal>
-                        </goals>
-                        <configuration>
-                            <sources>
-                                <source>${generated.sources.directory}</source>
-                            </sources>
+                            <sourceFile>${basedir}/src/main/resources/opensearch.xsd</sourceFile>
+                            <package>dk.dbc.opensearch.output</package>
+                            <elements>
+                                <element>searchResponse</element>
+                                <element>infoResponse</element>
+                            </elements>
                         </configuration>
                     </execution>
                 </executions>
