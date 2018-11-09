@@ -129,12 +129,14 @@ public class ClassBuilder {
                     methodsInStage.computeIfAbsent(stage, s -> new LinkedHashSet<>())
                             .add(ref);
                 }
-                if (!e.isRepeatable()) {
-                    if (i.hasNext()) {
-                        currentStage = "Stage." + camelcase(ref.getName());
-                    } else {
-                        currentStage = null;
-                    }
+                if (i.hasNext()) {
+                    currentStage = "Stage." + camelcase(ref.getName());
+                } else {
+                    currentStage = null;
+                }
+                if (e.isRepeatable() && currentStage != null) {
+                    methodsInStage.computeIfAbsent(currentStage, s -> new LinkedHashSet<>())
+                            .add(ref);
                 }
                 returnValue.put(ref, currentStage);
                 if (!e.isOptional())
@@ -220,7 +222,11 @@ public class ClassBuilder {
     }
 
     public void outputMethod(OutputStream os, String scope, QName method, String returnScope) throws IOException {
-        replace.with("return", returnScope == null ? "void" : returnScope)
+        boolean isVoid = returnScope == null;
+        if (returnScope == null)
+            returnScope = "void";
+
+        replace.with("return", returnScope)
                 .with("method", method.getName())
                 .with("method_upper", constName(method));
         String documentation = doc.get(method);
@@ -228,36 +234,50 @@ public class ClassBuilder {
         String type = types.get(method);
         if (type == null) {
             if (method.getName().equals("_any")) {
-                outputJavaDoc(os, "METHOD_COMMENT_ANY", documentation, returnScope == null);
+                outputJavaDoc(os, "METHOD_COMMENT_ANY", documentation, isVoid);
+                if (!isVoid)
+                    CLASS_INI.segment(os, "METHOD_RETURNS", replace);
                 CLASS_INI.segment(os, "METHOD_ANY_NO_SCOPE", replace);
             } else {
                 replace.with("type", camelcase(method.getName()));
-                outputJavaDoc(os, "METHOD_COMMENT_SCOPE", documentation, returnScope == null);
+                outputJavaDoc(os, "METHOD_COMMENT_SCOPE", documentation, isVoid);
+                if (!isVoid)
+                    CLASS_INI.segment(os, "METHOD_RETURNS", replace);
                 CLASS_INI.segment(os, "METHOD_SCOPE", replace);
                 referredNames.add(method);
             }
         } else if (type.equals("String")) {
-            outputJavaDoc(os, "METHOD_COMMENT", documentation, returnScope == null);
+            outputJavaDoc(os, "METHOD_COMMENT", documentation, isVoid);
+            if (!isVoid)
+                CLASS_INI.segment(os, "METHOD_RETURNS", replace);
             CLASS_INI.segment(os, "METHOD_STRING", replace);
         } else if (type.equals("ANY")) {
-            outputJavaDoc(os, "METHOD_COMMENT_ANY", documentation, returnScope == null);
+            outputJavaDoc(os, "METHOD_COMMENT_ANY", documentation, isVoid);
+            if (!isVoid)
+                CLASS_INI.segment(os, "METHOD_RETURNS", replace);
             CLASS_INI.segment(os, "METHOD_ANY", replace);
         } else if (type.startsWith("special:")) {
-            outputJavaDoc(os, "METHOD_COMMENT", documentation, returnScope == null);
+            outputJavaDoc(os, "METHOD_COMMENT", documentation, isVoid);
             String special = type.substring(8);
+            if (!isVoid)
+                CLASS_INI.segment(os, "METHOD_RETURNS", replace);
             CLASS_INI.segment(os, "METHOD_SPECIAL_" + special, replace);
             referredNames.add(method);
         } else if (type.startsWith("enum:")) {
             replace.with("type", type.substring(5));
-            outputJavaDoc(os, "METHOD_COMMENT", documentation, returnScope == null);
+            outputJavaDoc(os, "METHOD_COMMENT", documentation, isVoid);
+            if (!isVoid)
+                CLASS_INI.segment(os, "METHOD_RETURNS", replace);
             CLASS_INI.segment(os, "METHOD_SIMPLE", replace);
             referredNames.add(method);
         } else {
             replace.with("type", type);
-            outputJavaDoc(os, "METHOD_COMMENT", documentation, returnScope == null);
+            outputJavaDoc(os, "METHOD_COMMENT", documentation, isVoid);
+            if (!isVoid)
+                CLASS_INI.segment(os, "METHOD_RETURNS", replace);
             CLASS_INI.segment(os, "METHOD_SIMPLE", replace);
         }
-        if (returnScope != null) {
+        if (!isVoid) {
             if (returnScope.equals(scope)) {
                 CLASS_INI.segment(os, "METHOD_RETURN_THIS", replace);
             } else {
