@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.apache.maven.plugin.logging.Log;
 
 /**
  *
@@ -33,6 +34,7 @@ import java.util.stream.Collectors;
  */
 public class Context {
 
+    private final Log log;
     private final File targetFolder;
     private final String packageName;
     private final String rootClass;
@@ -45,7 +47,8 @@ public class Context {
     private Map<QName, String> doc;
     private QNameBuilder nameBuilder;
 
-    public Context(File targetFolder, String packageName, String rootClass) {
+    public Context(Log log, File targetFolder, String packageName, String rootClass) {
+        this.log = log;
         this.targetFolder = targetFolder;
         this.packageName = packageName;
         this.rootClass = rootClass;
@@ -147,4 +150,67 @@ public class Context {
         return prefix.toUpperCase(Locale.ROOT) + "_" + constcase(ref.getName());
     }
 
+    public boolean isDebugEnabled() {
+        return log.isDebugEnabled();
+    }
+
+    public void debug(CharSequence cs) {
+        log.debug(cs);
+    }
+
+    public void debug(CharSequence cs, Throwable thrwbl) {
+        log.debug(cs, thrwbl);
+    }
+
+    public void debug(Throwable thrwbl) {
+        log.debug(thrwbl);
+    }
+
+    public boolean isInfoEnabled() {
+        return log.isInfoEnabled();
+    }
+
+    public void info(CharSequence cs) {
+        log.info(cs);
+    }
+
+    public void info(CharSequence cs, Throwable thrwbl) {
+        log.info(cs, thrwbl);
+    }
+
+    public void info(Throwable thrwbl) {
+        log.info(thrwbl);
+    }
+
+    public boolean isWarnEnabled() {
+        return log.isWarnEnabled();
+    }
+
+    public void warn(CharSequence cs) {
+        log.warn(cs);
+    }
+
+    public void warn(CharSequence cs, Throwable thrwbl) {
+        log.warn(cs, thrwbl);
+    }
+
+    public void warn(Throwable thrwbl) {
+        log.warn(thrwbl);
+    }
+
+    public boolean isErrorEnabled() {
+        return log.isErrorEnabled();
+    }
+
+    public void error(CharSequence cs) {
+        log.error(cs);
+    }
+
+    public void error(CharSequence cs, Throwable thrwbl) {
+        log.error(cs, thrwbl);
+    }
+
+    public void error(Throwable thrwbl) {
+        log.error(thrwbl);
+    }
 }

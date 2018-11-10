@@ -69,7 +69,7 @@ public class XsdPlugin extends AbstractMojo {
         log.debug("skipNamespaces: " + skipNamespaces);
 
         try {
-            Generator generator = new Generator(sourceFile, packageName, elements, targetFolder, rootClass, skipNamespaces);
+            Generator generator = new Generator(log, sourceFile, packageName, elements, targetFolder, rootClass, skipNamespaces);
             generator.run();
             project.addCompileSourceRoot(targetFolder.getAbsolutePath());
         } catch (Exception ex) {

@@ -37,6 +37,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.Namespace;
 import javax.xml.stream.events.XMLEvent;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.logging.Log;
 
 /**
  *
@@ -53,11 +54,11 @@ public class Generator {
     private Schema schema;
     private final Context cxt;
 
-    public Generator(File sourceFile, String packageName, List<String> bases, File targetFolder, String rootClass, List<String> skipNamespaces) {
+    public Generator(Log log, File sourceFile, String packageName, List<String> bases, File targetFolder, String rootClass, List<String> skipNamespaces) {
         this.sourceFile = sourceFile;
         this.bases = bases;
         this.skipNamespaces = skipNamespaces;
-        this.cxt = new Context(targetFolder, packageName, rootClass);
+        this.cxt = new Context(log, targetFolder, packageName, rootClass);
     }
 
     public void run() throws Exception {
