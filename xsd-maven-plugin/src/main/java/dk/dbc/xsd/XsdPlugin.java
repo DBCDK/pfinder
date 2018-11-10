@@ -37,10 +37,7 @@ import org.apache.maven.project.MavenProject;
 @Mojo(threadSafe = true, name = "xsd-to-source", defaultPhase = LifecyclePhase.GENERATE_SOURCES, requiresProject = true)
 public class XsdPlugin extends AbstractMojo {
 
-    /**
-     * Folder to contain "bin" and "db" directories
-     */
-    @Parameter(property = "xsd.source.file")
+    @Parameter(property = "xsd.source.file", required = true)
     protected File sourceFile;
 
     @Parameter(defaultValue = "${project.build.directory}/generated-sources/dbc", property = "xsd.target.folder")
@@ -64,12 +61,12 @@ public class XsdPlugin extends AbstractMojo {
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         Log log = getLog();
-        log.info("src: " + sourceFile);
-        log.info("dest: " + targetFolder);
-        log.info("package: " + packageName);
-        log.info("rootClass: " + rootClass);
-        log.info("elements: " + elements);
-        log.info("skipNamespaces: " + skipNamespaces);
+        log.debug("src: " + sourceFile);
+        log.debug("dest: " + targetFolder);
+        log.debug("package: " + packageName);
+        log.debug("rootClass: " + rootClass);
+        log.debug("elements: " + elements);
+        log.debug("skipNamespaces: " + skipNamespaces);
 
         try {
             Generator generator = new Generator(sourceFile, packageName, elements, targetFolder, rootClass, skipNamespaces);
