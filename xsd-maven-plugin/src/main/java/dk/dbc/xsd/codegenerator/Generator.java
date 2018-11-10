@@ -65,57 +65,41 @@ public class Generator {
 
         unmarshall();
         cxt.createNameBuilder(schema.targetNamespace);
-        cxt.createInverseNamespaces(skipNamespaces);
 
-        elementsMap();
-        simpleTypesMap();
+        registerAllSimpleTypesInContext();
+        registerAllElementsInContext();
 
-        cxt.getSimpleTypes().values().stream()
-                .filter(e -> e.restriction != null)
-                .forEach(this::buildSimpleType);
+        registerSimpleTypesAsGenericTypes();
+        registerElementWithXSTypesAsGenericTypes();
+        registerElementsThatAreAliasesAsGenericTypes();
+        registerElementsThatAreOnlyAnyAsGenericType();
 
-        cxt.getElements().values().stream()
-                .filter(e -> e.type != null)
-                .forEach(this::buildSimpleType);
-        elementAliasTypes();
-//        System.out.println("cxt.getSimpleTypes() = " + cxt.getSimpleTypes());
-
-        cxt.getElements().values().stream()
-                .filter(el -> {
-                    E e = new E(el.complexType);
-                    return e.isSequence() &&
-                           e.asSequence().size() == 1 &&
-                           e.asSequence().get(0).isAny();
-                })
-                .forEach(e -> cxt.getTypes().put(cxt.name(e.name), "ANY"));
-
-        cxt.createDoc();
-
-        OutputRoot outputRoot = new OutputRoot(cxt, bases);
-        outputRoot.build();
+        new OutputRoot(cxt, bases).build();
 
         HashSet<QName> seen = new HashSet<>();
         HashSet<QName> wanted = new HashSet<>();
+
         for (String base : bases) {
-            QName qName = cxt.name(base);
-            seen.add(qName);
-            Element element = cxt.getElements().get(qName);
+            QName name = cxt.name(base);
+            seen.add(name);
+            Element element = cxt.getElement(name);
             Set<QName> referred = new ClassBuilder(cxt, element).build();
             wanted.addAll(referred);
         }
+
         wanted.removeAll(seen);
         while (!wanted.isEmpty()) {
             QName name = wanted.iterator().next();
-            String simpleTypeName = cxt.getTypes().get(name);
+            String typeName = cxt.getType(name);
             seen.add(name);
-            Element element = cxt.getElements().get(name);
-            if (simpleTypeName != null) {
-                if (simpleTypeName.startsWith("enum:")) {
-                    simpleTypeName = simpleTypeName.substring(5);
-                    SimpleType simpleType = cxt.getSimpleTypes().get(cxt.name(element.type));
-                    new EnumBuilder(cxt, simpleType, simpleTypeName).build();
+            Element element = cxt.getElement(name);
+            if (typeName != null) {
+                if (typeName.startsWith("enum:")) {
+                    typeName = typeName.substring(5);
+                    SimpleType simpleType = cxt.getSimpleType(cxt.name(element.type));
+                    new EnumBuilder(cxt, simpleType, typeName).build();
                 } else {
-                    throw new MojoExecutionException("Cannot generate SimpleType: " + simpleTypeName);
+                    throw new MojoExecutionException("Cannot generate SimpleType: " + typeName);
                 }
             } else {
                 Set<QName> referred = new ClassBuilder(cxt, element).build();
@@ -125,21 +109,101 @@ public class Generator {
         }
     }
 
-    private void elementsMap() {
-        for (Element element : schema.element) {
-            cxt.getElements().put(cxt.name(element.name), element);
+    private void unmarshall() throws JAXBException, IOException, XMLStreamException {
+        JAXBContext jc = JAXBContext.newInstance(Schema.class);
+        Unmarshaller unmarshaller = jc.createUnmarshaller();
+        try (FileInputStream is = new FileInputStream(sourceFile)) {
+            XMLEventReader reader = namespaceRecordingEventReader(is);
+            this.schema = (Schema) unmarshaller.unmarshal(reader);
         }
     }
 
-    private void simpleTypesMap() {
-        for (SimpleType simpleType : schema.simpleType) {
-            cxt.getSimpleTypes().put(cxt.name(simpleType.name), simpleType);
-        }
+    private XMLEventReader namespaceRecordingEventReader(FileInputStream is) throws XMLStreamException {
+        XMLInputFactory factory = makeXMLInputFactory();
+        return factory.createFilteredReader(
+                factory.createXMLEventReader(is),
+                (XMLEvent event) -> {
+            if (event.isStartElement()) {
+                Iterator<Namespace> n = event.asStartElement().getNamespaces();
+                while (n.hasNext()) {
+                    Namespace namespace = n.next();
+                    cxt.storeNamespace(namespace.getPrefix(), namespace.getNamespaceURI(), event);
+                }
+            }
+            return true;
+        });
     }
 
-    private void elementAliasTypes() throws AssertionError {
+    private void registerAllSimpleTypesInContext() {
+        schema.simpleType.forEach(cxt::addSimpleType);
+    }
+
+    private void registerAllElementsInContext() {
+        schema.element.forEach(cxt::addElement);
+    }
+
+    private void registerSimpleTypesAsGenericTypes() {
+        cxt.allSimpleTypes()
+                .filter(e -> e.restriction != null)
+                .forEach((SimpleType type) -> {
+                    QName name = cxt.name(type.name);
+                    if (type.restriction != null) {
+                        QName base = cxt.name(type.restriction.base);
+                        switch (base.getName()) {
+                            case "string":
+                                if (type.restriction.enumeration != null) {
+                                    cxt.addType(name, "enum:" + cxt.camelcase(name).replaceAll("Type$", ""));
+                                } else {
+                                    cxt.addType(name, "String");
+                                }
+                                break;
+                            default:
+                                throw new AssertionError(base);
+                        }
+                    }
+                });
+    }
+
+    private void registerElementWithXSTypesAsGenericTypes() {
+        cxt.allElements()
+                .filter(e -> e.type != null)
+                .forEach((Element type) -> {
+                    QName name = cxt.name(type.name);
+                    QName typeName = cxt.name(type.type);
+                    if (XS.equals(typeName.getNamespace())) {
+                        switch (typeName.getName()) {
+                            case "string":
+                            case "anyURI":
+                                cxt.addType(name, "String");
+                                break;
+                            case "positiveInteger":
+                            case "integer":
+                            case "int":
+                                cxt.addType(name, "int");
+                                break;
+                            case "decimal":
+                                cxt.addType(name, "double");
+                                break;
+                            case "float":
+                                cxt.addType(name, "float");
+                                break;
+                            case "date":
+                                cxt.addType(name, "special:DATE");
+                                break;
+                            case "boolean":
+                                cxt.addType(name, "boolean");
+                                break;
+                            default:
+                                System.err.println("type = " + type);
+                                throw new AssertionError(name.toString());
+                        }
+                    }
+                });
+    }
+
+    private void registerElementsThatAreAliasesAsGenericTypes() throws AssertionError {
         HashSet<Element> simpleNonXsTypes = new HashSet<>();
-        cxt.getElements().values().stream()
+        cxt.allElements()
                 .filter(e -> e.type != null && !XS.equals(cxt.name(e.type).getNamespace()))
                 .forEach(simpleNonXsTypes::add);
         while (!simpleNonXsTypes.isEmpty()) {
@@ -147,95 +211,27 @@ public class Generator {
             for (Iterator<Element> iterator = simpleNonXsTypes.iterator() ; iterator.hasNext() ;) {
                 Element next = iterator.next();
                 QName qName = cxt.name(next.type);
-                String target = cxt.getTypes().get(qName);
+                String target = cxt.getType(qName);
                 if (target != null) {
-                    cxt.getTypes().put(cxt.name(next.name), target);
+                    cxt.addType(cxt.name(next.name), target);
                     iterator.remove();
                 }
             }
             if (cnt == simpleNonXsTypes.size()) {
-                throw new AssertionError("Cannot consumer any of: " + simpleNonXsTypes);
+                throw new AssertionError("Cannot convert any of: " + simpleNonXsTypes);
             }
         }
     }
 
-    private void buildSimpleType(Element type) {
-        QName name = cxt.name(type.name);
-        QName typeName = cxt.name(type.type);
-        if (XS.equals(typeName.getNamespace())) {
-            switch (typeName.getName()) {
-                case "string":
-                case "anyURI":
-                    cxt.getTypes().put(name, "String");
-                    break;
-                case "positiveInteger":
-                case "integer":
-                case "int":
-                    cxt.getTypes().put(name, "int");
-                    break;
-                case "decimal":
-                    cxt.getTypes().put(name, "double");
-                    break;
-                case "float":
-                    cxt.getTypes().put(name, "float");
-                    break;
-                case "date":
-                    cxt.getTypes().put(name, "special:DATE");
-                    break;
-                case "boolean":
-                    cxt.getTypes().put(name, "boolean");
-                    break;
-                default:
-                    System.err.println("type = " + type);
-                    throw new AssertionError(name.toString());
-            }
-        }
-    }
-
-    private void buildSimpleType(SimpleType type) {
-        QName name = cxt.name(type.name);
-        if (type.restriction != null) {
-            QName base = cxt.name(type.restriction.base);
-            switch (base.getName()) {
-                case "string":
-                    if (type.restriction.enumeration != null) {
-                        cxt.getTypes().put(name, "enum:" + cxt.camelcase(name.getName()).replaceAll("Type$", ""));
-                    } else {
-                        cxt.getTypes().put(name, "String");
-                    }
-                    break;
-                default:
-                    throw new AssertionError(base);
-            }
-        }
-    }
-
-    private void unmarshall() throws JAXBException, IOException, XMLStreamException {
-        JAXBContext jc = JAXBContext.newInstance(Schema.class);
-        Unmarshaller unmarshaller = jc.createUnmarshaller();
-        try (FileInputStream is = new FileInputStream(sourceFile)) {
-            XMLInputFactory factory = makeXMLInputFactory();
-            XMLEventReader reader = factory.createFilteredReader(
-                    factory.createXMLEventReader(is),
-                    (XMLEvent event) -> {
-                if (event.isStartElement()) {
-                    Iterator<Namespace> n = event.asStartElement().getNamespaces();
-                    while (n.hasNext()) {
-                        Namespace namespace = n.next();
-                        String prefix = namespace.getPrefix();
-                        String uri = namespace.getNamespaceURI();
-                        String stored = cxt.getNamespaces().computeIfAbsent(prefix, p -> uri);
-                        if (!stored.equals(uri)) {
-                            throw new RuntimeException(
-                                    new XMLStreamException("Namespace prefix: " + prefix + " redefined",
-                                                           event.getLocation()));
-                        }
-                    }
-                }
-                return true;
-            });
-            this.schema = (Schema) unmarshaller.unmarshal(reader);
-        }
+    private void registerElementsThatAreOnlyAnyAsGenericType() {
+        cxt.allElements()
+                .filter(el -> {
+                    E e = new E(el.complexType);
+                    return e.isSequence() &&
+                           e.asSequence().size() == 1 &&
+                           e.asSequence().get(0).isAny();
+                })
+                .forEach(e -> cxt.addType(cxt.name(e.name), "ANY"));
     }
 
     private static XMLInputFactory makeXMLInputFactory() {

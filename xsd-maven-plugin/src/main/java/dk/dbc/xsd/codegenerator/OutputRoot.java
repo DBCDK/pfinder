@@ -18,7 +18,6 @@
  */
 package dk.dbc.xsd.codegenerator;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.LinkedHashSet;
@@ -82,9 +81,9 @@ public class OutputRoot {
             tags.add(name);
 
             replace.with("method", name.getName())
-                    .with("type", cxt.camelcase(name.getName()))
+                    .with("type", cxt.camelcase(name))
                     .with("method_upper", cxt.constName(name));
-            String documentation = cxt.getDoc().get(name);
+            String documentation = cxt.getDoc(name);
 
             if (documentation != null) {
                 replace.with("doc", documentation);

@@ -22,10 +22,11 @@ import dk.dbc.xsd.mapping.Element;
 import dk.dbc.xsd.mapping.SimpleType;
 import java.io.File;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.events.XMLEvent;
 import org.apache.maven.plugin.logging.Log;
 
 /**
@@ -56,6 +57,7 @@ public class Context {
         simpleTypes = new HashMap<>();
         types = new HashMap<>();
         namespaces = new HashMap<>();
+        inverseNamespaces = new HashMap<>();
         doc = new HashMap<>();
     }
 
@@ -71,32 +73,72 @@ public class Context {
         return rootClass;
     }
 
-    public HashMap<QName, Element> getElements() {
-        return elements;
+    public void addElement(Element element) {
+        QName name = name(element.name);
+        elements.put(name, element);
+        if (element.annotation != null &&
+            element.annotation.documentation != null &&
+            !element.annotation.documentation.isEmpty()) {
+            doc.put(name, element.annotation.documentation.get(0));
+        }
     }
 
-    public HashMap<QName, SimpleType> getSimpleTypes() {
-        return simpleTypes;
+    public Element getElement(QName name) {
+        return elements.get(name);
     }
 
-    public HashMap<QName, String> getTypes() {
-        return types;
+    public Stream<Element> allElements() {
+        return elements.values().stream();
     }
 
-    public HashMap<String, String> getNamespaces() {
-        return namespaces;
+    public void addSimpleType(SimpleType simpleType) {
+        QName name = name(simpleType.name);
+        simpleTypes.put(name, simpleType);
+    }
+
+    public SimpleType getSimpleType(QName name) {
+        return simpleTypes.get(name);
+    }
+
+    public Stream<SimpleType> allSimpleTypes() {
+        return simpleTypes.values().stream();
+    }
+
+    public String getType(QName name) {
+        return types.get(name);
+    }
+
+    public void addType(QName name, String type) {
+        types.put(name, type);
+    }
+
+    /**
+     * Places the namespace in a map, and returns the first namespace this
+     * prefix has been given
+     *
+     * @param prefix wanted prefix
+     * @param uri
+     */
+    public void storeNamespace(String prefix, String uri, XMLEvent event) {
+        String old = namespaces.put(prefix, uri);
+        if (old != null) {
+            throw new RuntimeException(
+                    new XMLStreamException("Namespace prefix: " + prefix + " redefined",
+                                           event.getLocation()));
+        }
+        inverseNamespaces.put(uri, prefix);
     }
 
     public Map<String, String> getInverseNamespaces() {
         return inverseNamespaces;
     }
 
-    public Map<QName, String> getDoc() {
-        return doc;
+    public String getDoc(QName name) {
+        return doc.getOrDefault(name, "");
     }
 
-    public QNameBuilder getNameBuilder() {
-        return nameBuilder;
+    public void addDoc(QName name, String text) {
+        doc.put(name, text);
     }
 
     public Replace replacer() {
@@ -109,26 +151,12 @@ public class Context {
         this.nameBuilder = new QNameBuilder(namespaces, targetNamespace);
     }
 
-    public void createInverseNamespaces(List<String> skipNamespaces) {
-        this.inverseNamespaces = inverseNamespaces = namespaces.entrySet().stream()
-                .filter(e -> !skipNamespaces.contains(e.getValue()))
-                .collect(Collectors.toMap(e -> e.getValue(),
-                                          e -> e.getKey().toUpperCase()));
-    }
-
-    public void createDoc() {
-        this.doc = elements.values().stream()
-                .filter(e -> e.annotation != null && e.annotation.documentation != null && !e.annotation.documentation.isEmpty())
-                .collect(Collectors.toMap(e -> name(e.name),
-                                          e -> e.annotation.documentation.get(0)));
-
-    }
-
     public QName name(String s) {
         return nameBuilder.from(s);
     }
 
-    public String camelcase(String s) {
+    public String camelcase(QName name) {
+        String s = name.getName();
         return s.substring(0, 1).toUpperCase(Locale.ROOT) + s.substring(1);
     }
 

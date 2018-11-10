@@ -20,7 +20,6 @@ package dk.dbc.xsd.codegenerator;
 
 import dk.dbc.xsd.mapping.Enumeration;
 import dk.dbc.xsd.mapping.SimpleType;
-import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Locale;

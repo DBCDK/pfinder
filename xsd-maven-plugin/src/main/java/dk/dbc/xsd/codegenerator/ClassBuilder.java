@@ -19,7 +19,6 @@
 package dk.dbc.xsd.codegenerator;
 
 import dk.dbc.xsd.mapping.Element;
-import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.HashSet;
@@ -27,7 +26,6 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -51,7 +49,7 @@ public class ClassBuilder {
     public ClassBuilder(Context cxt, Element element) {
         this.element = element;
         this.cxt = cxt;
-        this.className = cxt.camelcase(cxt.name(element.name).getName());
+        this.className = cxt.camelcase(cxt.name(element.name));
         this.replace = cxt.replacer()
                 .with("class", className);
         this.referredNames = new HashSet<>();
@@ -113,10 +111,10 @@ public class ClassBuilder {
                 }
                 if (e.isRepeatable()) {
                     if (!firstStage)
-                        currentStage = "Stage." + cxt.camelcase(ref.getName());
+                        currentStage = "Stage." + cxt.camelcase(ref);
                 } else if (i.hasNext()) {
                     if (!firstStage)
-                        currentStage = "Stage." + cxt.camelcase(ref.getName());
+                        currentStage = "Stage." + cxt.camelcase(ref);
                 } else {
                     currentStage = null;
                 }
@@ -155,7 +153,7 @@ public class ClassBuilder {
                         .add(ref);
             }
             if (e.isRepeatable()) {
-                String stage = "Stage._Choice" + cxt.camelcase(ref.getName());
+                String stage = "Stage._Choice" + cxt.camelcase(ref);
                 exitStages.add(stage);
                 returnValue.put(ref, stage);
                 methodsInStage.computeIfAbsent(stage, s -> new LinkedHashSet<>())
@@ -229,14 +227,14 @@ public class ClassBuilder {
         replace.with("return", returnScope)
                 .with("method", method.getName())
                 .with("method_upper", cxt.constName(method));
-        String documentation = cxt.getDoc().get(method);
+        String documentation = cxt.getDoc(method);
 
-        String type = cxt.getTypes().get(method);
+        String type = cxt.getType(method);
         if (type == null) {
             if (method.getName().equals("_any")) {
                 outputMethod(os, "METHOD_COMMENT_ANY", documentation, isVoid, isTerminal, "METHOD_ANY_NO_SCOPE");
             } else {
-                replace.with("type", cxt.camelcase(method.getName()));
+                replace.with("type", cxt.camelcase(method));
                 outputMethod(os, "METHOD_COMMENT_SCOPE", documentation, isVoid, isTerminal, "METHOD_SCOPE");
                 referredNames.add(method);
             }
