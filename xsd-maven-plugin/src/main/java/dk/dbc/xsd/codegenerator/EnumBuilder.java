@@ -34,48 +34,41 @@ public class EnumBuilder {
 
     private static final Ini INI = new Ini("enum.ini");
 
-    public static void build(QNameBuilder qNameBuilder, SimpleType type, File targetFolder, String packageName, String rootClass, String className) throws IOException {
-        new EnumBuilder(qNameBuilder, type, rootClass, className)
-                .build(targetFolder, packageName);
-    }
-
-    private final QNameBuilder qNameBuilder;
-    private final SimpleType type;
+    private final SimpleType simpleType;
     private final String className;
-    private final String rootClass;
     private final Replace replace;
+    private final Context cxt;
 
-    public EnumBuilder(QNameBuilder qNameBuilder, SimpleType type, String rootClass, String className) {
-        this.qNameBuilder = qNameBuilder;
-        this.type = type;
-        this.rootClass = rootClass;
+    public EnumBuilder(Context cxt, SimpleType simpleType, String className) {
+        this.cxt = cxt;
+        this.simpleType = simpleType;
         this.className = className;
-        this.replace = Replace.of("class", className)
-                .with("root", rootClass);
+        this.replace = cxt.replacer()
+                .with("class", className);
     }
 
-    private void build(File targetFolder, String packageName) throws IOException {
-        replace.with("package", packageName);
-        try (JavaFileOutputStream os = new JavaFileOutputStream(targetFolder, packageName, className)) {
+    public void build() throws IOException {
+        System.out.println("Building: " + className);
+        try (JavaFileOutputStream os = new JavaFileOutputStream(cxt, className)) {
             output(os);
         }
     }
 
     private void output(OutputStream os) throws IOException {
-        String names = type.restriction.enumeration.stream()
-                .map(s -> enumName(s.value))
+        String names = simpleType.restriction.enumeration.stream()
+                .map(s -> enumValueName(s.value))
                 .collect(Collectors.joining(", "));
         replace.with("names", names);
         INI.segment(os, "TOP", replace);
-        for (Enumeration enumeration : type.restriction.enumeration) {
-            replace.with("name", enumName(enumeration.value))
+        for (Enumeration enumeration : simpleType.restriction.enumeration) {
+            replace.with("name", enumValueName(enumeration.value))
                     .with("name_lower", enumeration.value.toLowerCase(Locale.ROOT));
             INI.segment(os, "VALUE", replace);
         }
         INI.segment(os, "BOTTOM", replace);
     }
 
-    private String enumName(String s) {
+    private String enumValueName(String s) {
         return s.replaceAll("[^0-9a-zA-Z_]", "").toUpperCase(Locale.ROOT);
     }
 

@@ -40,42 +40,24 @@ import static java.util.Collections.EMPTY_SET;
 public class ClassBuilder {
 
     private static final Ini CLASS_INI = new Ini("class.ini");
+    private final Context cxt;
 
-    public static Set<QName> build(QNameBuilder qNameBuilder, File targetFolder, String packageName, String rootClass, Element element, Map<String, String> inverseNamespaces, Map<QName, String> types, Map<QName, String> doc) throws Exception {
-        return new ClassBuilder(qNameBuilder, targetFolder, packageName, rootClass, element, inverseNamespaces, types, doc)
-                .build();
-    }
-
-    protected final String packageName;
-    protected final Map<String, String> inverseNamespaces;
-    protected final Map<QName, String> types;
-    protected final Map<QName, String> doc;
-    private final QNameBuilder qNameBuilder;
-    private final File targetFolder;
     private final Element element;
 
     protected final String className;
     protected final Replace replace;
     private final Set<QName> referredNames;
 
-    public ClassBuilder(QNameBuilder qNameBuilder, File targetFolder, String packageName, String rootClass, Element element, Map<String, String> inverseNamespaces, Map<QName, String> types, Map<QName, String> doc) {
-        this.packageName = packageName;
-        this.inverseNamespaces = inverseNamespaces;
-        this.types = types;
-        this.doc = doc;
-        this.qNameBuilder = qNameBuilder;
-        this.targetFolder = targetFolder;
+    public ClassBuilder(Context cxt, Element element) {
         this.element = element;
-        this.className = camelcase(qNameBuilder.from(element.name).getName());
-        this.replace = Replace.of("class", className)
-                .with("root", rootClass)
-                .with("package", packageName)
-                .with("indent", "");
-
+        this.cxt = cxt;
+        this.className = cxt.camelcase(cxt.name(element.name).getName());
+        this.replace = cxt.replacer()
+                .with("class", className);
         this.referredNames = new HashSet<>();
     }
 
-    private Set<QName> build() throws Exception {
+    public Set<QName> build() throws IOException {
         System.out.println("Building: " + className);
         E e = new E(element.complexType);
         Map<QName, String> returnValue = new LinkedHashMap<>();
@@ -97,9 +79,10 @@ public class ClassBuilder {
             terminalFunctions.forEach(System.out::println);
         }
 
-        try (JavaFileOutputStream os = new JavaFileOutputStream(targetFolder, packageName, className)) {
+        try (JavaFileOutputStream os = new JavaFileOutputStream(cxt, className)) {
             output(os, returnValue, methodsInStage, tags, terminalFunctions);
         }
+
         return referredNames;
     }
 
@@ -130,10 +113,10 @@ public class ClassBuilder {
                 }
                 if (e.isRepeatable()) {
                     if (!firstStage)
-                        currentStage = "Stage." + camelcase(ref.getName());
+                        currentStage = "Stage." + cxt.camelcase(ref.getName());
                 } else if (i.hasNext()) {
                     if (!firstStage)
-                        currentStage = "Stage." + camelcase(ref.getName());
+                        currentStage = "Stage." + cxt.camelcase(ref.getName());
                 } else {
                     currentStage = null;
                 }
@@ -172,7 +155,7 @@ public class ClassBuilder {
                         .add(ref);
             }
             if (e.isRepeatable()) {
-                String stage = "Stage._Choice" + camelcase(ref.getName());
+                String stage = "Stage._Choice" + cxt.camelcase(ref.getName());
                 exitStages.add(stage);
                 returnValue.put(ref, stage);
                 methodsInStage.computeIfAbsent(stage, s -> new LinkedHashSet<>())
@@ -194,11 +177,11 @@ public class ClassBuilder {
 
     private QName nameOfE(E e, Set<QName> tags) throws IllegalStateException {
         if (e.isElement()) {
-            QName ref = name(e.asElement().ref);
+            QName ref = cxt.name(e.asElement().ref);
             tags.add(ref);
             return ref;
         } else if (e.isAny()) {
-            return name("_any");
+            return cxt.name("_any");
         } else {
             throw new IllegalStateException("Don't know: " + e);
         }
@@ -245,15 +228,15 @@ public class ClassBuilder {
 
         replace.with("return", returnScope)
                 .with("method", method.getName())
-                .with("method_upper", constName(method));
-        String documentation = doc.get(method);
+                .with("method_upper", cxt.constName(method));
+        String documentation = cxt.getDoc().get(method);
 
-        String type = types.get(method);
+        String type = cxt.getTypes().get(method);
         if (type == null) {
             if (method.getName().equals("_any")) {
                 outputMethod(os, "METHOD_COMMENT_ANY", documentation, isVoid, isTerminal, "METHOD_ANY_NO_SCOPE");
             } else {
-                replace.with("type", camelcase(method.getName()));
+                replace.with("type", cxt.camelcase(method.getName()));
                 outputMethod(os, "METHOD_COMMENT_SCOPE", documentation, isVoid, isTerminal, "METHOD_SCOPE");
                 referredNames.add(method);
             }
@@ -297,36 +280,11 @@ public class ClassBuilder {
         CLASS_INI.segment(os, "TAGS_START", replace);
         for (QName tag : tags) {
             replace.with("tagname", tag.getName())
-                    .with("tagname_upper", constName(tag))
-                    .with("prefix", inverseNamespaces.getOrDefault(tag.getNamespace(), "XXX"));
+                    .with("tagname_upper", cxt.constName(tag))
+                    .with("prefix", cxt.prefix(tag));
             CLASS_INI.segment(os, "TAG", replace);
         }
         CLASS_INI.segment(os, "TAGS_END", replace);
-    }
-
-    private QName name(String name) {
-        return qNameBuilder.from(name);
-    }
-
-    private String prefix(QName ref) {
-        return inverseNamespaces.getOrDefault(ref.getNamespace(), "");
-    }
-
-    private String camelcase(String s) {
-        return s.substring(0, 1).toUpperCase(Locale.ROOT) + s.substring(1);
-    }
-
-    private String constcase(String s) {
-        return s.replaceAll("(?<=[a-z])(?=[A-Z])", "_")
-                .replaceAll("_+", "_")
-                .toUpperCase(Locale.ROOT);
-    }
-
-    private String constName(QName ref) {
-        String prefix = prefix(ref);
-        if (!prefix.isEmpty())
-            prefix = prefix.toUpperCase(Locale.ROOT) + "_";
-        return prefix + constcase(ref.getName());
     }
 
 }

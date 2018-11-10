@@ -28,7 +28,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-
 /**
  *
  * @author DBC {@literal <dbc.dk>}
@@ -37,37 +36,22 @@ public class OutputRoot {
 
     private static final Ini ROOT_INI = new Ini("root.ini");
 
-    protected final String packageName;
-    protected final Map<String, String> inverseNamespaces;
-    protected final Map<QName, String> types;
-    protected final Map<QName, String> doc;
-
-    protected final String className;
+    private final Context cxt;
+    private final List<String> bases;
     protected final Replace replace;
 
-    private final QNameBuilder qNameBuilder;
-    private final File targetFolder;
-    private final List<String> bases;
+    private final Set<QName> tags;
 
-    private final Set<QName> tags = new LinkedHashSet<>();
-
-    public OutputRoot(QNameBuilder qNameBuilder, File targetFolder, String packageName, String rootClass, Map<String, String> inverseNamespaces, Map<QName, String> types, Map<QName, String> doc, List<String> bases) {
-        this.packageName = packageName;
-        this.inverseNamespaces = inverseNamespaces;
-        this.types = types;
-        this.doc = doc;
-        this.className = rootClass;
-        this.replace = Replace.of("class", className)
-                .with("root", rootClass)
-                .with("package", packageName)
-                .with("indent", "");
-        this.qNameBuilder = qNameBuilder;
-        this.targetFolder = targetFolder;
+    OutputRoot(Context cxt, List<String> bases) {
+        this.cxt = cxt;
         this.bases = bases;
+        this.replace = cxt.replacer()
+                .with("class", cxt.getRootClass());
+        this.tags = new LinkedHashSet<>();
     }
 
     public void build() throws IOException {
-        try (JavaFileOutputStream os = new JavaFileOutputStream(targetFolder, packageName, className)) {
+        try (JavaFileOutputStream os = new JavaFileOutputStream(cxt, cxt.getRootClass())) {
             ROOT_INI.segment(os, "TOP", replace);
             outputEntryPoints(os);
             outputNamespaces(os);
@@ -77,7 +61,7 @@ public class OutputRoot {
     }
 
     private void outputNamespaces(final JavaFileOutputStream os) {
-        inverseNamespaces.entrySet().stream()
+        cxt.getInverseNamespaces().entrySet().stream()
                 .sorted(Map.Entry.comparingByValue())
                 .forEach(entry -> {
                     try {
@@ -94,13 +78,13 @@ public class OutputRoot {
     private void outputEntryPoints(JavaFileOutputStream os) throws IOException {
         ROOT_INI.segment(os, "ENTRYPOINTS_START", replace);
         for (String base : bases) {
-            QName name = qNameBuilder.from(base);
+            QName name = cxt.name(base);
             tags.add(name);
 
             replace.with("method", name.getName())
-                    .with("type", camelcase(name.getName()))
-                    .with("method_upper", constName(name));
-            String documentation = doc.get(name);
+                    .with("type", cxt.camelcase(name.getName()))
+                    .with("method_upper", cxt.constName(name));
+            String documentation = cxt.getDoc().get(name);
 
             if (documentation != null) {
                 replace.with("doc", documentation);
@@ -112,40 +96,19 @@ public class OutputRoot {
     }
 
     public void outputTags(OutputStream os, Set<QName> tags) throws IOException {
-        String allNamespaces = inverseNamespaces.values().stream()
+        String allNamespaces = cxt.getInverseNamespaces().values().stream()
                 .sorted()
                 .map(s -> "NS_" + s)
                 .collect(Collectors.joining(", "));
         ROOT_INI.segment(os, "TAGS_START", replace);
         for (QName tag : tags) {
             replace.with("tagname", tag.getName())
-                    .with("tagname_upper", constName(tag))
-                    .with("prefix", inverseNamespaces.getOrDefault(tag.getNamespace(), "XXX"))
+                    .with("tagname_upper", cxt.constName(tag))
+                    .with("prefix", cxt.prefix(tag))
                     .with("extra_ns", allNamespaces);
             ROOT_INI.segment(os, "TAG", replace);
         }
         ROOT_INI.segment(os, "TAGS_END", replace);
-    }
-
-    private String prefix(QName ref) {
-        return inverseNamespaces.getOrDefault(ref.getNamespace(), "");
-    }
-
-    private String camelcase(String s) {
-        return s.substring(0, 1).toUpperCase(Locale.ROOT) + s.substring(1);
-    }
-
-    private String constcase(String s) {
-        return s.replaceAll("(?<=[a-z])(?=[A-Z])", "_")
-                .replaceAll("_+", "_")
-                .toUpperCase(Locale.ROOT);
-    }
-
-    private String constName(QName ref) {
-        String prefix = prefix(ref);
-        if (!prefix.isEmpty())
-            prefix = prefix.toUpperCase(Locale.ROOT) + "_";
-        return prefix + constcase(ref.getName());
     }
 
 }

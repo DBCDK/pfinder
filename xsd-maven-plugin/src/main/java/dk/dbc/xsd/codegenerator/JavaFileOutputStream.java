@@ -29,13 +29,13 @@ import java.nio.file.Path;
  */
 public class JavaFileOutputStream extends FileOutputStream {
 
-    public JavaFileOutputStream(File targetFolder, String packageName, String className) throws IOException {
-        super(makeFile(targetFolder, packageName, className));
+    public JavaFileOutputStream(Context cxt, String className) throws IOException {
+        super(makeFile(cxt, className));
     }
 
-    private static File makeFile(File targetFolder, String packageName, String className) throws IOException {
-        Path p = targetFolder.toPath().toAbsolutePath();
-        for (String d : packageName.split("\\.")) {
+    private static File makeFile(Context cxt, String className) throws IOException {
+        Path p = cxt.getTargetFolder().toPath().toAbsolutePath();
+        for (String d : cxt.getPackageName().split("\\.")) {
             p = p.resolve(d);
         }
         File dir = p.toFile();

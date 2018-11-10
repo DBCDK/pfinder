@@ -24,14 +24,10 @@ import dk.dbc.xsd.mapping.SimpleType;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
-import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
@@ -51,113 +47,108 @@ public class Generator {
     public static final String XS = "http://www.w3.org/2001/XMLSchema";
 
     private final File sourceFile;
-    private final String packageName;
     private final List<String> bases;
-    private final File targetFolder;
-    private final String rootClass;
     private final List<String> skipNamespaces;
 
     private Schema schema;
-    private final HashMap<QName, Element> elements;
-    private final HashMap<QName, SimpleType> simpleTypes;
-    private final HashMap<QName, String> types;
-    private final HashMap<String, String> namespaces;
-    private Map<String, String> inverseNamespaces;
-    private QNameBuilder nameBuilder;
+    private final Context cxt;
 
     public Generator(File sourceFile, String packageName, List<String> bases, File targetFolder, String rootClass, List<String> skipNamespaces) {
         this.sourceFile = sourceFile;
-        this.packageName = packageName;
         this.bases = bases;
-        this.targetFolder = targetFolder;
-        this.rootClass = rootClass;
         this.skipNamespaces = skipNamespaces;
-        elements = new HashMap<>();
-        simpleTypes = new HashMap<>();
-        types = new HashMap<>();
-        namespaces = new HashMap<>();
+        this.cxt = new Context(targetFolder, packageName, rootClass);
     }
 
     public void run() throws Exception {
 
         unmarshall();
-        this.nameBuilder = new QNameBuilder(namespaces, schema.targetNamespace);
-        inverseNamespaces = namespaces.entrySet().stream()
-                .filter(e -> !skipNamespaces.contains(e.getValue()))
-                .collect(Collectors.toMap(e -> e.getValue(),
-                                          e -> e.getKey().toUpperCase()));
+        cxt.createNameBuilder(schema.targetNamespace);
+        cxt.createInverseNamespaces(skipNamespaces);
 
         elementsMap();
         simpleTypesMap();
 
-        simpleTypes.values().stream()
+        cxt.getSimpleTypes().values().stream()
                 .filter(e -> e.restriction != null)
                 .forEach(this::buildSimpleType);
-        elements.values().stream()
+
+        cxt.getElements().values().stream()
                 .filter(e -> e.type != null)
                 .forEach(this::buildSimpleType);
         elementAliasTypes();
+//        System.out.println("cxt.getSimpleTypes() = " + cxt.getSimpleTypes());
 
-        elements.values().stream()
+        cxt.getElements().values().stream()
                 .filter(el -> {
                     E e = new E(el.complexType);
                     return e.isSequence() &&
                            e.asSequence().size() == 1 &&
                            e.asSequence().get(0).isAny();
                 })
-                .forEach(e -> types.put(name(e.name), "ANY"));
+                .forEach(e -> cxt.getTypes().put(cxt.name(e.name), "ANY"));
 
-        Map<QName, String> doc = elements.values().stream()
-                .filter(e -> e.annotation != null && e.annotation.documentation != null && !e.annotation.documentation.isEmpty())
-                .collect(Collectors.toMap(e -> name(e.name),
-                                          e -> e.annotation.documentation.get(0)));
+        cxt.createDoc();
 
-        OutputRoot outputRoot = new OutputRoot(nameBuilder, targetFolder, packageName, rootClass, inverseNamespaces, types, doc, bases);
+        OutputRoot outputRoot = new OutputRoot(cxt, bases);
         outputRoot.build();
 
         HashSet<QName> seen = new HashSet<>();
         HashSet<QName> wanted = new HashSet<>();
         for (String base : bases) {
-            QName qName = name(base);
+            QName qName = cxt.name(base);
             seen.add(qName);
-            Element element = elements.get(qName);
-            Set<QName> referred = buildComplexType(element, doc);
+            Element element = cxt.getElements().get(qName);
+            Set<QName> referred = new ClassBuilder(cxt, element).build();
             wanted.addAll(referred);
         }
         wanted.removeAll(seen);
         while (!wanted.isEmpty()) {
             QName name = wanted.iterator().next();
-            String simpleType = types.get(name);
+            String simpleTypeName = cxt.getTypes().get(name);
             seen.add(name);
-            Element element = elements.get(name);
-            if (simpleType != null) {
-                if (simpleType.startsWith("enum:")) {
-                    SimpleType s = simpleTypes.get(name(element.type));
-                    EnumBuilder.build(nameBuilder, s, targetFolder, packageName, rootClass, simpleType.substring(5));
+            Element element = cxt.getElements().get(name);
+            if (simpleTypeName != null) {
+                if (simpleTypeName.startsWith("enum:")) {
+                    simpleTypeName = simpleTypeName.substring(5);
+                    SimpleType simpleType = cxt.getSimpleTypes().get(cxt.name(element.type));
+                    new EnumBuilder(cxt, simpleType, simpleTypeName).build();
                 } else {
-                    throw new MojoExecutionException("Cannot generate SimpleType: " + simpleType);
+                    throw new MojoExecutionException("Cannot generate SimpleType: " + simpleTypeName);
                 }
             } else {
-                Set<QName> referred = buildComplexType(element, doc);
+                Set<QName> referred = new ClassBuilder(cxt, element).build();
                 wanted.addAll(referred);
             }
             wanted.removeAll(seen);
         }
     }
 
+    private void elementsMap() {
+        for (Element element : schema.element) {
+            cxt.getElements().put(cxt.name(element.name), element);
+        }
+    }
+
+    private void simpleTypesMap() {
+        for (SimpleType simpleType : schema.simpleType) {
+            cxt.getSimpleTypes().put(cxt.name(simpleType.name), simpleType);
+        }
+    }
+
     private void elementAliasTypes() throws AssertionError {
         HashSet<Element> simpleNonXsTypes = new HashSet<>();
-        elements.values().stream()
-                .filter(e -> e.type != null && !XS.equals(name(e.type).getNamespace()))
+        cxt.getElements().values().stream()
+                .filter(e -> e.type != null && !XS.equals(cxt.name(e.type).getNamespace()))
                 .forEach(simpleNonXsTypes::add);
         while (!simpleNonXsTypes.isEmpty()) {
             int cnt = simpleNonXsTypes.size();
             for (Iterator<Element> iterator = simpleNonXsTypes.iterator() ; iterator.hasNext() ;) {
                 Element next = iterator.next();
-                QName qName = name(next.type);
-                String target = types.get(qName);
+                QName qName = cxt.name(next.type);
+                String target = cxt.getTypes().get(qName);
                 if (target != null) {
-                    types.put(name(next.name), target);
+                    cxt.getTypes().put(cxt.name(next.name), target);
                     iterator.remove();
                 }
             }
@@ -168,30 +159,30 @@ public class Generator {
     }
 
     private void buildSimpleType(Element type) {
-        QName name = name(type.name);
-        QName typeName = name(type.type);
+        QName name = cxt.name(type.name);
+        QName typeName = cxt.name(type.type);
         if (XS.equals(typeName.getNamespace())) {
             switch (typeName.getName()) {
                 case "string":
                 case "anyURI":
-                    types.put(name, "String");
+                    cxt.getTypes().put(name, "String");
                     break;
                 case "positiveInteger":
                 case "integer":
                 case "int":
-                    types.put(name, "int");
+                    cxt.getTypes().put(name, "int");
                     break;
                 case "decimal":
-                    types.put(name, "double");
+                    cxt.getTypes().put(name, "double");
                     break;
                 case "float":
-                    types.put(name, "float");
+                    cxt.getTypes().put(name, "float");
                     break;
                 case "date":
-                    types.put(name, "special:DATE");
+                    cxt.getTypes().put(name, "special:DATE");
                     break;
                 case "boolean":
-                    types.put(name, "boolean");
+                    cxt.getTypes().put(name, "boolean");
                     break;
                 default:
                     System.err.println("type = " + type);
@@ -201,36 +192,20 @@ public class Generator {
     }
 
     private void buildSimpleType(SimpleType type) {
-        QName name = name(type.name);
+        QName name = cxt.name(type.name);
         if (type.restriction != null) {
-            QName base = name(type.restriction.base);
+            QName base = cxt.name(type.restriction.base);
             switch (base.getName()) {
                 case "string":
                     if (type.restriction.enumeration != null) {
-                        types.put(name, "enum:" + camelcase(name.getName()).replaceAll("Type$", ""));
+                        cxt.getTypes().put(name, "enum:" + cxt.camelcase(name.getName()).replaceAll("Type$", ""));
                     } else {
-                        types.put(name, "String");
+                        cxt.getTypes().put(name, "String");
                     }
                     break;
                 default:
                     throw new AssertionError(base);
             }
-        }
-    }
-
-    private Set<QName> buildComplexType(Element type, Map<QName, String> doc) throws Exception {
-        return ClassBuilder.build(nameBuilder, targetFolder, packageName, rootClass, type, inverseNamespaces, types, doc);
-    }
-
-    private void simpleTypesMap() {
-        for (SimpleType simpleType : schema.simpleType) {
-            simpleTypes.put(name(simpleType.name), simpleType);
-        }
-    }
-
-    private void elementsMap() {
-        for (Element element : schema.element) {
-            elements.put(name(element.name), element);
         }
     }
 
@@ -248,7 +223,7 @@ public class Generator {
                         Namespace namespace = n.next();
                         String prefix = namespace.getPrefix();
                         String uri = namespace.getNamespaceURI();
-                        String stored = namespaces.computeIfAbsent(prefix, p -> uri);
+                        String stored = cxt.getNamespaces().computeIfAbsent(prefix, p -> uri);
                         if (!stored.equals(uri)) {
                             throw new RuntimeException(
                                     new XMLStreamException("Namespace prefix: " + prefix + " redefined",
@@ -268,11 +243,4 @@ public class Generator {
         }
     }
 
-    private String camelcase(String s) {
-        return s.substring(0, 1).toUpperCase(Locale.ROOT) + s.substring(1);
-    }
-
-    private QName name(String s) {
-        return nameBuilder.from(s);
-    }
 }
