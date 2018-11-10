@@ -1,14 +1,14 @@
 /*
  * Copyright (C) 2018 DBC A/S (http://dbc.dk/)
  *
- * This is part of opensearch-io-code-generator
+ * This is part of opensearch-xsd-maven-plugin
  *
- * opensearch-io-code-generator is free software: you can redistribute it with/or modify
+ * opensearch-xsd-maven-plugin is free software: you can redistribute it with/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * opensearch-io-code-generator is distributed in the hope that it will be useful,
+ * opensearch-xsd-maven-plugin is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -30,6 +30,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+
+import static java.util.Collections.EMPTY_SET;
 
 /**
  *
@@ -82,7 +84,7 @@ public class ClassBuilder {
         Set<QName> tags = new LinkedHashSet<>();
         stages.add(className);
         methodsInStage.put(className, new LinkedHashSet<>());
-        buildTree(e, className, returnValue, methodsInStage, stages, tags);
+        Set<QName> terminalFunctions = buildTree(e, className, returnValue, methodsInStage, stages, tags);
 
         if (false) {
             System.out.println("returnValue = ");
@@ -91,46 +93,47 @@ public class ClassBuilder {
             methodsInStage.entrySet().forEach(System.out::println);
             System.out.println("tags = ");
             tags.forEach(System.out::println);
+            System.out.println("terminalFunctions = ");
+            terminalFunctions.forEach(System.out::println);
         }
 
         try (JavaFileOutputStream os = new JavaFileOutputStream(targetFolder, packageName, className)) {
-            output(os, returnValue, methodsInStage, tags);
+            output(os, returnValue, methodsInStage, tags, terminalFunctions);
         }
         return referredNames;
     }
 
-    private void buildTree(E complex, String currentStage, Map<QName, String> returnValue, Map<String, Set<QName>> methodsInStage, Set<String> stages, Set<QName> tags) {
+    private Set<QName> buildTree(E complex, String currentStage, Map<QName, String> returnValue, Map<String, Set<QName>> methodsInStage, Set<String> stages, Set<QName> tags) {
         if (complex.isSequence()) {
-            buildTreeSequence(complex, currentStage, returnValue, methodsInStage, stages, tags);
+            return buildTreeSequence(complex, currentStage, returnValue, methodsInStage, stages, tags);
         } else if (complex.isChoice()) {
-            buildTreeChoice(complex, true, returnValue, methodsInStage, stages, tags);
+            return buildTreeChoice(complex, true, returnValue, methodsInStage, stages, tags);
         }
+        return EMPTY_SET;
     }
 
-    private void buildTreeSequence(E complex, String currentStage, Map<QName, String> returnValue, Map<String, Set<QName>> methodsInStage, Set<String> stages, Set<QName> tags) throws IllegalStateException {
+    private Set<QName> buildTreeSequence(E complex, String currentStage, Map<QName, String> returnValue, Map<String, Set<QName>> methodsInStage, Set<String> stages, Set<QName> tags) throws IllegalStateException {
+        Set<QName> terminalFunctions = new LinkedHashSet<>();
         List<E> seq = complex.asSequence();
-        for (Iterator<E> i = seq.iterator() ; i.hasNext() ;) {
+        boolean firstStage = true;
+        for (Iterator<E> i = seq.iterator() ; i.hasNext() ; firstStage = false) {
             E e = i.next();
             if (e.isSequence()) {
                 throw new IllegalStateException("xs:sequence nested in xs:sequence is unsupported");
             } else if (e.isChoice()) {
-                buildTreeChoice(e, !i.hasNext(), returnValue, methodsInStage, stages, tags);
+                terminalFunctions.addAll(buildTreeChoice(e, !i.hasNext(), returnValue, methodsInStage, stages, tags));
             } else {
-                QName ref;
-                if (e.isElement()) {
-                    ref = name(e.asElement().ref);
-                    tags.add(ref);
-                } else if (e.isAny()) {
-                    ref = name("_any");
-                } else {
-                    throw new IllegalStateException("Don't know: " + e);
-                }
+                QName ref = nameOfE(e, tags);
                 for (String stage : stages) {
                     methodsInStage.computeIfAbsent(stage, s -> new LinkedHashSet<>())
                             .add(ref);
                 }
-                if (i.hasNext()) {
-                    currentStage = "Stage." + camelcase(ref.getName());
+                if (e.isRepeatable()) {
+                    if (!firstStage)
+                        currentStage = "Stage." + camelcase(ref.getName());
+                } else if (i.hasNext()) {
+                    if (!firstStage)
+                        currentStage = "Stage." + camelcase(ref.getName());
                 } else {
                     currentStage = null;
                 }
@@ -139,14 +142,19 @@ public class ClassBuilder {
                             .add(ref);
                 }
                 returnValue.put(ref, currentStage);
-                if (!e.isOptional())
+                if (!e.isOptional()) {
                     stages.clear();
+                    terminalFunctions.clear();
+                }
                 stages.add(currentStage);
+                terminalFunctions.add(ref);
             }
         }
+        return terminalFunctions;
     }
 
-    private void buildTreeChoice(E complex, boolean lastElement, Map<QName, String> returnValue, Map<String, Set<QName>> methodsInStage, Set<String> stages, Set<QName> tags) throws IllegalStateException {
+    private Set<QName> buildTreeChoice(E complex, boolean lastElement, Map<QName, String> returnValue, Map<String, Set<QName>> methodsInStage, Set<String> stages, Set<QName> tags) throws IllegalStateException {
+        Set<QName> terminalFunctions = new LinkedHashSet<>();
         List<E> choice = complex.asChoice();
         boolean required = true;
         Set<String> exitStages = new LinkedHashSet<>();
@@ -158,15 +166,7 @@ public class ClassBuilder {
                 throw new IllegalStateException("xs:choice nested in xs:choice is unsupported");
             if (e.isOptional())
                 required = false;
-            QName ref;
-            if (e.isElement()) {
-                ref = name(e.asElement().ref);
-                tags.add(ref);
-            } else if (e.isAny()) {
-                ref = name("_any");
-            } else {
-                throw new IllegalStateException("Don't know: " + e);
-            }
+            QName ref = nameOfE(e, tags);
             for (String stage : stages) {
                 methodsInStage.computeIfAbsent(stage, s -> new LinkedHashSet<>())
                         .add(ref);
@@ -184,30 +184,47 @@ public class ClassBuilder {
                 exitStages.add(stage);
                 returnValue.put(ref, stage);
             }
+            terminalFunctions.add(ref);
         }
         if (required)
             stages.clear();
         stages.addAll(exitStages);
+        return terminalFunctions;
     }
 
-    private void output(OutputStream os, Map<QName, String> returnValue, Map<String, Set<QName>> methodsInStage, Set<QName> tags) throws IOException {
+    private QName nameOfE(E e, Set<QName> tags) throws IllegalStateException {
+        if (e.isElement()) {
+            QName ref = name(e.asElement().ref);
+            tags.add(ref);
+            return ref;
+        } else if (e.isAny()) {
+            return name("_any");
+        } else {
+            throw new IllegalStateException("Don't know: " + e);
+        }
+    }
+
+    private void output(OutputStream os, Map<QName, String> returnValue, Map<String, Set<QName>> methodsInStage, Set<QName> tags, Set<QName> terminalFunctions) throws IOException {
         CLASS_INI.segment(os, "TOP", replace);
-        outputRootClass(os, returnValue, methodsInStage);
-        CLASS_INI.segment(os, "SCOPE_CLASSES_START", replace);
-        outputStageClass(os, returnValue, methodsInStage);
-        CLASS_INI.segment(os, "SCOPE_CLASSES_END", replace);
+        outputRootClass(os, returnValue, methodsInStage, terminalFunctions);
+        CLASS_INI.segment(os, "ROOT_CLASS_END", replace);
+        if (methodsInStage.size() > 1) {
+            CLASS_INI.segment(os, "SCOPE_CLASSES_START", replace);
+            outputStageClass(os, returnValue, methodsInStage, terminalFunctions);
+            CLASS_INI.segment(os, "SCOPE_CLASSES_END", replace);
+        }
         outputTags(os, tags);
         CLASS_INI.segment(os, "BOTTOM", replace);
     }
 
-    private void outputRootClass(OutputStream os, Map<QName, String> returnValue, Map<String, Set<QName>> methodsInStage) throws IOException {
+    private void outputRootClass(OutputStream os, Map<QName, String> returnValue, Map<String, Set<QName>> methodsInStage, Set<QName> terminalFunctions) throws IOException {
         replace.with("indent", "");
         for (QName method : methodsInStage.get(className)) {
-            outputMethod(os, className, method, returnValue.get(method));
+            outputMethod(os, className, method, returnValue.get(method), terminalFunctions.contains(method));
         }
     }
 
-    private void outputStageClass(OutputStream os, Map<QName, String> returnValue, Map<String, Set<QName>> methodsInStage) throws IOException {
+    private void outputStageClass(OutputStream os, Map<QName, String> returnValue, Map<String, Set<QName>> methodsInStage, Set<QName> terminalFunctions) throws IOException {
         replace.with("indent", "        ");
         for (String stage : methodsInStage.keySet()) {
             if (stage.equals(className))
@@ -215,13 +232,13 @@ public class ClassBuilder {
             replace.with("scope", stage.substring(stage.indexOf('.') + 1));
             CLASS_INI.segment(os, "SCOPE_CLASS_START", replace);
             for (QName method : methodsInStage.get(stage)) {
-                outputMethod(os, stage, method, returnValue.get(method));
+                outputMethod(os, stage, method, returnValue.get(method), terminalFunctions.contains(method));
             }
             CLASS_INI.segment(os, "SCOPE_CLASS_END", replace);
         }
     }
 
-    public void outputMethod(OutputStream os, String scope, QName method, String returnScope) throws IOException {
+    public void outputMethod(OutputStream os, String scope, QName method, String returnScope, boolean isTerminal) throws IOException {
         boolean isVoid = returnScope == null;
         if (returnScope == null)
             returnScope = "void";
@@ -234,48 +251,26 @@ public class ClassBuilder {
         String type = types.get(method);
         if (type == null) {
             if (method.getName().equals("_any")) {
-                outputJavaDoc(os, "METHOD_COMMENT_ANY", documentation, isVoid);
-                if (!isVoid)
-                    CLASS_INI.segment(os, "METHOD_RETURNS", replace);
-                CLASS_INI.segment(os, "METHOD_ANY_NO_SCOPE", replace);
+                outputMethod(os, "METHOD_COMMENT_ANY", documentation, isVoid, isTerminal, "METHOD_ANY_NO_SCOPE");
             } else {
                 replace.with("type", camelcase(method.getName()));
-                outputJavaDoc(os, "METHOD_COMMENT_SCOPE", documentation, isVoid);
-                if (!isVoid)
-                    CLASS_INI.segment(os, "METHOD_RETURNS", replace);
-                CLASS_INI.segment(os, "METHOD_SCOPE", replace);
+                outputMethod(os, "METHOD_COMMENT_SCOPE", documentation, isVoid, isTerminal, "METHOD_SCOPE");
                 referredNames.add(method);
             }
         } else if (type.equals("String")) {
-            outputJavaDoc(os, "METHOD_COMMENT", documentation, isVoid);
-            if (!isVoid)
-                CLASS_INI.segment(os, "METHOD_RETURNS", replace);
-            CLASS_INI.segment(os, "METHOD_STRING", replace);
+            outputMethod(os, "METHOD_COMMENT", documentation, isVoid, isTerminal, "METHOD_STRING");
         } else if (type.equals("ANY")) {
-            outputJavaDoc(os, "METHOD_COMMENT_ANY", documentation, isVoid);
-            if (!isVoid)
-                CLASS_INI.segment(os, "METHOD_RETURNS", replace);
-            CLASS_INI.segment(os, "METHOD_ANY", replace);
+            outputMethod(os, "METHOD_COMMENT_ANY", documentation, isVoid, isTerminal, "METHOD_ANY");
         } else if (type.startsWith("special:")) {
-            outputJavaDoc(os, "METHOD_COMMENT", documentation, isVoid);
             String special = type.substring(8);
-            if (!isVoid)
-                CLASS_INI.segment(os, "METHOD_RETURNS", replace);
-            CLASS_INI.segment(os, "METHOD_SPECIAL_" + special, replace);
-            referredNames.add(method);
+            outputMethod(os, "METHOD_COMMENT", documentation, isVoid, isTerminal, "METHOD_SPECIAL_" + special);
         } else if (type.startsWith("enum:")) {
             replace.with("type", type.substring(5));
-            outputJavaDoc(os, "METHOD_COMMENT", documentation, isVoid);
-            if (!isVoid)
-                CLASS_INI.segment(os, "METHOD_RETURNS", replace);
-            CLASS_INI.segment(os, "METHOD_SIMPLE", replace);
+            outputMethod(os, "METHOD_COMMENT", documentation, isVoid, isTerminal, "METHOD_SIMPLE");
             referredNames.add(method);
         } else {
             replace.with("type", type);
-            outputJavaDoc(os, "METHOD_COMMENT", documentation, isVoid);
-            if (!isVoid)
-                CLASS_INI.segment(os, "METHOD_RETURNS", replace);
-            CLASS_INI.segment(os, "METHOD_SIMPLE", replace);
+            outputMethod(os, "METHOD_COMMENT", documentation, isVoid, isTerminal, "METHOD_SIMPLE");
         }
         if (!isVoid) {
             if (returnScope.equals(scope)) {
@@ -287,11 +282,15 @@ public class ClassBuilder {
         CLASS_INI.segment(os, "METHOD_END", replace);
     }
 
+    private void outputMethod(OutputStream os, String docSegment, String doc, boolean isVoid, boolean isTerminal, String methodSegment) throws IOException {
+        replace.with("doc", doc == null || doc.isEmpty() ? "No doc, please update xsd" : doc);
+        CLASS_INI.segment(os, docSegment + ( isVoid ? "_NORETURN" : "" ), replace);
+        if (!isTerminal)
+            CLASS_INI.segment(os, "METHOD_CHECK_RESULT", replace);
+        CLASS_INI.segment(os, methodSegment, replace);
+    }
+
     private void outputJavaDoc(OutputStream os, String segment, String documentation, boolean noreturn) throws IOException {
-        if (documentation != null) {
-            replace.with("doc", documentation);
-            CLASS_INI.segment(os, segment + ( noreturn ? "_NORETURN" : "" ), replace);
-        }
     }
 
     public void outputTags(OutputStream os, Set<QName> tags) throws IOException {

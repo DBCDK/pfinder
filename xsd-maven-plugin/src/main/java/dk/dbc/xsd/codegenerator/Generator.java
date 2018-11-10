@@ -1,14 +1,14 @@
 /*
  * Copyright (C) 2018 DBC A/S (http://dbc.dk/)
  *
- * This is part of opensearch-io-code-generator
+ * This is part of opensearch-xsd-maven-plugin
  *
- * opensearch-io-code-generator is free software: you can redistribute it and/or modify
+ * opensearch-xsd-maven-plugin is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * opensearch-io-code-generator is distributed in the hope that it will be useful,
+ * opensearch-xsd-maven-plugin is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -40,6 +40,7 @@ import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.Namespace;
 import javax.xml.stream.events.XMLEvent;
+import org.apache.maven.plugin.MojoExecutionException;
 
 /**
  *
@@ -133,6 +134,8 @@ public class Generator {
                 if (simpleType.startsWith("enum:")) {
                     SimpleType s = simpleTypes.get(name(element.type));
                     EnumBuilder.build(nameBuilder, s, targetFolder, packageName, rootClass, simpleType.substring(5));
+                } else {
+                    throw new MojoExecutionException("Cannot generate SimpleType: " + simpleType);
                 }
             } else {
                 Set<QName> referred = buildComplexType(element, doc);
