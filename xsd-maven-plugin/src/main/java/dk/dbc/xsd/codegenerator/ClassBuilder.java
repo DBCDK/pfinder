@@ -223,9 +223,11 @@ public class ClassBuilder {
         boolean isVoid = returnScope == null;
         if (returnScope == null)
             returnScope = "void";
+        boolean isSkip = !isVoid && !scope.equals(returnScope);
 
         replace.with("return", returnScope)
                 .with("method", method.getName())
+                .with("method_camelcase", cxt.camelcase(method))
                 .with("method_upper", cxt.constName(method));
         String documentation = cxt.getDoc(method);
 
@@ -261,6 +263,8 @@ public class ClassBuilder {
             }
         }
         CLASS_INI.segment(os, "METHOD_END", replace);
+        if (isSkip)
+            CLASS_INI.segment(os, "METHOD_SKIP", replace);
     }
 
     private void outputMethod(OutputStream os, String docSegment, String doc, boolean isVoid, boolean isTerminal, String methodSegment) throws IOException {
