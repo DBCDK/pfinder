@@ -271,9 +271,6 @@ public class ClassBuilder {
         CLASS_INI.segment(os, methodSegment, replace);
     }
 
-    private void outputJavaDoc(OutputStream os, String segment, String documentation, boolean noreturn) throws IOException {
-    }
-
     public void outputTags(OutputStream os, Set<QName> tags) throws IOException {
         CLASS_INI.segment(os, "TAGS_START", replace);
         for (QName tag : tags) {

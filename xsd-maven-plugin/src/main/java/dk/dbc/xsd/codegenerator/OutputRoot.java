@@ -97,7 +97,7 @@ public class OutputRoot {
     public void outputTags(OutputStream os, Set<QName> tags) throws IOException {
         String allNamespaces = cxt.getInverseNamespaces().values().stream()
                 .sorted()
-                .map(s -> "NS_" + s)
+                .map(s -> "NS_" + s.toUpperCase(Locale.ROOT))
                 .collect(Collectors.joining(", "));
         ROOT_INI.segment(os, "TAGS_START", replace);
         for (QName tag : tags) {

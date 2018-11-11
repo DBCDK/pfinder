@@ -49,7 +49,6 @@ public class Generator {
 
     private final File sourceFile;
     private final List<String> bases;
-    private final List<String> skipNamespaces;
 
     private Schema schema;
     private final Context cxt;
@@ -57,8 +56,7 @@ public class Generator {
     public Generator(Log log, File sourceFile, String packageName, List<String> bases, File targetFolder, String rootClass, List<String> skipNamespaces) {
         this.sourceFile = sourceFile;
         this.bases = bases;
-        this.skipNamespaces = skipNamespaces;
-        this.cxt = new Context(log, targetFolder, packageName, rootClass);
+        this.cxt = new Context(log, targetFolder, packageName, rootClass, skipNamespaces);
     }
 
     public void run() throws Exception {

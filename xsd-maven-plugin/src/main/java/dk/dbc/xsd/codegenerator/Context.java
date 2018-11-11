@@ -22,6 +22,7 @@ import dk.dbc.xsd.mapping.Element;
 import dk.dbc.xsd.mapping.SimpleType;
 import java.io.File;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -39,6 +40,7 @@ public class Context {
     private final File targetFolder;
     private final String packageName;
     private final String rootClass;
+    private final List<String> skipNamespaces;
 
     private final HashMap<QName, Element> elements;
     private final HashMap<QName, SimpleType> simpleTypes;
@@ -48,11 +50,12 @@ public class Context {
     private Map<QName, String> doc;
     private QNameBuilder nameBuilder;
 
-    public Context(Log log, File targetFolder, String packageName, String rootClass) {
+    public Context(Log log, File targetFolder, String packageName, String rootClass, List<String> skipNamespaces) {
         this.log = log;
         this.targetFolder = targetFolder;
         this.packageName = packageName;
         this.rootClass = rootClass;
+        this.skipNamespaces = skipNamespaces;
         elements = new HashMap<>();
         simpleTypes = new HashMap<>();
         types = new HashMap<>();
@@ -112,13 +115,6 @@ public class Context {
         types.put(name, type);
     }
 
-    /**
-     * Places the namespace in a map, and returns the first namespace this
-     * prefix has been given
-     *
-     * @param prefix wanted prefix
-     * @param uri
-     */
     public void storeNamespace(String prefix, String uri, XMLEvent event) {
         String old = namespaces.put(prefix, uri);
         if (old != null) {
@@ -126,7 +122,8 @@ public class Context {
                     new XMLStreamException("Namespace prefix: " + prefix + " redefined",
                                            event.getLocation()));
         }
-        inverseNamespaces.put(uri, prefix);
+        if (!skipNamespaces.contains(uri))
+            inverseNamespaces.put(uri, prefix.toUpperCase(Locale.ROOT));
     }
 
     public Map<String, String> getInverseNamespaces() {
