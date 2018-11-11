@@ -45,6 +45,7 @@ public class ClassBuilder {
     protected final String className;
     protected final Replace replace;
     private final Set<QName> referredNames;
+    private final Set<QName> optionalMethods;
 
     public ClassBuilder(Context cxt, Element element) {
         this.element = element;
@@ -53,6 +54,7 @@ public class ClassBuilder {
         this.replace = cxt.replacer()
                 .with("class", className);
         this.referredNames = new HashSet<>();
+        this.optionalMethods = new HashSet<>();
     }
 
     public Set<QName> build() throws IOException {
@@ -104,31 +106,32 @@ public class ClassBuilder {
             } else if (e.isChoice()) {
                 terminalFunctions.addAll(buildTreeChoice(e, !i.hasNext(), returnValue, methodsInStage, stages, tags));
             } else {
-                QName ref = nameOfE(e, tags);
+                QName method = nameOfE(e, tags);
                 for (String stage : stages) {
                     methodsInStage.computeIfAbsent(stage, s -> new LinkedHashSet<>())
-                            .add(ref);
+                            .add(method);
                 }
                 if (e.isRepeatable()) {
                     if (!firstStage)
-                        currentStage = "Stage." + cxt.camelcase(ref);
+                        currentStage = "Stage." + cxt.camelcase(method);
                 } else if (i.hasNext()) {
-                    if (!firstStage)
-                        currentStage = "Stage." + cxt.camelcase(ref);
+                    currentStage = "Stage." + cxt.camelcase(method);
                 } else {
                     currentStage = null;
                 }
                 if (e.isRepeatable() && currentStage != null) {
                     methodsInStage.computeIfAbsent(currentStage, s -> new LinkedHashSet<>())
-                            .add(ref);
+                            .add(method);
                 }
-                returnValue.put(ref, currentStage);
-                if (!e.isOptional()) {
+                returnValue.put(method, currentStage);
+                if (e.isOptional()) {
+                    optionalMethods.add(method);
+                } else {
                     stages.clear();
                     terminalFunctions.clear();
                 }
                 stages.add(currentStage);
-                terminalFunctions.add(ref);
+                terminalFunctions.add(method);
             }
         }
         return terminalFunctions;
@@ -223,7 +226,7 @@ public class ClassBuilder {
         boolean isVoid = returnScope == null;
         if (returnScope == null)
             returnScope = "void";
-        boolean isSkip = !isVoid && !scope.equals(returnScope);
+        boolean isSkip = !isVoid && optionalMethods.contains(method);
 
         replace.with("return", returnScope)
                 .with("method", method.getName())
