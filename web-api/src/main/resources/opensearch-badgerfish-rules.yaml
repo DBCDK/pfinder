@@ -5,11 +5,98 @@ ns:
             - Body
         Body:
             - searchResponse
+# Handwritten from xsd - should be scripted but not often changed
     "http://oss.dbc.dk/ns/opensearch":
+        infoResponse:
+            - infoGeneral
+            - infoRepositories
+            - infoObjectFormats
+            - infoSearchProfile
+            - infoSorts
+            - infoNameSpaces
         searchResponse:
             - result
-        result:
+            - error
+
+
+        collection:
             - resultPosition
-            - agency
-            - callback
+            - numberOfObjects
+        cqlIndex:
+            - indexName
+            - indexSlop
+        facet:
+            - facetName
+        facetTerm:
+            - frequence
+            - term
+        fieldNameAndWeight:
+            - fieldName
+            - weight
+        indexAlias:
+            - indexName
+            - indexSlop
+        infoGeneral:
+            - defaultRepository
+        infoNameSpace:
+            - prefix
+            - uri
+        infoRepository:
+            - repository
+            - cqlIndexDoc
+        infoSearchProfile:
+            - relationTypes
+        infoSort:
+            - sort
+            - internalType
+            - rankDetails
+            - sortDetails
+        linkObject:
+            - accessType
+            - access
+            - linkTo
+        object:
+            - error
+            - identifier
+            - primaryObjectIdentifier
+            - recordStatus
+            - creationDate
+            - holdingsCount
+            - lendingLibraries
+            - relations
+            - formatsAvailable
+            - objectsAvailable
+            - queryResultExplanation
+        queryDebugResult:
+            - rawQueryString
+            - queryString
+            - parsedQuery
+            - parsedQueryString
+            - rankFrequency
+        rankDetails:
+            - word
+            - phrase
+        relation:
+            - relationType
+            - relationUri
+            - linkObject
+            - relationObject
+        relationObject:
+            - object
+        result:
             - hitCount
+            - collectionCount
+            - more
+            - facetResult
+            - queryDebugResult
+            - statInfo
+        searchCollection:
+            - searchCollectionName
+            - searchCollectionIdentifier
+            - searchCollectionIsSearched
+        statInfo:
+            - fedoraRecordsCached
+            - fedoraRecordsRead
+            - time
+            - trackingId
+            
