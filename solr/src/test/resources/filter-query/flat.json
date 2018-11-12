@@ -1,0 +1,64 @@
+[
+    {
+        "query": "b.a=m",
+        "expected": [
+            [
+                "b.a:m"
+            ],
+            []
+        ]
+    },
+    {
+        "title": "nested query with only filter part",
+        "query": "b.a=m and h.a=123456",
+        "expected": [
+            [
+                "b.a:m", 
+                "t:h AND h.agencyId:123456"
+            ],
+            [
+                "{!parent which=\"t:m\" v=$q1}"
+            ]
+        ]
+    },
+    {
+        "title": "nested query with or",
+        "query": "b.a=m and h.a=123456 and (hh.foo=bar1 or hh.foo=bar2)",
+        "expected": [
+            [
+                "b.a:m",
+                "t:h AND h.agencyId:123456"
+            ],
+            [
+                "{!parent which=\"t:m\" v=$q1} AND (hh.foo:bar1 OR hh.foo:bar2)"
+            ]
+        ]
+    },
+    {
+        "title": "nested query with complex",
+        "query": "b.a=m and h.a=123456 and (hh.foo=bar1 or (hh.foo=bar2 and hh.foo=bar3))",
+        "expected": [
+            [
+                "b.a:m",
+                "t:h AND h.agencyId:123456"
+            ],
+            [
+                "{!parent which=\"t:m\" v=$q1} AND (hh.foo:bar1 OR (hh.foo:bar2 AND hh.foo:bar3))"
+            ]
+        ]
+    } ,
+    {
+        "title": "nested query with complex and extra filter",
+        "query": "b.a=m and h.a=123456 and other=foo and (hh.foo=bar1 or (hh.foo=bar2 and hh.foo=bar3))",
+        "expected": [
+            [
+                "b.a:m",
+                "t:h AND h.agencyId:123456"
+            ],
+            [
+                "{!parent which=\"t:m\" v=$q1} AND (hh.foo:bar1 OR (hh.foo:bar2 AND hh.foo:bar3))",
+                "other:foo"
+            ]
+        ]
+    } 
+]
