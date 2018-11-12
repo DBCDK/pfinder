@@ -1,0 +1,32 @@
+
+fields:
+    default:
+        solrName: default
+    n.:
+        nestedGroup: nest
+        solrName: nest.
+
+    p:
+        solrName: phrase
+        type: PHRASE
+    
+    t:
+        solrName: term
+        type: TEXT
+    
+    i:
+        solrName: int
+        type: NUMBER
+    
+    d:
+        solrName: date
+        type: DATE
+        
+# GROUPING FOR NESTED
+    type:
+        solrName: type
+    
+nested:
+    nest:
+        query: '{!parent which="type:m" v=$q%d}'
+        cql: 'type=n'

@@ -1,0 +1,14 @@
+[
+    {
+        "query": "p adj 'one'",
+        "exception": "Unsupported combination of relation and index"
+    },
+    {
+        "query": "t adj 'one'",
+        "expected": "term:one"
+    },
+    {
+        "query": "t adj 'one two three'",
+        "expected": "term:\"one\\ two\\ three\"~0"
+    }
+]

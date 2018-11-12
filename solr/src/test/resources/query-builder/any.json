@@ -1,0 +1,14 @@
+[
+    {
+        "query": "t any 'one two three'",
+        "expected": "term:(one OR two OR three)"
+    },
+    {
+        "query": "t aNy 'one two three'",
+        "expected": "term:(one OR two OR three)"
+    },
+    {
+        "query": "p any 'one two three'",
+        "exception": "Unsupported combination of relation and index"
+    }
+]

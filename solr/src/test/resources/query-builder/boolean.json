@@ -1,0 +1,21 @@
+[
+    {
+        "query": "one and two or three",
+        "expected": "(default:one AND default:two) OR default:three"
+    },
+    {
+        "query": "one or two and three",
+        "expected": "(default:one OR default:two) AND default:three"
+    },
+    {
+        "query": "one or (two and three and four)",
+        "expected": "default:one OR (default:two AND default:three AND default:four)"
+    },
+    {
+        "query": "one or (two and three and four) and n.a=foo",
+        "expected": [
+            "(default:one OR (default:two AND default:three AND default:four)) AND {!parent which=\"type:m\" v=$q1}",
+            "type:n AND nest.a:foo"
+        ]
+    }
+]

@@ -1,0 +1,26 @@
+[
+    {
+        "query": "t = 'one'",
+        "expected": "term:one"
+    },
+    {
+        "query": "t = 'one two three'",
+        "expected": "term:\"one\\ two\\ three\"~9999"
+    },
+    {
+        "query": "t =/string 'one'",
+        "expected": "term:one"
+    },
+    {
+        "query": "t =/string 'one two thr?e'",
+        "expected": "term:\"one\\ two\\ thr\\?e\"~0"
+    },
+    {
+        "query": "t =/word 'one'",
+        "expected": "term:one"
+    },
+    {
+        "query": "t =/word 'one two three'",
+        "expected": "term:\"one\\ two\\ three\"~9999"
+    }
+]
