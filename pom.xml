@@ -29,6 +29,7 @@
     <modules>
         <module>cql</module>
         <module>solr</module>
+        <module>service</module>
     </modules>
 
     <dependencies>
