@@ -30,45 +30,27 @@ import static dk.dbc.opensearch.input.RequestHelpers.*;
  *
  * @author DBC {@literal <dbc.dk>}
  */
-public class CommonRequest {
+public class CommonRequest extends BaseRequest {
 
     private static final Function<String, String> OUTPUT_TYPES = makeTrimOneOf("outputType", "xml", "json", "soap");
     private static final Function<String, String> RELATION_DATAS = makeTrimOneOf("relationData", "type", "uri", "full");
 
-    private Integer agency = null;
-    private final List<String> profile = new ArrayList<>();
     private Integer showAgency = null;
     private Authentication authentication = null;
-    private String callback = null;
     private Boolean includeHoldingsCount = null;
-    private OutputType outputType = null;
     private RelationDataType relationData = null;
     private String repository = null;
-    private String trackingId = null;
 
     public CommonRequest() {
     }
 
     public void validate() throws XMLStreamException {
-        if (agency == null)
-            throw new XMLStreamException("property 'agency' is required in a searchRequest");
-        if (profile.isEmpty())
-            throw new XMLStreamException("property 'profile' is required in a searchRequest");
+        super.validate();
     }
 
     //
     // Setters and getters
     //
-
-    public void setAgency(String content, Location location) throws XMLStreamException {
-        agency = get("agency", agency, content, location,
-                     s -> Integer.parseUnsignedInt(trimNotEmpty(s), 10));
-    }
-
-    public Integer getAgency() {
-        return agency;
-    }
-
     public void setAuthentication(Authentication content, Location location) throws XMLStreamException {
         authentication = get("authentication", authentication, content, location);
     }
@@ -76,15 +58,6 @@ public class CommonRequest {
     public Authentication getAuthentication() {
         return authentication;
     }
-
-    public void setCallback(String content, Location location) throws XMLStreamException {
-        callback = get("callback", callback, content, location);
-    }
-
-    public String getCallback() {
-        return callback;
-    }
-
 
     public void setIncludeHoldingsCount(String content, Location location) throws XMLStreamException {
         includeHoldingsCount = get("includeHoldingsCount", includeHoldingsCount, content, location,
@@ -94,31 +67,6 @@ public class CommonRequest {
     public Boolean getIncludeHoldingsCount() {
         return includeHoldingsCount;
     }
-
-
-    public void setOutputType(OutputType outputType) {
-        this.outputType = outputType;
-    }
-
-    public void setOutputType(String content, Location location) throws XMLStreamException {
-        outputType = OutputType.from(
-                get("outputType", nullOrString(outputType), content, location,
-                    OUTPUT_TYPES));
-    }
-
-    public OutputType getOutputType() {
-        return outputType;
-    }
-
-    public void addProfile(String content, Location location) throws XMLStreamException {
-        profile.add(get("profile", content, location,
-                        s -> trimNotEmptyOneWord(s)));
-    }
-
-    public List<String> getProfiles() {
-        return profile;
-    }
-
 
     public void setRepository(String content, Location location) throws XMLStreamException {
         repository = get("repository", repository, content, location,
@@ -148,21 +96,12 @@ public class CommonRequest {
         return showAgency;
     }
 
-    public void setTrackingId(String trackingId) {
-        this.trackingId = trackingId;
-    }
-
-    public void setTrackingId(String content, Location location) throws XMLStreamException {
-        trackingId = get("trackingId", trackingId, content, location);
-    }
-
-    public String getTrackingId() {
-        return trackingId;
-    }
-
     @Override
     public String toString() {
-        return "CommonRequest{" + "agency=" + agency + ", profile=" + profile + ", showAgency=" + showAgency + ", authentication=" + authentication + ", callback=" + callback + ", includeHoldingsCount=" + includeHoldingsCount + ", outputType=" + outputType + ", relationData=" + relationData + ", repository=" + repository + ", trackingId=" + trackingId + '}';
+        String s = super.toString();
+        return "CommonRequest{" +
+               "showAgency=" + showAgency + ", authentication=" + authentication + ", includeHoldingsCount=" + includeHoldingsCount + ", relationData=" + relationData + ", repository=" + repository +
+               s.substring(s.indexOf('{'));
     }
 
 }

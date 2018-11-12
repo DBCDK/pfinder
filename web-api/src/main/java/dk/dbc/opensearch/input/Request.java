@@ -46,7 +46,7 @@ public class Request {
     private static final String SOAP_URI = "http://schemas.xmlsoap.org/soap/envelope/";
 
     private final XMLEventReader reader;
-    private CommonRequest request;
+    private BaseRequest request;
 
     public Request(InputStream is) throws XMLStreamException {
         this.reader = I.createFilteredReader(
@@ -54,6 +54,22 @@ public class Request {
                 e -> ( EVENT_FILTER & ( 1 << e.getEventType() ) ) == 0
         );
         readOuterMost();
+    }
+
+    public boolean isGetObjectRequest() {
+        return request instanceof GetObjectRequest;
+    }
+
+    public GetObjectRequest asGetObjectRequest() {
+        return (GetObjectRequest) request;
+    }
+
+    public boolean isInfoRequest() {
+        return request instanceof InfoRequest;
+    }
+
+    public InfoRequest asInfoRequest() {
+        return (InfoRequest) request;
     }
 
     public boolean isSearchRequest() {
@@ -65,6 +81,10 @@ public class Request {
     }
 
     public CommonRequest asCommonRequest() {
+        return (CommonRequest) request;
+    }
+
+    public BaseRequest asBaseRequest() {
         return request;
     }
 
@@ -136,10 +156,14 @@ public class Request {
     }
 
     private void readRequest(XMLEvent event) throws XMLStreamException {
-        if (isOpen(event, OS_URI, "searchRequest")) {
+        if (isOpen(event, OS_URI, "getObjectRequest")) {
+            request = readGetObjectRequest();
+        } else if (isOpen(event, OS_URI, "infoRequest")) {
+            request = readInfoRequest();
+        } else if (isOpen(event, OS_URI, "searchRequest")) {
             request = readSearchRequest();
         } else {
-            throw new XMLStreamException("Expected OpenSearch searchRequest", event.getLocation());
+            throw new XMLStreamException("Expected OpenSearch getObjectRequest, infoRequest or searchRequest", event.getLocation());
         }
     }
 
@@ -160,83 +184,172 @@ public class Request {
                 throw new XMLStreamException("Expected searchRequest close or request parameter", event.getLocation());
             }
             String name = qname.getLocalPart();
-            switch (name) {
-                case "allObjects":
-                    searchRequest.setAllObjects(readTextAndClose(name), location);
-                    break;
-                case "agency":
-                    searchRequest.setAgency(readTextAndClose(name), location);
-                    break;
-                case "callback":
-                    searchRequest.setCallback(readTextAndClose(name), location);
-                    break;
-                case "collapseHitsThreshold":
-                    searchRequest.setCollapseHitsThreshold(readTextAndClose(name), location);
-                    break;
-                case "collectionType":
-                    searchRequest.setCollectionType(readTextAndClose(name), location);
-                    break;
-                case "includeHoldingsCount":
-                    searchRequest.setIncludeHoldingsCount(readTextAndClose(name), location);
-                    break;
-                case "objectFormat":
-                    searchRequest.addObjectFormat(readTextAndClose(name), location);
-                    break;
-                case "outputType":
-                    searchRequest.setOutputType(readTextAndClose(name), location);
-                    break;
-                case "profile":
-                    searchRequest.addProfile(readTextAndClose(name), location);
-                    break;
-                case "query":
-                    searchRequest.setQuery(readTextAndClose(name), location);
-                    break;
-                case "queryDebug":
-                    searchRequest.setQueryDebug(readTextAndClose(name), location);
-                    break;
-                case "queryLanguage":
-                    searchRequest.setQueryLanguage(readTextAndClose(name), location);
-                    break;
-                case "relationData":
-                    searchRequest.setRelationData(readTextAndClose(name), location);
-                    break;
-                case "repository":
-                    searchRequest.setRepository(readTextAndClose(name), location);
-                    break;
-                case "showAgency":
-                    searchRequest.setShowAgency(readTextAndClose(name), location);
-                    break;
-                case "sort":
-                    searchRequest.addSort(readTextAndClose(name), location);
-                    break;
-                case "start":
-                    searchRequest.setStart(readTextAndClose(name), location);
-                    break;
-                case "stepValue":
-                    searchRequest.setStepValue(readTextAndClose(name), location);
-                    break;
-                case "trackingId":
-                    searchRequest.setTrackingId(readTextAndClose(name), location);
-                    break;
+            if (!readCommonRequestElement(searchRequest, name, location)) {
+                switch (name) {
+                    case "allObjects":
+                        searchRequest.setAllObjects(readTextAndClose(name), location);
+                        break;
+                    case "collapseHitsThreshold":
+                        searchRequest.setCollapseHitsThreshold(readTextAndClose(name), location);
+                        break;
+                    case "collectionType":
+                        searchRequest.setCollectionType(readTextAndClose(name), location);
+                        break;
+                    case "objectFormat":
+                        searchRequest.addObjectFormat(readTextAndClose(name), location);
+                        break;
+                    case "query":
+                        searchRequest.setQuery(readTextAndClose(name), location);
+                        break;
+                    case "queryDebug":
+                        searchRequest.setQueryDebug(readTextAndClose(name), location);
+                        break;
+                    case "queryLanguage":
+                        searchRequest.setQueryLanguage(readTextAndClose(name), location);
+                        break;
+                    case "sort":
+                        searchRequest.addSort(readTextAndClose(name), location);
+                        break;
+                    case "start":
+                        searchRequest.setStart(readTextAndClose(name), location);
+                        break;
+                    case "stepValue":
+                        searchRequest.setStepValue(readTextAndClose(name), location);
+                        break;
 
-                case "authentication":
-                    searchRequest.setAuthentication(readAuthentication(location), location);
-                    break;
-                case "facets":
-                    searchRequest.addFacets(readFacets(location), location);
-                    break;
-                case "userDefinedBoost":
-                    searchRequest.addUserDefinedBoost(readUserDefinedBoost(location), location);
-                    break;
-                case "userDefinedRanking":
-                    searchRequest.addUserDefinedRanking(readUserDefinedRanking(location), location);
-                    break;
-                default:
-                    throw new XMLStreamException("Unknown request property " + name, event.getLocation());
+                    case "facets":
+                        searchRequest.addFacets(readFacets(location), location);
+                        break;
+                    case "userDefinedBoost":
+                        searchRequest.addUserDefinedBoost(readUserDefinedBoost(location), location);
+                        break;
+                    case "userDefinedRanking":
+                        searchRequest.addUserDefinedRanking(readUserDefinedRanking(location), location);
+                        break;
+                    default:
+                        throw new XMLStreamException("Unknown request property " + name, event.getLocation());
+                }
             }
         }
         searchRequest.validate();
         return searchRequest;
+    }
+
+    private GetObjectRequest readGetObjectRequest() throws XMLStreamException {
+        GetObjectRequest getObjectRequest = new GetObjectRequest();
+        for (;;) {
+            XMLEvent event = reader.nextTag();
+            if (isClose(event, OS_URI, "getObjectRequest")) {
+                break;
+            }
+            if (!event.isStartElement()) {
+                throw new XMLStreamException("Expected getObjectRequest close or request parameter", event.getLocation());
+            }
+            StartElement element = event.asStartElement();
+            Location location = element.getLocation();
+            QName qname = element.getName();
+            if (!OS_URI.equals(qname.getNamespaceURI())) {
+                throw new XMLStreamException("Expected getObjectRequest close or request parameter", event.getLocation());
+            }
+            String name = qname.getLocalPart();
+            if (!readCommonRequestElement(getObjectRequest, name, location)) {
+                switch (name) {
+                    case "identifier":
+                        getObjectRequest.addIdentifier(readTextAndClose(name), location);
+                        break;
+                    case "localIdentifier":
+                        getObjectRequest.addLocalIdentifier(readTextAndClose(name), location);
+                        break;
+                    case "objectFormat":
+                        getObjectRequest.addObjectFormat(readTextAndClose(name), location);
+                        break;
+
+                    case "agencyAndLocalIdentifer":
+                        getObjectRequest.addAgencyAndLocalIdentifier(readAgencyAndLocalIdentifier(location), location);
+                        break;
+                    default:
+                        throw new XMLStreamException("Unknown request property " + name, event.getLocation());
+                }
+            }
+        }
+        getObjectRequest.validate();
+        return getObjectRequest;
+    }
+
+    private InfoRequest readInfoRequest() throws XMLStreamException {
+        InfoRequest infoRequest = new InfoRequest();
+        for (;;) {
+            XMLEvent event = reader.nextTag();
+            if (isClose(event, OS_URI, "getObjectRequest")) {
+                break;
+            }
+            if (!event.isStartElement()) {
+                throw new XMLStreamException("Expected infoRequest close or request parameter", event.getLocation());
+            }
+            StartElement element = event.asStartElement();
+            Location location = element.getLocation();
+            QName qname = element.getName();
+            if (!OS_URI.equals(qname.getNamespaceURI())) {
+                throw new XMLStreamException("Expected infoRequest close or request parameter", event.getLocation());
+            }
+            String name = qname.getLocalPart();
+            if (!readBaseRequestElement(infoRequest, name, location)) {
+                switch (name) {
+                    // This is unnessecary, but to be like other request parsers...
+                    default:
+                        throw new XMLStreamException("Unknown request property " + name, event.getLocation());
+                }
+            }
+        }
+        infoRequest.validate();
+        return infoRequest;
+    }
+
+    private boolean readBaseRequestElement(BaseRequest getObjectRequest, String name, Location location) throws XMLStreamException {
+        switch (name) {
+            case "agency":
+                getObjectRequest.setAgency(readTextAndClose(name), location);
+                return true;
+            case "callback":
+                getObjectRequest.setCallback(readTextAndClose(name), location);
+                return true;
+            case "outputType":
+                getObjectRequest.setOutputType(readTextAndClose(name), location);
+                return true;
+            case "profile":
+                getObjectRequest.addProfile(readTextAndClose(name), location);
+                return true;
+            case "trackingId":
+                getObjectRequest.setTrackingId(readTextAndClose(name), location);
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    private boolean readCommonRequestElement(CommonRequest getObjectRequest, String name, Location location) throws XMLStreamException {
+        if (readBaseRequestElement(getObjectRequest, name, location))
+            return true;
+        switch (name) {
+            case "includeHoldingsCount":
+                getObjectRequest.setIncludeHoldingsCount(readTextAndClose(name), location);
+                return true;
+            case "relationData":
+                getObjectRequest.setRelationData(readTextAndClose(name), location);
+                return true;
+            case "repository":
+                getObjectRequest.setRepository(readTextAndClose(name), location);
+                return true;
+            case "showAgency":
+                getObjectRequest.setShowAgency(readTextAndClose(name), location);
+                return true;
+
+            case "authentication":
+                getObjectRequest.setAuthentication(readAuthentication(location), location);
+                return true;
+            default:
+                return false;
+        }
     }
 
     private Authentication readAuthentication(Location openLocation) throws XMLStreamException {
@@ -415,6 +528,12 @@ public class Request {
         }
         rankField.validate(openLocation);
         return rankField;
+    }
+
+    private AgencyAndLocalIdentifier readAgencyAndLocalIdentifier(Location location) {
+        AgencyAndLocalIdentifier agencyAndLocalIdentifier = new AgencyAndLocalIdentifier();
+
+        return agencyAndLocalIdentifier;
     }
 
     private static boolean isOpen(XMLEvent element, String namespace, String name) {
