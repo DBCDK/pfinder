@@ -1,0 +1,25 @@
+
+fields:
+    default:
+        solrName: ""
+    h.a:
+        solrName: h.agencyId
+        type: NUMBER
+    h.:
+        nestedGroup: hold
+        type: text
+    hh.:
+        filterQuery: holdingsitem
+    t:
+        internal: true
+    b.:
+    other:
+        filterQuery: other
+        
+
+nested:
+    hold:
+        query: '{!parent which="t:m" v=$q%d}'
+        cql: 't=h'
+        filterQuery: holdingsitem
+
