@@ -37,11 +37,32 @@ import static javax.xml.stream.XMLStreamConstants.*;
 public class Request {
 
     private static final XMLInputFactory I = makeXMLInputFactory();
-    private static final int EVENT_FILTER = ( 1 << PROCESSING_INSTRUCTION ) | ( 1 << COMMENT ) | ( 1 << SPACE ) |
-                                            ( 1 << START_DOCUMENT ) | ( 1 << END_DOCUMENT ) |
-                                            ( 1 << ENTITY_REFERENCE ) | ( 1 << ATTRIBUTE ) |
-                                            ( 1 << DTD ) | ( 1 << NAMESPACE ) | ( 1 << NOTATION_DECLARATION ) |
-                                            ( 1 << ENTITY_DECLARATION );
+    private static final int EVENT_FILTER =
+            maskOf(PROCESSING_INSTRUCTION) | maskOf(COMMENT) | maskOf(SPACE) |
+            maskOf(START_DOCUMENT) | maskOf(END_DOCUMENT) |
+            maskOf(ENTITY_REFERENCE) | maskOf(ATTRIBUTE) |
+            maskOf(DTD) | maskOf(NAMESPACE) | maskOf(NOTATION_DECLARATION) |
+            maskOf(ENTITY_DECLARATION);
+
+    /**
+     * Convert a bit number into a bit mask
+     *
+     * @param bitNo the bit that should be set
+     * @return integer with the bit set
+     */
+    private static int maskOf(int bitNo) {
+        return 1 << bitNo;
+    }
+
+    /**
+     * Check if a bit is set in EVENT_FILTER
+     *
+     * @param bitNo this bit to test
+     * @return if the bit is set
+     */
+    private static boolean isWanted(int bitNo) {
+        return ( EVENT_FILTER & maskOf(bitNo) ) != 0;
+    }
     private static final String OS_URI = "http://oss.dbc.dk/ns/opensearch";
     private static final String SOAP_URI = "http://schemas.xmlsoap.org/soap/envelope/";
 
@@ -51,8 +72,7 @@ public class Request {
     public Request(InputStream is) throws XMLStreamException {
         this.reader = I.createFilteredReader(
                 I.createXMLEventReader(is),
-                e -> ( EVENT_FILTER & ( 1 << e.getEventType() ) ) == 0
-        );
+                e -> isWanted(e.getEventType()));
         readOuterMost();
     }
 
