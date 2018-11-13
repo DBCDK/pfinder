@@ -96,6 +96,11 @@ public class BadgerFishSingle {
         return new BadgerFishSingle(mapping);
     }
 
+    @Override
+    public String toString() {
+        return "BadgerFishSingle{" + "mapping=" + mapping + '}';
+    }
+
     public static class Mapping {
 
         public Set<String> all;
