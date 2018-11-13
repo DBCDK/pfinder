@@ -280,7 +280,7 @@ public class Request {
         InfoRequest infoRequest = new InfoRequest();
         for (;;) {
             XMLEvent event = reader.nextTag();
-            if (isClose(event, OS_URI, "getObjectRequest")) {
+            if (isClose(event, OS_URI, "infoRequest")) {
                 break;
             }
             if (!event.isStartElement()) {
