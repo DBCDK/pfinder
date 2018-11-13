@@ -34,7 +34,7 @@ import static javax.xml.stream.XMLStreamConstants.*;
  *
  * @author DBC {@literal <dbc.dk>}
  */
-public class Request {
+public class RequestParser {
 
     private static final XMLInputFactory I = makeXMLInputFactory();
     private static final int EVENT_FILTER =
@@ -69,7 +69,7 @@ public class Request {
     private final XMLEventReader reader;
     private BaseRequest request;
 
-    public Request(InputStream is) throws XMLStreamException {
+    public RequestParser(InputStream is) throws XMLStreamException {
         this.reader = I.createFilteredReader(
                 I.createXMLEventReader(is),
                 e -> isWanted(e.getEventType()));

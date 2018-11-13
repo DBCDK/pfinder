@@ -40,14 +40,14 @@ import static org.junit.Assert.*;
  * @author DBC {@literal <dbc.dk>}
  */
 @RunWith(Parameterized.class)
-public class RequestTest {
+public class RequestParserTest {
 
     private static final XMLInputFactory I = makeXMLInputFactory();
 
     private final String name;
     private final String fileName;
 
-    public RequestTest(String name, String fileName) {
+    public RequestParserTest(String name, String fileName) {
         this.name = name;
         this.fileName = fileName;
     }
@@ -57,7 +57,7 @@ public class RequestTest {
         System.out.println(name);
         String actual = "";
         try {
-            Request request = new Request(new FileInputStream(fileName));
+            RequestParser request = new RequestParser(new FileInputStream(fileName));
             if (request.isSearchRequest())
                 actual = request.asSearchRequest().toString();
         } catch (Exception ex) {
@@ -78,7 +78,7 @@ public class RequestTest {
 
     @Parameterized.Parameters(name = "{0}")
     public static Collection<Object[]> tests() throws Exception {
-        File base = new File(RequestTest.class.getClassLoader().getResource("input").toURI());
+        File base = new File(RequestParserTest.class.getClassLoader().getResource("input").toURI());
         Path basePath = base.toPath();
         return Arrays.stream(base.listFiles())
                 .filter(f -> f.getName().endsWith(".xml"))
