@@ -40,11 +40,32 @@ public class BadgerFishWriter implements XMLEventWriter {
 
     private static final JsonFactory JSON_FACTORY = new JsonFactory();
 
-    private static final int EVENT_FILTER = ( 1 << PROCESSING_INSTRUCTION ) | ( 1 << COMMENT ) | ( 1 << SPACE ) |
-                                            ( 1 << START_DOCUMENT ) | ( 1 << END_DOCUMENT ) |
-                                            ( 1 << ENTITY_REFERENCE ) | ( 1 << ATTRIBUTE ) |
-                                            ( 1 << DTD ) | ( 1 << NAMESPACE ) | ( 1 << NOTATION_DECLARATION ) |
-                                            ( 1 << ENTITY_DECLARATION );
+    private static final int EVENT_FILTER =
+            maskOf(PROCESSING_INSTRUCTION) | maskOf(COMMENT) | maskOf(SPACE) |
+            maskOf(START_DOCUMENT) | maskOf(END_DOCUMENT) |
+            maskOf(ENTITY_REFERENCE) | maskOf(ATTRIBUTE) |
+            maskOf(DTD) | maskOf(NAMESPACE) | maskOf(NOTATION_DECLARATION) |
+            maskOf(ENTITY_DECLARATION);
+
+    /**
+     * Convert a bit number into a bit mask
+     *
+     * @param bitNo the bit that should be set
+     * @return integer with the bit set
+     */
+    private static int maskOf(int bitNo) {
+        return 1 << bitNo;
+    }
+
+    /**
+     * Check if a bit is set in EVENT_FILTER
+     *
+     * @param bitNo this bit to test
+     * @return if the bit is set
+     */
+    private static boolean isWanted(int bitNo) {
+        return ( EVENT_FILTER & maskOf(bitNo) ) != 0;
+    }
 
     private final Context cxt;
 
@@ -95,7 +116,7 @@ public class BadgerFishWriter implements XMLEventWriter {
 
     @Override
     public void add(XMLEvent event) throws XMLStreamException {
-        if (( EVENT_FILTER & ( 1 << event.getEventType() ) ) == 0) {
+        if (isWanted(event.getEventType())) {
             try {
                 cxt.stack.consume(event);
             } catch (IOException ex) {
