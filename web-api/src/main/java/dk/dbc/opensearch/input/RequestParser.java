@@ -43,6 +43,8 @@ public class RequestParser {
             maskOf(ENTITY_REFERENCE) | maskOf(ATTRIBUTE) |
             maskOf(DTD) | maskOf(NAMESPACE) | maskOf(NOTATION_DECLARATION) |
             maskOf(ENTITY_DECLARATION);
+    private static final String OS_URI = "http://oss.dbc.dk/ns/opensearch";
+    private static final String SOAP_URI = "http://schemas.xmlsoap.org/soap/envelope/";
 
     /**
      * Convert a bit number into a bit mask
@@ -63,8 +65,6 @@ public class RequestParser {
     private static boolean isWanted(int bitNo) {
         return ( EVENT_FILTER & maskOf(bitNo) ) != 0;
     }
-    private static final String OS_URI = "http://oss.dbc.dk/ns/opensearch";
-    private static final String SOAP_URI = "http://schemas.xmlsoap.org/soap/envelope/";
 
     private final XMLEventReader reader;
     private BaseRequest request;
