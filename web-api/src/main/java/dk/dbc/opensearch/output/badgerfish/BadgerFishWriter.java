@@ -40,7 +40,7 @@ public class BadgerFishWriter implements XMLEventWriter {
 
     private static final JsonFactory JSON_FACTORY = new JsonFactory();
 
-    private static final int EVENT_FILTER =
+    private static final int UNWANTED_EVENTS =
             maskOf(PROCESSING_INSTRUCTION) | maskOf(COMMENT) | maskOf(SPACE) |
             maskOf(START_DOCUMENT) | maskOf(END_DOCUMENT) |
             maskOf(ENTITY_REFERENCE) | maskOf(ATTRIBUTE) |
@@ -64,7 +64,7 @@ public class BadgerFishWriter implements XMLEventWriter {
      * @return if the bit is set
      */
     private static boolean isWanted(int bitNo) {
-        return ( EVENT_FILTER & maskOf(bitNo) ) != 0;
+        return ( UNWANTED_EVENTS & maskOf(bitNo) ) == 0;
     }
 
     private final Context cxt;

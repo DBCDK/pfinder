@@ -61,6 +61,7 @@ public class RequestParserTest {
             if (request.isSearchRequest())
                 actual = request.asSearchRequest().toString();
         } catch (Exception ex) {
+            System.out.println(ex.toString());
             actual = ex.getMessage();
         }
         System.out.println(actual);
