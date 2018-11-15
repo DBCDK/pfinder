@@ -33,7 +33,8 @@ import static dk.dbc.opensearch.input.RequestHelpers.*;
  */
 public class SearchRequest extends CommonRequest {
 
-    private static final Function<String, String> COLLECTION_TYPES = makeTrimOneOf("collectionType", "work", "work-1", "manifestation");
+    private static final Function<String, CollectionType> COLLECTION_TYPES = mapTo(makeTrimOneOf("collectionType", "work", "work-1", "manifestation"),
+                                                                                   CollectionType::from);
     private static final Function<String, String> QUERY_LANGUAGES = makeTrimOneOf("queryLanguage", "cqleng", "bestMatch");
     private static final Function<String, String> OBJECT_FORMATS = makeTrimOneOf("objectFormat",
                                                                                  "dkabm", "docbook", "marcxchange", "opensearchobject", "briefWorkDisplay",
@@ -86,9 +87,8 @@ public class SearchRequest extends CommonRequest {
     }
 
     public void setCollectionType(String content, Location location) throws XMLStreamException {
-        collectionType = CollectionType.from(
-                get("collectionType", nullOrString(collectionType), content, location,
-                    COLLECTION_TYPES));
+        collectionType = get("collectionType", collectionType, content, location,
+                             COLLECTION_TYPES);
     }
 
     public CollectionType getCollectionType() {

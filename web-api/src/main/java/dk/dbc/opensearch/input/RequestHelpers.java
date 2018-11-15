@@ -84,6 +84,10 @@ class RequestHelpers {
         };
     }
 
+    static <T> Function<String, T> mapTo(Function<String, String> func, Function<String, T> map) {
+        return (String t) -> map.apply(func.apply(t));
+    }
+
     static String trimNotEmpty(String content) {
         content = content.trim();
         if (content.isEmpty()) {
@@ -108,7 +112,4 @@ class RequestHelpers {
         throw new IllegalArgumentException("Value should be one of: " + errorList);
     }
 
-    static String nullOrString(Object value) {
-        return value == null ? null : "VALUE_WAS_SET";
-    }
 }

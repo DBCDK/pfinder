@@ -32,7 +32,8 @@ import static dk.dbc.opensearch.input.RequestHelpers.*;
  */
 public class Facets {
 
-    private static final Function<String, String> FACET_SORT_TYPES = makeTrimOneOf("facetSort", "count", "index");
+    private static final Function<String, FacetSortType> FACET_SORT_TYPES = mapTo(makeTrimOneOf("facetSort", "count", "index"),
+                                                                                  FacetSortType::from);
 
     private Integer numberOfTerms = null;
     private FacetSortType facetSort = null;
@@ -75,9 +76,8 @@ public class Facets {
     }
 
     public void setFacetSort(String content, Location location) throws XMLStreamException {
-        facetSort = FacetSortType.from(
-                get("facetSort", nullOrString(facetSort), content, location,
-                    FACET_SORT_TYPES));
+        facetSort = get("facetSort", facetSort, content, location,
+                    FACET_SORT_TYPES);
     }
 
     public FacetSortType getFacetSort() {

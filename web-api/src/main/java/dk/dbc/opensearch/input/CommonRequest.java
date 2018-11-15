@@ -18,8 +18,6 @@
  */
 package dk.dbc.opensearch.input;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.function.Function;
 import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamException;
@@ -32,8 +30,8 @@ import static dk.dbc.opensearch.input.RequestHelpers.*;
  */
 public class CommonRequest extends BaseRequest {
 
-    private static final Function<String, String> OUTPUT_TYPES = makeTrimOneOf("outputType", "xml", "json", "soap");
-    private static final Function<String, String> RELATION_DATAS = makeTrimOneOf("relationData", "type", "uri", "full");
+    private static final Function<String, RelationDataType> RELATION_DATAS = mapTo(makeTrimOneOf("relationData", "type", "uri", "full"),
+                                                                                   RelationDataType::from);
 
     private Integer showAgency = null;
     private Authentication authentication = null;
@@ -78,9 +76,8 @@ public class CommonRequest extends BaseRequest {
     }
 
     public void setRelationData(String content, Location location) throws XMLStreamException {
-        relationData = RelationDataType.from(
-                get("relationData", nullOrString(relationData), content, location,
-                    RELATION_DATAS));
+        relationData = get("relationData", relationData, content, location,
+                           RELATION_DATAS);
     }
 
     public RelationDataType getRelationData() {

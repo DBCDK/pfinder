@@ -32,7 +32,8 @@ import static dk.dbc.opensearch.input.RequestHelpers.*;
  */
 public class BaseRequest {
 
-    private static final Function<String, String> OUTPUT_TYPES = makeTrimOneOf("outputType", "xml", "json", "soap");
+    private static final Function<String, OutputType> OUTPUT_TYPES = mapTo(makeTrimOneOf("outputType", "xml", "json", "soap"),
+                                                                           OutputType::from);
 
     private Integer agency = null;
     private final List<String> profile = new ArrayList<>();
@@ -75,9 +76,8 @@ public class BaseRequest {
     }
 
     public void setOutputType(String content, Location location) throws XMLStreamException {
-        outputType = OutputType.from(
-                get("outputType", nullOrString(outputType), content, location,
-                    OUTPUT_TYPES));
+        outputType = get("outputType", outputType, content, location,
+                         OUTPUT_TYPES);
     }
 
     public OutputType getOutputType() {
