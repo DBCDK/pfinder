@@ -191,18 +191,15 @@ public class RequestParser {
         SearchRequest searchRequest = new SearchRequest();
         for (;;) {
             XMLEvent event = reader.nextTag();
-            if (isClose(event, OS_URI, "searchRequest")) {
+            if (isClose(event, OS_URI, "searchRequest"))
                 break;
-            }
-            if (!event.isStartElement()) {
+            if (!event.isStartElement())
                 throw new XMLStreamException("Expected searchRequest close or request parameter", event.getLocation());
-            }
             StartElement element = event.asStartElement();
             Location location = element.getLocation();
             QName qname = element.getName();
-            if (!OS_URI.equals(qname.getNamespaceURI())) {
+            if (!OS_URI.equals(qname.getNamespaceURI()))
                 throw new XMLStreamException("Expected searchRequest close or request parameter", event.getLocation());
-            }
             String name = qname.getLocalPart();
             if (!readCommonRequestElement(searchRequest, name, location)) {
                 switch (name) {
@@ -259,18 +256,15 @@ public class RequestParser {
         GetObjectRequest getObjectRequest = new GetObjectRequest();
         for (;;) {
             XMLEvent event = reader.nextTag();
-            if (isClose(event, OS_URI, "getObjectRequest")) {
+            if (isClose(event, OS_URI, "getObjectRequest"))
                 break;
-            }
-            if (!event.isStartElement()) {
+            if (!event.isStartElement())
                 throw new XMLStreamException("Expected getObjectRequest close or request parameter", event.getLocation());
-            }
             StartElement element = event.asStartElement();
             Location location = element.getLocation();
             QName qname = element.getName();
-            if (!OS_URI.equals(qname.getNamespaceURI())) {
+            if (!OS_URI.equals(qname.getNamespaceURI()))
                 throw new XMLStreamException("Expected getObjectRequest close or request parameter", event.getLocation());
-            }
             String name = qname.getLocalPart();
             if (!readCommonRequestElement(getObjectRequest, name, location)) {
                 switch (name) {
@@ -300,18 +294,15 @@ public class RequestParser {
         InfoRequest infoRequest = new InfoRequest();
         for (;;) {
             XMLEvent event = reader.nextTag();
-            if (isClose(event, OS_URI, "infoRequest")) {
+            if (isClose(event, OS_URI, "infoRequest"))
                 break;
-            }
-            if (!event.isStartElement()) {
+            if (!event.isStartElement())
                 throw new XMLStreamException("Expected infoRequest close or request parameter", event.getLocation());
-            }
             StartElement element = event.asStartElement();
             Location location = element.getLocation();
             QName qname = element.getName();
-            if (!OS_URI.equals(qname.getNamespaceURI())) {
+            if (!OS_URI.equals(qname.getNamespaceURI()))
                 throw new XMLStreamException("Expected infoRequest close or request parameter", event.getLocation());
-            }
             String name = qname.getLocalPart();
             if (!readBaseRequestElement(infoRequest, name, location)) {
                 switch (name) {
@@ -376,18 +367,15 @@ public class RequestParser {
         Authentication auth = new Authentication();
         for (;;) {
             XMLEvent event = reader.nextTag();
-            if (isClose(event, OS_URI, "authentication")) {
+            if (isClose(event, OS_URI, "authentication"))
                 break;
-            }
-            if (!event.isStartElement()) {
+            if (!event.isStartElement())
                 throw new XMLStreamException("Expected authentication close or authentication parameter", event.getLocation());
-            }
             StartElement element = event.asStartElement();
             Location location = element.getLocation();
             QName qname = element.getName();
-            if (!OS_URI.equals(qname.getNamespaceURI())) {
+            if (!OS_URI.equals(qname.getNamespaceURI()))
                 throw new XMLStreamException("Expected authentication close or authentication parameter", event.getLocation());
-            }
             String name = qname.getLocalPart();
             switch (name) {
                 case "groupIdAut":
@@ -411,18 +399,15 @@ public class RequestParser {
         Facets facet = new Facets();
         for (;;) {
             XMLEvent event = reader.nextTag();
-            if (isClose(event, OS_URI, "facets")) {
+            if (isClose(event, OS_URI, "facets"))
                 break;
-            }
-            if (!event.isStartElement()) {
+            if (!event.isStartElement())
                 throw new XMLStreamException("Expected facets close or facets parameter", event.getLocation());
-            }
             StartElement element = event.asStartElement();
             Location location = element.getLocation();
             QName qname = element.getName();
-            if (!OS_URI.equals(qname.getNamespaceURI())) {
+            if (!OS_URI.equals(qname.getNamespaceURI()))
                 throw new XMLStreamException("Expected facets close or facets parameter", event.getLocation());
-            }
             String name = qname.getLocalPart();
             switch (name) {
                 case "facetName":
@@ -452,18 +437,15 @@ public class RequestParser {
         UserDefinedRanking userDefinedRanking = new UserDefinedRanking();
         for (;;) {
             XMLEvent event = reader.nextTag();
-            if (isClose(event, OS_URI, "userDefinedRanking")) {
+            if (isClose(event, OS_URI, "userDefinedRanking"))
                 break;
-            }
-            if (!event.isStartElement()) {
+            if (!event.isStartElement())
                 throw new XMLStreamException("Expected userDefinedRanking close or userDefinedRanking parameter", event.getLocation());
-            }
             StartElement element = event.asStartElement();
             Location location = element.getLocation();
             QName qname = element.getName();
-            if (!OS_URI.equals(qname.getNamespaceURI())) {
+            if (!OS_URI.equals(qname.getNamespaceURI()))
                 throw new XMLStreamException("Expected userDefinedRanking close or userDefinedRanking parameter", event.getLocation());
-            }
             String name = qname.getLocalPart();
             switch (name) {
                 case "tieValue":
@@ -484,18 +466,15 @@ public class RequestParser {
         UserDefinedBoost boost = new UserDefinedBoost();
         for (;;) {
             XMLEvent event = reader.nextTag();
-            if (isClose(event, OS_URI, "userDefinedBoost")) {
+            if (isClose(event, OS_URI, "userDefinedBoost"))
                 break;
-            }
-            if (!event.isStartElement()) {
+            if (!event.isStartElement())
                 throw new XMLStreamException("Expected userDefinedBoost close or userDefinedBoost parameter", event.getLocation());
-            }
             StartElement element = event.asStartElement();
             Location location = element.getLocation();
             QName qname = element.getName();
-            if (!OS_URI.equals(qname.getNamespaceURI())) {
+            if (!OS_URI.equals(qname.getNamespaceURI()))
                 throw new XMLStreamException("Expected userDefinedBoost close or userDefinedBoost parameter", event.getLocation());
-            }
             String name = qname.getLocalPart();
             switch (name) {
                 case "fieldName":
@@ -519,18 +498,15 @@ public class RequestParser {
         RankField rankField = new RankField();
         for (;;) {
             XMLEvent event = reader.nextTag();
-            if (isClose(event, OS_URI, "rankField")) {
+            if (isClose(event, OS_URI, "rankField"))
                 break;
-            }
-            if (!event.isStartElement()) {
+            if (!event.isStartElement())
                 throw new XMLStreamException("Expected rankField close or rankField parameter", event.getLocation());
-            }
             StartElement element = event.asStartElement();
             Location location = element.getLocation();
             QName qname = element.getName();
-            if (!OS_URI.equals(qname.getNamespaceURI())) {
+            if (!OS_URI.equals(qname.getNamespaceURI()))
                 throw new XMLStreamException("Expected rankField close or rankField parameter", event.getLocation());
-            }
             String name = qname.getLocalPart();
             switch (name) {
                 case "fieldName":
@@ -550,25 +526,46 @@ public class RequestParser {
         return rankField;
     }
 
-    private AgencyAndLocalIdentifier readAgencyAndLocalIdentifier(Location location) {
+    private AgencyAndLocalIdentifier readAgencyAndLocalIdentifier(Location openLocation) throws XMLStreamException {
         AgencyAndLocalIdentifier agencyAndLocalIdentifier = new AgencyAndLocalIdentifier();
-
+        for (;;) {
+            XMLEvent event = reader.nextTag();
+            if (isClose(event, OS_URI, "agencyAndLocalIdentifier"))
+                break;
+            if (!event.isStartElement())
+                throw new XMLStreamException("Expected agencyAndLocalIdentifier close or agencyAndLocalIdentifier parameter", event.getLocation());
+            StartElement element = event.asStartElement();
+            Location location = element.getLocation();
+            QName qname = element.getName();
+            if (!OS_URI.equals(qname.getNamespaceURI()))
+                throw new XMLStreamException("Expected agencyAndLocalIdentifier close or agencyAndLocalIdentifier parameter", event.getLocation());
+            String name = qname.getLocalPart();
+            switch (name) {
+                case "agency":
+                    agencyAndLocalIdentifier.setAgency(readTextAndClose(name), location);
+                    break;
+                case "localIdentifier":
+                    agencyAndLocalIdentifier.setLocalIdentifier(readTextAndClose(name), location);
+                    break;
+                default:
+                    throw new XMLStreamException("Unknown agencyAndLocalIdentifier property " + name, event.getLocation());
+            }
+        }
+        agencyAndLocalIdentifier.validate(openLocation);
         return agencyAndLocalIdentifier;
     }
 
     private static boolean isOpen(XMLEvent element, String namespace, String name) {
-        if (!element.isStartElement()) {
+        if (!element.isStartElement())
             return false;
-        }
         QName qname = element.asStartElement().getName();
         return namespace.equals(qname.getNamespaceURI()) &&
                name.equals(qname.getLocalPart());
     }
 
     private static boolean isClose(XMLEvent element, String namespace, String name) {
-        if (!element.isEndElement()) {
+        if (!element.isEndElement())
             return false;
-        }
         QName qname = element.asEndElement().getName();
         return namespace.equals(qname.getNamespaceURI()) &&
                name.equals(qname.getLocalPart());
@@ -579,14 +576,12 @@ public class RequestParser {
         XMLEvent event;
         for (;;) {
             event = reader.nextEvent();
-            if (!event.isCharacters()) {
+            if (!event.isCharacters())
                 break;
-            }
             buffer.append(event.asCharacters().getData());
         }
-        if (!isClose(event, OS_URI, name)) {
+        if (!isClose(event, OS_URI, name))
             throw new XMLStreamException("Expected " + name + " close", event.getLocation());
-        }
         return buffer.toString();
     }
 
