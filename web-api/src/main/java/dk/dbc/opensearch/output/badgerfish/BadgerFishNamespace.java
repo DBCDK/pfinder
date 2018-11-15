@@ -35,7 +35,7 @@ class BadgerFishNamespace {
 
     private final JsonGenerator generator;
     private final Map<String, String> defaults;
-    private int no;
+    private int unresolvedNamespaceNumber;
 
     private final HashMap<String, String> mappings = new HashMap<>();
 
@@ -59,7 +59,7 @@ class BadgerFishNamespace {
     BadgerFishNamespace(JsonGenerator generator, Map<String, String> defaults) {
         this.generator = generator;
         this.defaults = defaults;
-        this.no = 1;
+        this.unresolvedNamespaceNumber = 1;
     }
 
     /**
@@ -77,7 +77,7 @@ class BadgerFishNamespace {
         String mapping = mappings.computeIfAbsent(uri, s -> {
                                               String ret = defaults.get(s);
                                               if (ret == null)
-                                                  ret = "ns" + no++;
+                                                  ret = "ns" + unresolvedNamespaceNumber++;
                                               return ret;
                                           });
         generator.writeStringField("@", mapping);
