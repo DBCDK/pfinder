@@ -27,7 +27,7 @@ import javax.xml.stream.events.XMLEvent;
  *
  * @author DBC {@literal <dbc.dk>}
  */
-class EventConsumer {
+abstract class EventConsumer {
 
     protected final Context context;
     protected boolean completed;
