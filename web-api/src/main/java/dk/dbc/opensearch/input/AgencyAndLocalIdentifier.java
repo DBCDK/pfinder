@@ -21,8 +21,7 @@ package dk.dbc.opensearch.input;
 import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamException;
 
-import static dk.dbc.opensearch.input.RequestHelpers.get;
-import static dk.dbc.opensearch.input.RequestHelpers.trimNotEmpty;
+import static dk.dbc.opensearch.input.RequestHelpers.*;
 
 /**
  *
