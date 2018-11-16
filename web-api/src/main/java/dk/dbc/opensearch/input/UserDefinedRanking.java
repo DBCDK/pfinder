@@ -29,7 +29,12 @@ import static dk.dbc.opensearch.input.RequestHelpers.*;
  *
  * @author DBC {@literal <dbc.dk>}
  */
-public class UserDefinedRanking {
+public class UserDefinedRanking implements InputPart {
+
+    public static final InputPartFactory<UserDefinedRanking> FACTORY =
+            new InputPartFactory<>(UserDefinedRanking::new)
+                    .with("tieValue", obj -> obj::setTieValue)
+                    .with("rankField", RankField.FACTORY, obj -> obj::addRankField);
 
     private Double tieValue = null;
     private final List<RankField> rankField = new ArrayList<>();

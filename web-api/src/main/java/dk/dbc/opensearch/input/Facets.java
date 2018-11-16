@@ -30,7 +30,15 @@ import static dk.dbc.opensearch.input.RequestHelpers.*;
  *
  * @author DBC {@literal <dbc.dk>}
  */
-public class Facets {
+public class Facets implements InputPart {
+
+    public static final InputPartFactory<Facets> FACTORY =
+            new InputPartFactory<>(Facets::new)
+                    .with("numberOfTerms", obj -> obj::setNumberOfTerms)
+                    .with("facetSort", obj -> obj::setFacetSort)
+                    .with("facetMinCount", obj -> obj::setFacetMinCount)
+                    .with("facetName", obj -> obj::addFacetName)
+                    .with("facetOffset", obj -> obj::setFacetOffset);
 
     private static final Function<String, FacetSortType> FACET_SORT_TYPES = mapTo(makeTrimOneOf("facetSort", "count", "index"),
                                                                                   FacetSortType::from);
@@ -44,7 +52,7 @@ public class Facets {
     public Facets() {
     }
 
-    void validate(Location location) {
+    public void validate(Location location) {
     }
 
     public void setFacetMinCount(String content, Location location) throws XMLStreamException {
@@ -77,7 +85,7 @@ public class Facets {
 
     public void setFacetSort(String content, Location location) throws XMLStreamException {
         facetSort = get("facetSort", facetSort, content, location,
-                    FACET_SORT_TYPES);
+                        FACET_SORT_TYPES);
     }
 
     public FacetSortType getFacetSort() {

@@ -27,7 +27,13 @@ import static dk.dbc.opensearch.input.RequestHelpers.*;
  *
  * @author DBC {@literal <dbc.dk>}
  */
-public class UserDefinedBoost {
+public class UserDefinedBoost implements InputPart {
+
+    public static final InputPartFactory<UserDefinedBoost> FACTORY =
+            new InputPartFactory<>(UserDefinedBoost::new)
+                    .with("fieldName", obj -> obj::setFieldName)
+                    .with("fieldValue", obj -> obj::setFieldValue)
+                    .with("weight", obj -> obj::setWeight);
 
     private String fieldName = null;
     private String fieldValue = null;

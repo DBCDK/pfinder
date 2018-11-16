@@ -42,8 +42,8 @@ public class CommonRequest extends BaseRequest {
     public CommonRequest() {
     }
 
-    public void validate() throws XMLStreamException {
-        super.validate();
+    public void validate(Location location) throws XMLStreamException {
+        super.validate(location);
     }
 
     //

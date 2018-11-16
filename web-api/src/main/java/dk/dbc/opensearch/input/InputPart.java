@@ -18,19 +18,14 @@
  */
 package dk.dbc.opensearch.input;
 
+import javax.xml.stream.Location;
+import javax.xml.stream.XMLStreamException;
+
 /**
  *
  * @author DBC {@literal <dbc.dk>}
  */
-public class InfoRequest extends BaseRequest {
+public interface InputPart {
 
-    public static final InputPartFactory<InfoRequest> FACTORY =
-            new InputPartFactory<>(InfoRequest::new)
-                    // Base
-                    .with("agency", obj -> obj::setAgency)
-                    .with("profile", obj -> obj::addProfile)
-                    .with("callback", obj -> obj::setCallback)
-                    .with("outputType", obj -> obj::setOutputType)
-                    .with("trackingId", obj -> obj::setTrackingId);
-
+    public void validate(Location openLocation) throws XMLStreamException;
 }

@@ -30,7 +30,7 @@ import static dk.dbc.opensearch.input.RequestHelpers.*;
  *
  * @author DBC {@literal <dbc.dk>}
  */
-public class BaseRequest {
+public class BaseRequest implements InputPart {
 
     private static final Function<String, OutputType> OUTPUT_TYPES = mapTo(makeTrimOneOf("outputType", "xml", "json", "soap"),
                                                                            OutputType::from);
@@ -44,7 +44,7 @@ public class BaseRequest {
     public BaseRequest() {
     }
 
-    public void validate() throws XMLStreamException {
+    public void validate(Location location) throws XMLStreamException {
         if (agency == null)
             throw new XMLStreamException("property 'agency' is required in a searchRequest");
         if (profile.isEmpty())

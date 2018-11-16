@@ -27,7 +27,13 @@ import static dk.dbc.opensearch.input.RequestHelpers.*;
  *
  * @author DBC {@literal <dbc.dk>}
  */
-public class Authentication {
+public class Authentication implements InputPart {
+
+    public static final InputPartFactory<Authentication> FACTORY =
+            new InputPartFactory<>(Authentication::new)
+                    .with("groupIdAut", obj -> obj::setGroupIdAut)
+                    .with("passwordAut", obj -> obj::setPasswordAut)
+                    .with("userIdAut", obj -> obj::setUserIdAut);
 
     private String groupIdAut = null;
     private String passwordAut = null;

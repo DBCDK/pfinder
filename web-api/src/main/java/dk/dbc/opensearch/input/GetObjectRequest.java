@@ -19,9 +19,7 @@
 package dk.dbc.opensearch.input;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.function.Function;
 import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamException;
 
@@ -33,6 +31,26 @@ import static dk.dbc.opensearch.input.RequestHelpers.*;
  */
 public class GetObjectRequest extends CommonRequest {
 
+    public static final InputPartFactory<GetObjectRequest> FACTORY =
+            new InputPartFactory<>(GetObjectRequest::new)
+                    // Base
+                    .with("agency", obj -> obj::setAgency)
+                    .with("profile", obj -> obj::addProfile)
+                    .with("callback", obj -> obj::setCallback)
+                    .with("outputType", obj -> obj::setOutputType)
+                    .with("trackingId", obj -> obj::setTrackingId)
+                    // Common
+                    .with("showAgency", obj -> obj::setShowAgency)
+                    .with("authentication", Authentication.FACTORY, obj -> obj::setAuthentication)
+                    .with("includeHoldingsCount", obj -> obj::setIncludeHoldingsCount)
+                    .with("relationData", obj -> obj::setRelationData)
+                    .with("repository", obj -> obj::setRepository)
+                    // Local
+                    .with("identifier", obj -> obj::addIdentifier)
+                    .with("localIdentifier", obj -> obj::addLocalIdentifier)
+                    .with("agencyAndLocalIdentifier", AgencyAndLocalIdentifier.READER, obj -> obj::addAgencyAndLocalIdentifier)
+                    .with("objectFormat", obj -> obj::addObjectFormat);
+
     private List<String> identifier = null;
     private List<String> localIdentifier = null;
     private List<AgencyAndLocalIdentifier> agencyAndLocalIdentifier = null;
@@ -42,8 +60,8 @@ public class GetObjectRequest extends CommonRequest {
     }
 
     @Override
-    public void validate() throws XMLStreamException {
-        super.validate();
+    public void validate(Location location) throws XMLStreamException {
+        super.validate(location);
         if (identifier == null ||
             localIdentifier == null ||
             agencyAndLocalIdentifier == null)

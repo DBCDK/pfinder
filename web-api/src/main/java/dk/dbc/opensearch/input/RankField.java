@@ -27,7 +27,13 @@ import static dk.dbc.opensearch.input.RequestHelpers.*;
  *
  * @author DBC {@literal <dbc.dk>}
  */
-public class RankField {
+public class RankField implements InputPart {
+
+    public static final InputPartFactory<RankField> FACTORY =
+            new InputPartFactory<>(RankField::new)
+                    .with("fieldName", obj -> obj::setFieldName)
+                    .with("fieldType", obj -> obj::setFieldType)
+                    .with("weight", obj -> obj::setWeight);
 
     private String fieldName = null;
     private String fieldType = null;

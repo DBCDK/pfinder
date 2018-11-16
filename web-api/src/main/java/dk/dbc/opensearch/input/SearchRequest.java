@@ -33,6 +33,35 @@ import static dk.dbc.opensearch.input.RequestHelpers.*;
  */
 public class SearchRequest extends CommonRequest {
 
+    public static final InputPartFactory<SearchRequest> FACTORY =
+            new InputPartFactory<>(SearchRequest::new)
+                    // Base
+                    .with("agency", obj -> obj::setAgency)
+                    .with("profile", obj -> obj::addProfile)
+                    .with("callback", obj -> obj::setCallback)
+                    .with("outputType", obj -> obj::setOutputType)
+                    .with("trackingId", obj -> obj::setTrackingId)
+                    // Common
+                    .with("showAgency", obj -> obj::setShowAgency)
+                    .with("authentication", Authentication.FACTORY, obj -> obj::setAuthentication)
+                    .with("includeHoldingsCount", obj -> obj::setIncludeHoldingsCount)
+                    .with("relationData", obj -> obj::setRelationData)
+                    .with("repository", obj -> obj::setRepository)
+                    // Local
+                    .with("allObjects", obj -> obj::setAllObjects)
+                    .with("collapseHitsThreshold", obj -> obj::setCollapseHitsThreshold)
+                    .with("collectionType", obj -> obj::setCollectionType)
+                    .with("facets", Facets.FACTORY, obj -> obj::addFacets)
+                    .with("objectFormat", obj -> obj::addObjectFormat)
+                    .with("query", obj -> obj::setQuery)
+                    .with("queryDebug", obj -> obj::setQueryDebug)
+                    .with("queryLanguage", obj -> obj::setQueryLanguage)
+                    .with("sort", obj -> obj::addSort)
+                    .with("start", obj -> obj::setStart)
+                    .with("stepValue", obj -> obj::setStepValue)
+                    .with("userDefinedBoost", UserDefinedBoost.FACTORY, obj -> obj::addUserDefinedBoost)
+                    .with("userDefinedRanking", UserDefinedRanking.FACTORY, obj -> obj::addUserDefinedRanking);
+
     private static final Function<String, CollectionType> COLLECTION_TYPES = mapTo(makeTrimOneOf("collectionType", "work", "work-1", "manifestation"),
                                                                                    CollectionType::from);
     private static final Function<String, String> QUERY_LANGUAGES = makeTrimOneOf("queryLanguage", "cqleng", "bestMatch");
@@ -59,8 +88,8 @@ public class SearchRequest extends CommonRequest {
     }
 
     @Override
-    public void validate() throws XMLStreamException {
-        super.validate();
+    public void validate(Location location) throws XMLStreamException {
+        super.validate(location);
         if (query == null)
             throw new XMLStreamException("property 'query' is required in a searchRequest");
     }
@@ -170,7 +199,7 @@ public class SearchRequest extends CommonRequest {
         return stepValue == null ? 10 : stepValue;
     }
 
-    void addUserDefinedBoost(UserDefinedBoost content, Location location) {
+    public void addUserDefinedBoost(UserDefinedBoost content, Location location) {
         if (userDefinedBoost == null)
             userDefinedBoost = new ArrayList<>();
         userDefinedBoost.add(content);

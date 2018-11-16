@@ -28,7 +28,13 @@ import static dk.dbc.opensearch.input.RequestHelpers.trimNotEmpty;
  *
  * @author DBC {@literal <dbc.dk>}
  */
-public class AgencyAndLocalIdentifier {
+public class AgencyAndLocalIdentifier implements InputPart {
+
+        public static final InputPartFactory<AgencyAndLocalIdentifier> READER =
+            new InputPartFactory<>(AgencyAndLocalIdentifier::new)
+                .with("agency", obj -> obj::setAgency)
+                .with("localIdentifier", obj -> obj::setLocalIdentifier);
+
 
     private String agency = null;
     private String localIdentifier = null;
