@@ -42,6 +42,7 @@ public class UserDefinedBoost implements InputPart {
     public UserDefinedBoost() {
     }
 
+    @Override
     public void validate(Location location) throws XMLStreamException {
         if (fieldName == null)
             throw new XMLStreamException("fieldName is a required property of userDefinedBoost", location);

@@ -52,6 +52,7 @@ public class Facets implements InputPart {
     public Facets() {
     }
 
+    @Override
     public void validate(Location location) {
     }
 

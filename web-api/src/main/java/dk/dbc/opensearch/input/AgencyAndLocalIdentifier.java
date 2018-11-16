@@ -30,11 +30,10 @@ import static dk.dbc.opensearch.input.RequestHelpers.trimNotEmpty;
  */
 public class AgencyAndLocalIdentifier implements InputPart {
 
-        public static final InputPartFactory<AgencyAndLocalIdentifier> READER =
+    public static final InputPartFactory<AgencyAndLocalIdentifier> READER =
             new InputPartFactory<>(AgencyAndLocalIdentifier::new)
-                .with("agency", obj -> obj::setAgency)
-                .with("localIdentifier", obj -> obj::setLocalIdentifier);
-
+                    .with("agency", obj -> obj::setAgency)
+                    .with("localIdentifier", obj -> obj::setLocalIdentifier);
 
     private String agency = null;
     private String localIdentifier = null;
@@ -42,6 +41,7 @@ public class AgencyAndLocalIdentifier implements InputPart {
     public AgencyAndLocalIdentifier() {
     }
 
+    @Override
     public void validate(Location location) throws XMLStreamException {
         if (agency == null)
             throw new XMLStreamException("agency is a required property of agencyAndLocalIdentifier", location);

@@ -42,6 +42,7 @@ public class Authentication implements InputPart {
     public Authentication() {
     }
 
+    @Override
     public void validate(Location location) throws XMLStreamException {
         if (groupIdAut == null)
             throw new XMLStreamException("groupIdAut is a required property of authentication", location);

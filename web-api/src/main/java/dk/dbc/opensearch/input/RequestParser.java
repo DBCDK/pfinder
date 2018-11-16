@@ -21,11 +21,9 @@ package dk.dbc.opensearch.input;
 import java.io.InputStream;
 import java.util.UUID;
 import javax.xml.namespace.QName;
-import javax.xml.stream.Location;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 
 import static javax.xml.stream.XMLStreamConstants.*;

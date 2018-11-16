@@ -44,6 +44,7 @@ public class BaseRequest implements InputPart {
     public BaseRequest() {
     }
 
+    @Override
     public void validate(Location location) throws XMLStreamException {
         if (agency == null)
             throw new XMLStreamException("property 'agency' is required in a searchRequest");

@@ -42,6 +42,7 @@ public class RankField implements InputPart {
     public RankField() {
     }
 
+    @Override
     public void validate(Location location) throws XMLStreamException {
         if (fieldName == null)
             throw new XMLStreamException("fieldName is a required property of rankField", location);

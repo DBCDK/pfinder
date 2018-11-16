@@ -170,7 +170,7 @@ public class SearchRequest extends CommonRequest {
     }
 
     public void addSort(String content, Location location) throws XMLStreamException {
-        if (userDefinedRanking == null)
+        if (userDefinedRanking != null)
             throw new XMLStreamException("Cannot have both userDefinedRanking and sort", location);
         if (sort == null)
             sort = new ArrayList<>();
@@ -187,7 +187,7 @@ public class SearchRequest extends CommonRequest {
     }
 
     public Integer getStart() {
-        return start == null ? 0 : start;
+        return start == null ? 1 : Integer.max(1, start);
     }
 
     public void setStepValue(String content, Location location) throws XMLStreamException {
@@ -196,7 +196,7 @@ public class SearchRequest extends CommonRequest {
     }
 
     public Integer getStepValue() {
-        return stepValue == null ? 10 : stepValue;
+        return stepValue == null ? 0 : stepValue;
     }
 
     public void addUserDefinedBoost(UserDefinedBoost content, Location location) {
@@ -205,12 +205,20 @@ public class SearchRequest extends CommonRequest {
         userDefinedBoost.add(content);
     }
 
+    public List<UserDefinedBoost> getUserDefinedBoost() {
+        return userDefinedBoost;
+    }
+
     public void addUserDefinedRanking(UserDefinedRanking content, Location location) throws XMLStreamException {
         if (sort != null)
             throw new XMLStreamException("Cannot have both sort and userDefinedRanking", location);
         if (userDefinedRanking == null)
             userDefinedRanking = new ArrayList<>();
         userDefinedRanking.add(content);
+    }
+
+    public List<UserDefinedRanking> getUserDefinedRanking() {
+        return userDefinedRanking;
     }
 
     @Override

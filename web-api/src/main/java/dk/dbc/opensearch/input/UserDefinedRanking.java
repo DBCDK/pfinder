@@ -42,6 +42,7 @@ public class UserDefinedRanking implements InputPart {
     public UserDefinedRanking() {
     }
 
+    @Override
     public void validate(Location location) throws XMLStreamException {
         if (tieValue == null)
             throw new XMLStreamException("tieValue is a required property of userDefinedRanking", location);
