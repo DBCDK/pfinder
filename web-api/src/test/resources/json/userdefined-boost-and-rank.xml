@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:open="http://oss.dbc.dk/ns/opensearch"><SOAP-ENV:Body>
+<open:searchRequest>
+    <open:query>angora</open:query>
+    <open:agency>100200</open:agency>
+    <open:profile>test</open:profile>
+    <open:collectionType>manifestation</open:collectionType>
+    <open:start>1</open:start>
+    <open:stepValue>10</open:stepValue>    
+    <open:userDefinedRanking>
+        <open:tieValue>0.1</open:tieValue>
+        <open:rankField>
+          <open:fieldName>dkcclterm.ti</open:fieldName>
+          <open:fieldType>word</open:fieldType>
+          <open:weight>4</open:weight>
+        </open:rankField>
+        <open:rankField>
+          <open:fieldName>dkcclterm.ti</open:fieldName>
+          <open:fieldType>phrase</open:fieldType>
+          <open:weight>8</open:weight>
+        </open:rankField>
+    </open:userDefinedRanking>
+    <open:userDefinedBoost>
+        <open:fieldName>term.workType</open:fieldName>
+        <open:fieldValue>literature</open:fieldValue>
+        <open:weight>20</open:weight>
+    </open:userDefinedBoost>    
+    <open:queryDebug>1</open:queryDebug>    
+    <open:trackingId>xxx</open:trackingId>    
+    
+</open:searchRequest>
+</SOAP-ENV:Body></SOAP-ENV:Envelope>
