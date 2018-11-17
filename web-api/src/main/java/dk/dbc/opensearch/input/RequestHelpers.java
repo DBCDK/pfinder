@@ -21,6 +21,7 @@ package dk.dbc.opensearch.input;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -110,6 +111,22 @@ class RequestHelpers {
             return content;
         }
         throw new IllegalArgumentException("Value should be one of: " + errorList);
+    }
+
+    static boolean bool(String content) {
+        switch (content.toLowerCase(Locale.ROOT)) {
+            case "0":
+            case "no":
+            case "false":
+                return false;
+            case "1":
+            case "yes":
+            case "true":
+                return true;
+            default:
+        throw new IllegalArgumentException("Value should be one of: 0, 1, yes, no, true or false");
+        }
+
     }
 
 }

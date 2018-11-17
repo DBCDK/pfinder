@@ -111,7 +111,7 @@ public class SearchRequest extends CommonRequest {
     //
     public void putAllObjects(String content, Location location) throws XMLStreamException {
         allObjects = get("allObjects", allObjects, content, location,
-                         s -> Boolean.parseBoolean(trimNotEmpty(s)));
+                         s -> bool(trimNotEmpty(s)));
     }
 
     public Boolean getAllObjects() {
@@ -199,7 +199,7 @@ public class SearchRequest extends CommonRequest {
 
     public void putQueryDebug(String content, Location location) throws XMLStreamException {
         queryDebug = get("queryDebug", queryDebug, content, location,
-                         s -> Boolean.parseBoolean(trimNotEmpty(s)));
+                         s -> bool(trimNotEmpty(s)));
     }
 
     public Boolean getQueryDebug() {

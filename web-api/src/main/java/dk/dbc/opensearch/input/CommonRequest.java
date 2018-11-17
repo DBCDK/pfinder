@@ -64,7 +64,7 @@ public class CommonRequest extends BaseRequest {
 
     public void putIncludeHoldingsCount(String content, Location location) throws XMLStreamException {
         includeHoldingsCount = get("includeHoldingsCount", includeHoldingsCount, content, location,
-                                   s -> Boolean.parseBoolean(trimNotEmpty(s)));
+                                   s -> bool(trimNotEmpty(s)));
     }
 
     public Boolean getIncludeHoldingsCount() {
