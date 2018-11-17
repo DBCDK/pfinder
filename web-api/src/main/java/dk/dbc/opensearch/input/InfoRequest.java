@@ -27,10 +27,10 @@ public class InfoRequest extends BaseRequest {
     public static final InputPartFactory<InfoRequest> FACTORY =
             new InputPartFactory<>(InfoRequest::new)
                     // Base
-                    .with("agency", obj -> obj::setAgency)
+                    .with("agency", obj -> obj::putAgency)
                     .with("profile", obj -> obj::addProfile)
-                    .with("callback", obj -> obj::setCallback)
-                    .with("outputType", obj -> obj::setOutputType)
-                    .with("trackingId", obj -> obj::setTrackingId);
+                    .with("callback", obj -> obj::putCallback)
+                    .with("outputType", obj -> obj::putOutputType)
+                    .with("trackingId", obj -> obj::putTrackingId);
 
 }

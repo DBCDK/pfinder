@@ -50,7 +50,7 @@ public class CommonRequest extends BaseRequest {
     //
     // Setters and getters
     //
-    public void setAuthentication(Authentication content, Location location) throws XMLStreamException {
+    public void putAuthentication(Authentication content, Location location) throws XMLStreamException {
         authentication = get("authentication", authentication, content, location);
     }
 
@@ -58,7 +58,7 @@ public class CommonRequest extends BaseRequest {
         return authentication;
     }
 
-    public void setIncludeHoldingsCount(String content, Location location) throws XMLStreamException {
+    public void putIncludeHoldingsCount(String content, Location location) throws XMLStreamException {
         includeHoldingsCount = get("includeHoldingsCount", includeHoldingsCount, content, location,
                                    s -> Boolean.parseBoolean(trimNotEmpty(s)));
     }
@@ -67,7 +67,7 @@ public class CommonRequest extends BaseRequest {
         return includeHoldingsCount;
     }
 
-    public void setRepository(String content, Location location) throws XMLStreamException {
+    public void putRepository(String content, Location location) throws XMLStreamException {
         repository = get("repository", repository, content, location,
                          s -> trimNotEmptyOneWord(s));
     }
@@ -76,7 +76,7 @@ public class CommonRequest extends BaseRequest {
         return repository;
     }
 
-    public void setRelationData(String content, Location location) throws XMLStreamException {
+    public void putRelationData(String content, Location location) throws XMLStreamException {
         relationData = get("relationData", relationData, content, location,
                            RELATION_DATAS);
     }
@@ -85,7 +85,7 @@ public class CommonRequest extends BaseRequest {
         return relationData;
     }
 
-    public void setShowAgency(String content, Location location) throws XMLStreamException {
+    public void putShowAgency(String content, Location location) throws XMLStreamException {
         showAgency = get("showAgency", showAgency, content, location,
                          s -> Integer.parseUnsignedInt(trimNotEmpty(s), 10));
     }

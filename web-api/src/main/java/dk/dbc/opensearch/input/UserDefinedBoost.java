@@ -31,9 +31,9 @@ public class UserDefinedBoost implements InputPart {
 
     public static final InputPartFactory<UserDefinedBoost> FACTORY =
             new InputPartFactory<>(UserDefinedBoost::new)
-                    .with("fieldName", obj -> obj::setFieldName)
-                    .with("fieldValue", obj -> obj::setFieldValue)
-                    .with("weight", obj -> obj::setWeight);
+                    .with("fieldName", obj -> obj::putFieldName)
+                    .with("fieldValue", obj -> obj::putFieldValue)
+                    .with("weight", obj -> obj::putWeight);
 
     private String fieldName = null;
     private String fieldValue = null;
@@ -52,7 +52,7 @@ public class UserDefinedBoost implements InputPart {
             throw new XMLStreamException("weight is a required property of userDefinedBoost", location);
     }
 
-    public void setFieldName(String content, Location location) throws XMLStreamException {
+    public void putFieldName(String content, Location location) throws XMLStreamException {
         fieldName = get("fieldName", fieldValue, content, location, s -> trimNotEmptyOneWord(s));
     }
 
@@ -60,7 +60,7 @@ public class UserDefinedBoost implements InputPart {
         return fieldName;
     }
 
-    public void setFieldValue(String content, Location location) throws XMLStreamException {
+    public void putFieldValue(String content, Location location) throws XMLStreamException {
         fieldValue = get("fieldValue", fieldValue, content, location);
     }
 
@@ -68,7 +68,7 @@ public class UserDefinedBoost implements InputPart {
         return fieldValue;
     }
 
-    public void setWeight(String content, Location location) throws XMLStreamException {
+    public void putWeight(String content, Location location) throws XMLStreamException {
         weight = get("weight", weight, content, location, s -> Double.parseDouble(trimNotEmpty(s)));
     }
 

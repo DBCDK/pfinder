@@ -36,29 +36,29 @@ public class SearchRequest extends CommonRequest {
     public static final InputPartFactory<SearchRequest> FACTORY =
             new InputPartFactory<>(SearchRequest::new)
                     // Base
-                    .with("agency", obj -> obj::setAgency)
+                    .with("agency", obj -> obj::putAgency)
                     .with("profile", obj -> obj::addProfile)
-                    .with("callback", obj -> obj::setCallback)
-                    .with("outputType", obj -> obj::setOutputType)
-                    .with("trackingId", obj -> obj::setTrackingId)
+                    .with("callback", obj -> obj::putCallback)
+                    .with("outputType", obj -> obj::putOutputType)
+                    .with("trackingId", obj -> obj::putTrackingId)
                     // Common
-                    .with("showAgency", obj -> obj::setShowAgency)
-                    .with("authentication", Authentication.FACTORY, obj -> obj::setAuthentication)
-                    .with("includeHoldingsCount", obj -> obj::setIncludeHoldingsCount)
-                    .with("relationData", obj -> obj::setRelationData)
-                    .with("repository", obj -> obj::setRepository)
+                    .with("showAgency", obj -> obj::putShowAgency)
+                    .with("authentication", Authentication.FACTORY, obj -> obj::putAuthentication)
+                    .with("includeHoldingsCount", obj -> obj::putIncludeHoldingsCount)
+                    .with("relationData", obj -> obj::putRelationData)
+                    .with("repository", obj -> obj::putRepository)
                     // Local
-                    .with("allObjects", obj -> obj::setAllObjects)
-                    .with("collapseHitsThreshold", obj -> obj::setCollapseHitsThreshold)
-                    .with("collectionType", obj -> obj::setCollectionType)
+                    .with("allObjects", obj -> obj::putAllObjects)
+                    .with("collapseHitsThreshold", obj -> obj::putCollapseHitsThreshold)
+                    .with("collectionType", obj -> obj::putCollectionType)
                     .with("facets", Facets.FACTORY, obj -> obj::addFacets)
                     .with("objectFormat", obj -> obj::addObjectFormat)
-                    .with("query", obj -> obj::setQuery)
-                    .with("queryDebug", obj -> obj::setQueryDebug)
-                    .with("queryLanguage", obj -> obj::setQueryLanguage)
+                    .with("query", obj -> obj::putQuery)
+                    .with("queryDebug", obj -> obj::putQueryDebug)
+                    .with("queryLanguage", obj -> obj::putQueryLanguage)
                     .with("sort", obj -> obj::addSort)
-                    .with("start", obj -> obj::setStart)
-                    .with("stepValue", obj -> obj::setStepValue)
+                    .with("start", obj -> obj::putStart)
+                    .with("stepValue", obj -> obj::putStepValue)
                     .with("userDefinedBoost", UserDefinedBoost.FACTORY, obj -> obj::addUserDefinedBoost)
                     .with("userDefinedRanking", UserDefinedRanking.FACTORY, obj -> obj::addUserDefinedRanking);
 
@@ -97,7 +97,7 @@ public class SearchRequest extends CommonRequest {
     //
     // Setters and getters
     //
-    public void setAllObjects(String content, Location location) throws XMLStreamException {
+    public void putAllObjects(String content, Location location) throws XMLStreamException {
         allObjects = get("allObjects", allObjects, content, location,
                          s -> Boolean.parseBoolean(trimNotEmpty(s)));
     }
@@ -106,7 +106,7 @@ public class SearchRequest extends CommonRequest {
         return allObjects;
     }
 
-    public void setCollapseHitsThreshold(String content, Location location) throws XMLStreamException {
+    public void putCollapseHitsThreshold(String content, Location location) throws XMLStreamException {
         collapseHitsThreshold = get("collapseHitsThreshold", collapseHitsThreshold, content, location,
                                     s -> Integer.parseUnsignedInt(trimNotEmpty(s)));
     }
@@ -115,7 +115,7 @@ public class SearchRequest extends CommonRequest {
         return collapseHitsThreshold;
     }
 
-    public void setCollectionType(String content, Location location) throws XMLStreamException {
+    public void putCollectionType(String content, Location location) throws XMLStreamException {
         collectionType = get("collectionType", collectionType, content, location,
                              COLLECTION_TYPES);
     }
@@ -142,7 +142,7 @@ public class SearchRequest extends CommonRequest {
         return objectFormat.isEmpty() ? Arrays.asList("marcxchange") : objectFormat;
     }
 
-    public void setQuery(String content, Location location) throws XMLStreamException {
+    public void putQuery(String content, Location location) throws XMLStreamException {
         query = get("query", query, content, location,
                     s -> trimNotEmpty(s));
     }
@@ -151,7 +151,7 @@ public class SearchRequest extends CommonRequest {
         return query;
     }
 
-    public void setQueryDebug(String content, Location location) throws XMLStreamException {
+    public void putQueryDebug(String content, Location location) throws XMLStreamException {
         queryDebug = get("queryDebug", queryDebug, content, location,
                          s -> Boolean.parseBoolean(trimNotEmpty(s)));
     }
@@ -160,7 +160,7 @@ public class SearchRequest extends CommonRequest {
         return queryDebug;
     }
 
-    public void setQueryLanguage(String content, Location location) throws XMLStreamException {
+    public void putQueryLanguage(String content, Location location) throws XMLStreamException {
         queryLanguage = get("queryLanguage", queryLanguage, content, location,
                             QUERY_LANGUAGES);
     }
@@ -181,7 +181,7 @@ public class SearchRequest extends CommonRequest {
         return sort;
     }
 
-    public void setStart(String content, Location location) throws XMLStreamException {
+    public void putStart(String content, Location location) throws XMLStreamException {
         start = get("start", start, content, location,
                     s -> Integer.parseUnsignedInt(trimNotEmpty(s)));
     }
@@ -190,7 +190,7 @@ public class SearchRequest extends CommonRequest {
         return start == null ? 1 : Integer.max(1, start);
     }
 
-    public void setStepValue(String content, Location location) throws XMLStreamException {
+    public void putStepValue(String content, Location location) throws XMLStreamException {
         stepValue = get("stepValue", stepValue, content, location,
                         s -> Integer.parseUnsignedInt(trimNotEmpty(s)));
     }

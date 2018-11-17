@@ -55,7 +55,7 @@ public class BaseRequest implements InputPart {
     //
     // Setters and getters
     //
-    public void setAgency(String content, Location location) throws XMLStreamException {
+    public void putAgency(String content, Location location) throws XMLStreamException {
         agency = get("agency", agency, content, location,
                      s -> Integer.parseUnsignedInt(trimNotEmpty(s), 10));
     }
@@ -64,7 +64,7 @@ public class BaseRequest implements InputPart {
         return agency;
     }
 
-    public void setCallback(String content, Location location) throws XMLStreamException {
+    public void putCallback(String content, Location location) throws XMLStreamException {
         callback = get("callback", callback, content, location);
     }
 
@@ -76,7 +76,7 @@ public class BaseRequest implements InputPart {
         this.outputType = outputType;
     }
 
-    public void setOutputType(String content, Location location) throws XMLStreamException {
+    public void putOutputType(String content, Location location) throws XMLStreamException {
         outputType = get("outputType", outputType, content, location,
                          OUTPUT_TYPES);
     }
@@ -98,7 +98,7 @@ public class BaseRequest implements InputPart {
         this.trackingId = trackingId;
     }
 
-    public void setTrackingId(String content, Location location) throws XMLStreamException {
+    public void putTrackingId(String content, Location location) throws XMLStreamException {
         trackingId = get("trackingId", trackingId, content, location);
     }
 

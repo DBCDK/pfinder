@@ -31,9 +31,9 @@ public class RankField implements InputPart {
 
     public static final InputPartFactory<RankField> FACTORY =
             new InputPartFactory<>(RankField::new)
-                    .with("fieldName", obj -> obj::setFieldName)
-                    .with("fieldType", obj -> obj::setFieldType)
-                    .with("weight", obj -> obj::setWeight);
+                    .with("fieldName", obj -> obj::putFieldName)
+                    .with("fieldType", obj -> obj::putFieldType)
+                    .with("weight", obj -> obj::putWeight);
 
     private String fieldName = null;
     private String fieldType = null;
@@ -52,7 +52,7 @@ public class RankField implements InputPart {
             throw new XMLStreamException("weight is a required property of rankField", location);
     }
 
-    public void setFieldName(String content, Location location) throws XMLStreamException {
+    public void putFieldName(String content, Location location) throws XMLStreamException {
         fieldName = get("fieldName", fieldName, content, location, s -> trimNotEmptyOneWord(s));
     }
 
@@ -60,7 +60,7 @@ public class RankField implements InputPart {
         return fieldName;
     }
 
-    public void setFieldType(String content, Location location) throws XMLStreamException {
+    public void putFieldType(String content, Location location) throws XMLStreamException {
         fieldType = get("fieldType", fieldType, content, location, s -> trimNotEmptyOneWord(s));
     }
 
@@ -68,7 +68,7 @@ public class RankField implements InputPart {
         return fieldType;
     }
 
-    public void setWeight(String content, Location location) throws XMLStreamException {
+    public void putWeight(String content, Location location) throws XMLStreamException {
         weight = get("weight", weight, content, location, s -> Double.parseDouble(trimNotEmpty(s)));
     }
 

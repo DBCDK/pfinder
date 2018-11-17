@@ -34,17 +34,17 @@ public class GetObjectRequest extends CommonRequest {
     public static final InputPartFactory<GetObjectRequest> FACTORY =
             new InputPartFactory<>(GetObjectRequest::new)
                     // Base
-                    .with("agency", obj -> obj::setAgency)
+                    .with("agency", obj -> obj::putAgency)
                     .with("profile", obj -> obj::addProfile)
-                    .with("callback", obj -> obj::setCallback)
-                    .with("outputType", obj -> obj::setOutputType)
-                    .with("trackingId", obj -> obj::setTrackingId)
+                    .with("callback", obj -> obj::putCallback)
+                    .with("outputType", obj -> obj::putOutputType)
+                    .with("trackingId", obj -> obj::putTrackingId)
                     // Common
-                    .with("showAgency", obj -> obj::setShowAgency)
-                    .with("authentication", Authentication.FACTORY, obj -> obj::setAuthentication)
-                    .with("includeHoldingsCount", obj -> obj::setIncludeHoldingsCount)
-                    .with("relationData", obj -> obj::setRelationData)
-                    .with("repository", obj -> obj::setRepository)
+                    .with("showAgency", obj -> obj::putShowAgency)
+                    .with("authentication", Authentication.FACTORY, obj -> obj::putAuthentication)
+                    .with("includeHoldingsCount", obj -> obj::putIncludeHoldingsCount)
+                    .with("relationData", obj -> obj::putRelationData)
+                    .with("repository", obj -> obj::putRepository)
                     // Local
                     .with("identifier", obj -> obj::addIdentifier)
                     .with("localIdentifier", obj -> obj::addLocalIdentifier)

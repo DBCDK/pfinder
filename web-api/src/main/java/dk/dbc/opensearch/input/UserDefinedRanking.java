@@ -33,7 +33,7 @@ public class UserDefinedRanking implements InputPart {
 
     public static final InputPartFactory<UserDefinedRanking> FACTORY =
             new InputPartFactory<>(UserDefinedRanking::new)
-                    .with("tieValue", obj -> obj::setTieValue)
+                    .with("tieValue", obj -> obj::putTieValue)
                     .with("rankField", RankField.FACTORY, obj -> obj::addRankField);
 
     private Double tieValue = null;
@@ -58,7 +58,7 @@ public class UserDefinedRanking implements InputPart {
         return rankField;
     }
 
-    public void setTieValue(String content, Location location) throws XMLStreamException {
+    public void putTieValue(String content, Location location) throws XMLStreamException {
         tieValue = get("tieValue", tieValue, content, location, s -> Double.parseDouble(trimNotEmpty(s)));
     }
 
