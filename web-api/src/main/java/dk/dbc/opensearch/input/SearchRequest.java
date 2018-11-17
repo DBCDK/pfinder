@@ -138,7 +138,11 @@ public class SearchRequest extends CommonRequest {
         objectFormat.add(get("objectFormat", content, location, OBJECT_FORMATS));
     }
 
-    public List<String> getObjectFormats() {
+    public List<String> getObjectFormat() {
+        return objectFormat;
+    }
+
+    public List<String> getObjectFormatsOrDerault() {
         return objectFormat.isEmpty() ? Arrays.asList("marcxchange") : objectFormat;
     }
 
@@ -187,7 +191,15 @@ public class SearchRequest extends CommonRequest {
     }
 
     public Integer getStart() {
+        return start;
+    }
+
+    public Integer getStartOrDefault() {
         return start == null ? 1 : Integer.max(1, start);
+    }
+
+    public Integer getStepValue() {
+        return stepValue;
     }
 
     public void putStepValue(String content, Location location) throws XMLStreamException {
@@ -195,7 +207,7 @@ public class SearchRequest extends CommonRequest {
                         s -> Integer.parseUnsignedInt(trimNotEmpty(s)));
     }
 
-    public Integer getStepValue() {
+    public Integer getStepValueOrDefault() {
         return stepValue == null ? 0 : stepValue;
     }
 
