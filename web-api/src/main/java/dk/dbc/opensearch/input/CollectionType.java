@@ -18,6 +18,8 @@
  */
 package dk.dbc.opensearch.input;
 
+import java.util.Locale;
+
 /**
  *
  * @author DBC {@literal <dbc.dk>}
@@ -26,7 +28,7 @@ public enum CollectionType {
     WORK, WORK1, MANIFESTATION;
 
     public static CollectionType from(String value) {
-        switch (value) {
+        switch (value.toLowerCase(Locale.ROOT)) {
             case "work":
                 return WORK;
             case "work-1":

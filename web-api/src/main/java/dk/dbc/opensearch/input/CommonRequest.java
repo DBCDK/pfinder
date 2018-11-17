@@ -118,8 +118,8 @@ public class CommonRequest extends BaseRequest {
     public String toString() {
         String s = super.toString();
         return "CommonRequest{" +
-               "showAgency=" + showAgency + ", authentication=" + authentication + ", includeHoldingsCount=" + includeHoldingsCount + ", relationData=" + relationData + ", repository=" + repository +
-               s.substring(s.indexOf('{'));
+               s.substring(s.indexOf('{') + 1, s.lastIndexOf('}')) +
+               ", showAgency=" + showAgency + ", authentication=" + authentication + ", includeHoldingsCount=" + includeHoldingsCount + ", relationData=" + relationData + ", repository=" + repository + '}';
     }
 
 }
