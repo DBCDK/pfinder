@@ -61,12 +61,20 @@ public class Authentication implements InputPart {
         return groupIdAut;
     }
 
+    public void setGroupIdAut(String groupIdAut) {
+        this.groupIdAut = groupIdAut;
+    }
+
     public void putPasswordAut(String content, Location location) throws XMLStreamException {
         passwordAut = get("passwordAut", passwordAut, content, location);
     }
 
     public String getPasswordAut() {
         return passwordAut;
+    }
+
+    public void setPasswordAut(String passwordAut) {
+        this.passwordAut = passwordAut;
     }
 
     public void putUserIdAut(String content, Location location) throws XMLStreamException {
@@ -76,6 +84,10 @@ public class Authentication implements InputPart {
 
     public String getUserIdAut() {
         return userIdAut;
+    }
+
+    public void setUserIdAut(String userIdAut) {
+        this.userIdAut = userIdAut;
     }
 
     @Override

@@ -58,6 +58,10 @@ public class CommonRequest extends BaseRequest {
         return authentication;
     }
 
+    public void setAuthentication(Authentication authentication) {
+        this.authentication = authentication;
+    }
+
     public void putIncludeHoldingsCount(String content, Location location) throws XMLStreamException {
         includeHoldingsCount = get("includeHoldingsCount", includeHoldingsCount, content, location,
                                    s -> Boolean.parseBoolean(trimNotEmpty(s)));
@@ -65,6 +69,10 @@ public class CommonRequest extends BaseRequest {
 
     public Boolean getIncludeHoldingsCount() {
         return includeHoldingsCount;
+    }
+
+    public void setIncludeHoldingsCount(Boolean includeHoldingsCount) {
+        this.includeHoldingsCount = includeHoldingsCount;
     }
 
     public void putRepository(String content, Location location) throws XMLStreamException {
@@ -76,6 +84,10 @@ public class CommonRequest extends BaseRequest {
         return repository;
     }
 
+    public void setRepository(String repository) {
+        this.repository = repository;
+    }
+
     public void putRelationData(String content, Location location) throws XMLStreamException {
         relationData = get("relationData", relationData, content, location,
                            RELATION_DATAS);
@@ -85,6 +97,10 @@ public class CommonRequest extends BaseRequest {
         return relationData;
     }
 
+    public void setRelationData(RelationDataType relationData) {
+        this.relationData = relationData;
+    }
+
     public void putShowAgency(String content, Location location) throws XMLStreamException {
         showAgency = get("showAgency", showAgency, content, location,
                          s -> Integer.parseUnsignedInt(trimNotEmpty(s), 10));
@@ -92,6 +108,10 @@ public class CommonRequest extends BaseRequest {
 
     public Integer getShowAgency() {
         return showAgency;
+    }
+
+    public void setShowAgency(Integer showAgency) {
+        this.showAgency = showAgency;
     }
 
     @Override

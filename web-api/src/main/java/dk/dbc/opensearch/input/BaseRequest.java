@@ -25,6 +25,7 @@ import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamException;
 
 import static dk.dbc.opensearch.input.RequestHelpers.*;
+import static java.util.Collections.EMPTY_LIST;
 
 /**
  *
@@ -36,7 +37,7 @@ public class BaseRequest implements InputPart {
                                                                            OutputType::from);
 
     private Integer agency = null;
-    private final List<String> profile = new ArrayList<>();
+    private List<String> profile;
     private String callback = null;
     private OutputType outputType = null;
     private String trackingId = null;
@@ -48,7 +49,7 @@ public class BaseRequest implements InputPart {
     public void validate(Location location) throws XMLStreamException {
         if (agency == null)
             throw new XMLStreamException("property 'agency' is required in a searchRequest");
-        if (profile.isEmpty())
+        if (profile == null || profile.isEmpty())
             throw new XMLStreamException("property 'profile' is required in a searchRequest");
     }
 
@@ -64,6 +65,10 @@ public class BaseRequest implements InputPart {
         return agency;
     }
 
+    public void setAgency(Integer agency) {
+        this.agency = agency;
+    }
+
     public void putCallback(String content, Location location) throws XMLStreamException {
         callback = get("callback", callback, content, location);
     }
@@ -72,8 +77,8 @@ public class BaseRequest implements InputPart {
         return callback;
     }
 
-    public void setOutputType(OutputType outputType) {
-        this.outputType = outputType;
+    public void setCallback(String callback) {
+        this.callback = callback;
     }
 
     public void putOutputType(String content, Location location) throws XMLStreamException {
@@ -85,17 +90,27 @@ public class BaseRequest implements InputPart {
         return outputType;
     }
 
+    public void setOutputType(OutputType outputType) {
+        this.outputType = outputType;
+    }
+
     public void addProfile(String content, Location location) throws XMLStreamException {
+        if (profile == null)
+            profile = new ArrayList<>();
         profile.add(get("profile", content, location,
                         s -> trimNotEmptyOneWord(s)));
     }
 
-    public List<String> getProfiles() {
+    public List<String> getProfile() {
         return profile;
     }
 
-    public void setTrackingId(String trackingId) {
-        this.trackingId = trackingId;
+    public List<String> getProfilesOrDefault() {
+        return profile == null ? EMPTY_LIST : profile;
+    }
+
+    public void setProfile(List<String> profiles) {
+        this.profile = profiles;
     }
 
     public void putTrackingId(String content, Location location) throws XMLStreamException {
@@ -104,6 +119,10 @@ public class BaseRequest implements InputPart {
 
     public String getTrackingId() {
         return trackingId;
+    }
+
+    public void setTrackingId(String trackingId) {
+        this.trackingId = trackingId;
     }
 
     @Override

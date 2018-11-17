@@ -65,7 +65,10 @@ public class GetObjectRequest extends CommonRequest {
         if (identifier == null ||
             localIdentifier == null ||
             agencyAndLocalIdentifier == null)
-            throw new XMLStreamException("one of identifier, localIdentifier or agencyAndLocalIdentifier iw required");
+            throw new XMLStreamException("one of identifier, localIdentifier or agencyAndLocalIdentifier is required");
+        if (identifier != null && ( localIdentifier != null || agencyAndLocalIdentifier != null ) ||
+            ( localIdentifier != null && agencyAndLocalIdentifier != null ))
+            throw new XMLStreamException("only one of identifier, localIdentifier or agencyAndLocalIdentifier is allowed");
     }
 
     //
@@ -86,6 +89,10 @@ public class GetObjectRequest extends CommonRequest {
         return identifier;
     }
 
+    public void setIdentifier(List<String> identifier) {
+        this.identifier = identifier;
+    }
+
     public void addLocalIdentifier(String content, Location location) throws XMLStreamException {
         if (identifier != null)
             throw new XMLStreamException("Cannot have both identifier and localIdentifier", location);
@@ -99,6 +106,10 @@ public class GetObjectRequest extends CommonRequest {
 
     public List<String> getLocalIdentifier() {
         return localIdentifier;
+    }
+
+    public void setLocalIdentifier(List<String> localIdentifier) {
+        this.localIdentifier = localIdentifier;
     }
 
     public void addAgencyAndLocalIdentifier(AgencyAndLocalIdentifier content, Location location) throws XMLStreamException {
@@ -115,6 +126,10 @@ public class GetObjectRequest extends CommonRequest {
         return agencyAndLocalIdentifier;
     }
 
+    public void setAgencyAndLocalIdentifier(List<AgencyAndLocalIdentifier> agencyAndLocalIdentifier) {
+        this.agencyAndLocalIdentifier = agencyAndLocalIdentifier;
+    }
+
     public void addObjectFormat(String content, Location location) throws XMLStreamException {
         this.objectFormat.add(get("objectFormat", content, location,
                                   s -> trimNotEmptyOneWord(s)));
@@ -122,6 +137,10 @@ public class GetObjectRequest extends CommonRequest {
 
     public List<String> getObjectFormat() {
         return objectFormat;
+    }
+
+    public void setObjectFormat(List<String> objectFormat) {
+        this.objectFormat = objectFormat;
     }
 
     @Override

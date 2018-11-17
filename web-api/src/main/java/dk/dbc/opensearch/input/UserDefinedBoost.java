@@ -60,6 +60,10 @@ public class UserDefinedBoost implements InputPart {
         return fieldName;
     }
 
+    public void setFieldName(String fieldName) {
+        this.fieldName = fieldName;
+    }
+
     public void putFieldValue(String content, Location location) throws XMLStreamException {
         fieldValue = get("fieldValue", fieldValue, content, location);
     }
@@ -68,12 +72,25 @@ public class UserDefinedBoost implements InputPart {
         return fieldValue;
     }
 
+    public void setFieldValue(String fieldValue) {
+        this.fieldValue = fieldValue;
+    }
+
     public void putWeight(String content, Location location) throws XMLStreamException {
         weight = get("weight", weight, content, location, s -> Double.parseDouble(trimNotEmpty(s)));
     }
 
     public Double getWeight() {
         return weight;
+    }
+
+    public void setWeight(Double weight) {
+        this.weight = weight;
+    }
+
+    @Override
+    public String toString() {
+        return "UserDefinedBoost{" + "fieldName=" + fieldName + ", fieldValue=" + fieldValue + ", weight=" + weight + '}';
     }
 
 }

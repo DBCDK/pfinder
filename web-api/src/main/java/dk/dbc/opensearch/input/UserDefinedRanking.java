@@ -24,6 +24,7 @@ import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamException;
 
 import static dk.dbc.opensearch.input.RequestHelpers.*;
+import static java.util.Collections.EMPTY_LIST;
 
 /**
  *
@@ -37,7 +38,7 @@ public class UserDefinedRanking implements InputPart {
                     .with("rankField", RankField.FACTORY, obj -> obj::addRankField);
 
     private Double tieValue = null;
-    private final List<RankField> rankField = new ArrayList<>();
+    private List<RankField> rankField = null;
 
     public UserDefinedRanking() {
     }
@@ -46,16 +47,26 @@ public class UserDefinedRanking implements InputPart {
     public void validate(Location location) throws XMLStreamException {
         if (tieValue == null)
             throw new XMLStreamException("tieValue is a required property of userDefinedRanking", location);
-        if (rankField.isEmpty())
+        if (rankField == null || rankField.isEmpty())
             throw new XMLStreamException("rankField is a required property of userDefinedRanking", location);
     }
 
     public void addRankField(RankField content, Location location) throws XMLStreamException {
+        if (rankField == null)
+            rankField = new ArrayList<>();
         rankField.add(content);
+    }
+
+    public List<RankField> getRankFieldOrDefault() {
+        return rankField == null ? EMPTY_LIST : rankField;
     }
 
     public List<RankField> getRankField() {
         return rankField;
+    }
+
+    public void setRankField(List<RankField> rankField) {
+        this.rankField = rankField;
     }
 
     public void putTieValue(String content, Location location) throws XMLStreamException {
@@ -64,6 +75,10 @@ public class UserDefinedRanking implements InputPart {
 
     public Double getTieValue() {
         return tieValue;
+    }
+
+    public void setTieValue(double tieValue) {
+        this.tieValue = tieValue;
     }
 
     @Override

@@ -76,7 +76,7 @@ public class SearchRequest extends CommonRequest {
     private CollectionType collectionType;
     private List<Facets> facets = null;
     private Integer collapseHitsThreshold = null;
-    private final List<String> objectFormat = new ArrayList<>();
+    private List<String> objectFormat = null;
     private Integer start = null;
     private Integer stepValue = null;
     private List<UserDefinedRanking> userDefinedRanking = null;
@@ -92,6 +92,18 @@ public class SearchRequest extends CommonRequest {
         super.validate(location);
         if (query == null)
             throw new XMLStreamException("property 'query' is required in a searchRequest");
+        if(queryLanguage == null)
+            queryLanguage = "cql";
+        switch (queryLanguage) {
+            case "cql":
+            case "cqleng":
+                queryLanguage = "cql";
+                break;
+            default:
+                throw new XMLStreamException("unsuppoerted queryLanguang in searchRequest");
+        }
+        if (sort != null && userDefinedRanking != null)
+            throw new XMLStreamException("Only one of sort and userDefinedRanking is supported in searchRequest");
     }
 
     //
@@ -106,6 +118,10 @@ public class SearchRequest extends CommonRequest {
         return allObjects;
     }
 
+    public void setAllObjects(Boolean allObjects) {
+        this.allObjects = allObjects;
+    }
+
     public void putCollapseHitsThreshold(String content, Location location) throws XMLStreamException {
         collapseHitsThreshold = get("collapseHitsThreshold", collapseHitsThreshold, content, location,
                                     s -> Integer.parseUnsignedInt(trimNotEmpty(s)));
@@ -115,13 +131,25 @@ public class SearchRequest extends CommonRequest {
         return collapseHitsThreshold;
     }
 
+    public void setCollapseHitsThreshold(Integer collapseHitsThreshold) {
+        this.collapseHitsThreshold = collapseHitsThreshold;
+    }
+
     public void putCollectionType(String content, Location location) throws XMLStreamException {
         collectionType = get("collectionType", collectionType, content, location,
                              COLLECTION_TYPES);
     }
 
-    public CollectionType getCollectionType() {
+    public CollectionType getCollectionTypeOrDefault() {
         return collectionType == null ? CollectionType.WORK : collectionType;
+    }
+
+    public CollectionType getCollectionType() {
+        return collectionType;
+    }
+
+    public void setCollectionType(CollectionType collectionType) {
+        this.collectionType = collectionType;
     }
 
     public void addFacets(Facets content, Location location) throws XMLStreamException {
@@ -134,16 +162,26 @@ public class SearchRequest extends CommonRequest {
         return facets;
     }
 
+    public void setFacets(List<Facets> facets) {
+        this.facets = facets;
+    }
+
     public void addObjectFormat(String content, Location location) throws XMLStreamException {
+        if (objectFormat == null)
+            objectFormat = new ArrayList<>();
         objectFormat.add(get("objectFormat", content, location, OBJECT_FORMATS));
+    }
+
+    public List<String> getObjectFormatOrDerault() {
+        return objectFormat == null || objectFormat.isEmpty() ? Arrays.asList("marcxchange") : objectFormat;
     }
 
     public List<String> getObjectFormat() {
         return objectFormat;
     }
 
-    public List<String> getObjectFormatsOrDerault() {
-        return objectFormat.isEmpty() ? Arrays.asList("marcxchange") : objectFormat;
+    public void setObjectFormat(List<String> objectFormat) {
+        this.objectFormat = objectFormat;
     }
 
     public void putQuery(String content, Location location) throws XMLStreamException {
@@ -155,6 +193,10 @@ public class SearchRequest extends CommonRequest {
         return query;
     }
 
+    public void setQuery(String query) {
+        this.query = query;
+    }
+
     public void putQueryDebug(String content, Location location) throws XMLStreamException {
         queryDebug = get("queryDebug", queryDebug, content, location,
                          s -> Boolean.parseBoolean(trimNotEmpty(s)));
@@ -164,6 +206,10 @@ public class SearchRequest extends CommonRequest {
         return queryDebug;
     }
 
+    public void setQueryDebug(boolean queryDebug) {
+        this.queryDebug = queryDebug;
+    }
+
     public void putQueryLanguage(String content, Location location) throws XMLStreamException {
         queryLanguage = get("queryLanguage", queryLanguage, content, location,
                             QUERY_LANGUAGES);
@@ -171,6 +217,10 @@ public class SearchRequest extends CommonRequest {
 
     public String getQueryLanguage() {
         return queryLanguage;
+    }
+
+    public void setQueryLanguage(String queryLanguage) {
+        this.queryLanguage = queryLanguage;
     }
 
     public void addSort(String content, Location location) throws XMLStreamException {
@@ -185,21 +235,25 @@ public class SearchRequest extends CommonRequest {
         return sort;
     }
 
+    public void setSort(List<String> sort) {
+        this.sort = sort;
+    }
+
     public void putStart(String content, Location location) throws XMLStreamException {
         start = get("start", start, content, location,
                     s -> Integer.parseUnsignedInt(trimNotEmpty(s)));
-    }
-
-    public Integer getStart() {
-        return start;
     }
 
     public Integer getStartOrDefault() {
         return start == null ? 1 : Integer.max(1, start);
     }
 
-    public Integer getStepValue() {
-        return stepValue;
+    public Integer getStart() {
+        return start;
+    }
+
+    public void setStart(Integer start) {
+        this.start = start;
     }
 
     public void putStepValue(String content, Location location) throws XMLStreamException {
@@ -209,6 +263,14 @@ public class SearchRequest extends CommonRequest {
 
     public Integer getStepValueOrDefault() {
         return stepValue == null ? 0 : stepValue;
+    }
+
+    public Integer getStepValue() {
+        return stepValue;
+    }
+
+    public void setStepValue(Integer stepValue) {
+        this.stepValue = stepValue;
     }
 
     public void addUserDefinedBoost(UserDefinedBoost content, Location location) {
@@ -221,6 +283,10 @@ public class SearchRequest extends CommonRequest {
         return userDefinedBoost;
     }
 
+    public void setUserDefinedBoost(List<UserDefinedBoost> userDefinedBoost) {
+        this.userDefinedBoost = userDefinedBoost;
+    }
+
     public void addUserDefinedRanking(UserDefinedRanking content, Location location) throws XMLStreamException {
         if (sort != null)
             throw new XMLStreamException("Cannot have both sort and userDefinedRanking", location);
@@ -231,6 +297,10 @@ public class SearchRequest extends CommonRequest {
 
     public List<UserDefinedRanking> getUserDefinedRanking() {
         return userDefinedRanking;
+    }
+
+    public void setUserDefinedRanking(List<UserDefinedRanking> userDefinedRanking) {
+        this.userDefinedRanking = userDefinedRanking;
     }
 
     @Override

@@ -60,6 +60,10 @@ public class RankField implements InputPart {
         return fieldName;
     }
 
+    public void setFieldName(String fieldName) {
+        this.fieldName = fieldName;
+    }
+
     public void putFieldType(String content, Location location) throws XMLStreamException {
         fieldType = get("fieldType", fieldType, content, location, s -> trimNotEmptyOneWord(s));
     }
@@ -68,12 +72,20 @@ public class RankField implements InputPart {
         return fieldType;
     }
 
+    public void setFieldType(String fieldType) {
+        this.fieldType = fieldType;
+    }
+
     public void putWeight(String content, Location location) throws XMLStreamException {
         weight = get("weight", weight, content, location, s -> Double.parseDouble(trimNotEmpty(s)));
     }
 
     public Double getWeight() {
         return weight;
+    }
+
+    public void setWeight(Double weight) {
+        this.weight = weight;
     }
 
     @Override

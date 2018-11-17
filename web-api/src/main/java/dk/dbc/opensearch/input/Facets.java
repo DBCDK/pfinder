@@ -25,6 +25,7 @@ import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamException;
 
 import static dk.dbc.opensearch.input.RequestHelpers.*;
+import static java.util.Collections.EMPTY_LIST;
 
 /**
  *
@@ -65,14 +66,26 @@ public class Facets implements InputPart {
         return facetMinCount;
     }
 
+    public void setFacetMinCount(Integer facetMinCount) {
+        this.facetMinCount = facetMinCount;
+    }
+
     public void addFacetName(String content, Location location) throws XMLStreamException {
         if (facetName == null)
             facetName = new ArrayList<>();
         facetName.add(get("facetName", content, location, s -> trimNotEmptyOneWord(content)));
     }
 
+    public List<String> getFacetNamesOrDefault() {
+        return facetName == null ? EMPTY_LIST : facetName;
+    }
+
     public List<String> getFacetNames() {
         return facetName;
+    }
+
+    public void setFacetName(List<String> facetName) {
+        this.facetName = facetName;
     }
 
     public void putFacetOffset(String content, Location location) throws XMLStreamException {
@@ -84,6 +97,10 @@ public class Facets implements InputPart {
         return facetOffset;
     }
 
+    public void setFacetOffset(Integer facetOffset) {
+        this.facetOffset = facetOffset;
+    }
+
     public void putFacetSort(String content, Location location) throws XMLStreamException {
         facetSort = get("facetSort", facetSort, content, location,
                         FACET_SORT_TYPES);
@@ -93,6 +110,10 @@ public class Facets implements InputPart {
         return facetSort;
     }
 
+    public void setFacetSort(FacetSortType facetSort) {
+        this.facetSort = facetSort;
+    }
+
     public void putNumberOfTerms(String content, Location location) throws XMLStreamException {
         numberOfTerms = get("numberOfTerms", numberOfTerms, content, location,
                             s -> Integer.parseUnsignedInt(trimNotEmpty(s)));
@@ -100,6 +121,10 @@ public class Facets implements InputPart {
 
     public Integer getNumberOfTerms() {
         return numberOfTerms;
+    }
+
+    public void setNumberOfTerms(Integer numberOfTerms) {
+        this.numberOfTerms = numberOfTerms;
     }
 
     @Override

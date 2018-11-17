@@ -57,6 +57,10 @@ public class AgencyAndLocalIdentifier implements InputPart {
         return agency;
     }
 
+    public void setAgency(String agency) {
+        this.agency = agency;
+    }
+
     public void putLocalIdentifier(String content, Location location) throws XMLStreamException {
         localIdentifier = get("localIdentifier", localIdentifier, content, location,
                               s -> trimNotEmpty(s));
@@ -64,6 +68,10 @@ public class AgencyAndLocalIdentifier implements InputPart {
 
     public String getLocalIdentifier() {
         return localIdentifier;
+    }
+
+    public void setLocalIdentifier(String localIdentifier) {
+        this.localIdentifier = localIdentifier;
     }
 
     @Override
