@@ -33,4 +33,10 @@ public class InfoRequest extends BaseRequest {
                     .with("outputType", obj -> obj::putOutputType)
                     .with("trackingId", obj -> obj::putTrackingId);
 
+    @Override
+    public String toString() {
+        String s = super.toString();
+        return "InfoRequest{" + s.substring(s.indexOf('{') + 1);
+    }
+
 }

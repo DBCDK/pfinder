@@ -146,9 +146,7 @@ public class GetObjectRequest extends CommonRequest {
     @Override
     public String toString() {
         String s = super.toString();
-        return "GetObjectRequest{" +
-               "identifier=" + identifier + ", localIdentifier=" + localIdentifier + ", agencyAndLocalIdentifier=" + agencyAndLocalIdentifier + ", objectFormat=" + objectFormat +
-               s.substring(s.indexOf('{') + 1);
+        return "GetObjectRequest{" + s.substring(s.indexOf('{') + 1, s.lastIndexOf('}')) + ", identifier=" + identifier + ", localIdentifier=" + localIdentifier + ", agencyAndLocalIdentifier=" + agencyAndLocalIdentifier + ", objectFormat=" + objectFormat + '}';
     }
 
 }
