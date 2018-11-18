@@ -49,6 +49,9 @@ public class UserDefinedRanking implements InputPart {
             throw new XMLStreamException("tieValue is a required property of userDefinedRanking", location);
         if (rankField == null || rankField.isEmpty())
             throw new XMLStreamException("rankField is a required property of userDefinedRanking", location);
+        for (RankField obj : rankField) {
+            obj.validate(location);
+        }
     }
 
     public void addRankField(RankField content, Location location) throws XMLStreamException {

@@ -1,0 +1,11 @@
+{ 
+    "search": {
+        "query": "danmark and hello",
+        "agency": "100200",
+        "start": 1,
+        "stepValue": 10,
+        "callback": "cb",
+        "collectionType": "work-1",
+        "outputType": "SOAP"
+    }
+}

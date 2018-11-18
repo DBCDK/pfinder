@@ -97,13 +97,23 @@ public class SearchRequest extends CommonRequest {
         switch (queryLanguage) {
             case "cql":
             case "cqleng":
-                queryLanguage = "cql";
+                queryLanguage = "cqleng";
                 break;
             default:
                 throw new XMLStreamException("unsuppoerted queryLanguang in searchRequest");
         }
         if (sort != null && userDefinedRanking != null)
             throw new XMLStreamException("Only one of sort and userDefinedRanking is supported in searchRequest");
+        if(userDefinedRanking != null) {
+            for (UserDefinedRanking obj : userDefinedRanking) {
+                obj.validate(location);
+            }
+        }
+        if(userDefinedBoost != null) {
+            for (UserDefinedBoost obj : userDefinedBoost) {
+                obj.validate(location);
+            }
+        }
     }
 
     //

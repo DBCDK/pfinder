@@ -51,11 +51,15 @@ public class RequestParserJSONTest {
 
     @Parameterized.Parameters(name = "{0}")
     public static List<Object[]> tests() throws Exception {
-        URL resource = RequestParserJSONTest.class.getClassLoader().getResource("json");
-        File dir = new File(resource.toURI());
-        Path path = dir.toPath();
-        return Arrays.stream(dir.list((f, s) -> s.endsWith(".json")))
-                .map(s -> test(s.substring(0, s.length() - 5), path))
+        ClassLoader classLoader = RequestParserJSONTest.class.getClassLoader();
+        return Arrays.asList("input", "json").stream()
+                .flatMap((String folder) -> {
+                    URL resource = classLoader.getResource(folder);
+                    File dir = new File(resource.getPath());
+                    Path path = dir.toPath();
+                    return Arrays.stream(dir.list((file, fileName) -> fileName.endsWith(".json")))
+                            .map(s -> test(s.substring(0, s.length() - 5), path));
+                })
                 .collect(Collectors.toList());
     }
 
@@ -71,17 +75,21 @@ public class RequestParserJSONTest {
             String jsonReq;
             try {
                 jsonReq = new RequestParserJSON(json).asBaseRequest().toString();
+                jsonReq = jsonReq.replaceFirst("trackingId=[^,]*", "trackingId=***");
             } catch (XMLStreamException ex) {
                 jsonReq = ex.getMessage();
+                jsonReq = jsonReq.substring(jsonReq.indexOf('\n') + 1); // Strip error location
             }
-            System.out.println("jsonReq = " + jsonReq);
             String xmlReq;
             try {
                 xmlReq = new RequestParser(xml).asBaseRequest().toString();
+                xmlReq = xmlReq.replaceFirst("trackingId=[^,]*", "trackingId=***");
             } catch (XMLStreamException ex) {
                 xmlReq = ex.getMessage();
+                xmlReq = xmlReq.substring(xmlReq.indexOf('\n') + 1); // Strip error location
             }
-            System.out.println("xmlReq = " + xmlReq);
+            System.out.println("jsonReq = " + jsonReq);
+            System.out.println("xmlReq  = " + xmlReq);
             assertThat(jsonReq, is(xmlReq));
         }
 
