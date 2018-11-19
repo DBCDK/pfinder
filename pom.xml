@@ -29,6 +29,8 @@
     <modules>
         <module>cql</module>
         <module>solr</module>
+        <module>web-api</module>
+        <module>xsd-maven-plugin</module>
     </modules>
 
     <dependencies>

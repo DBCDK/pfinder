@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tns="http://oss.dbc.dk/ns/opensearch" xmlns:wsaw="http://www.w3.org/2006/05/addressing/wsdl" name="OpensearchService" targetNamespace="http://oss.dbc.dk/ns/opensearch">
+  <wsdl:types>
+    <xs:schema attributeFormDefault="qualified" elementFormDefault="qualified">
+      <xs:import namespace="http://oss.dbc.dk/ns/opensearch" schemaLocation="opensearch.xsd"/>
+    </xs:schema>
+  </wsdl:types>
+  <wsdl:message name="SearchInputMessage">
+    <wsdl:part name="parameters" element="tns:searchRequest"/>
+  </wsdl:message>
+  <wsdl:message name="SearchOutputMessage">
+    <wsdl:part name="parameters" element="tns:searchResponse"/>
+  </wsdl:message>
+  <wsdl:message name="GetObjectInputMessage">
+    <wsdl:part name="parameters" element="tns:getObjectRequest"/>
+  </wsdl:message>
+  <wsdl:message name="GetObjectOutputMessage">
+    <wsdl:part name="parameters" element="tns:searchResponse"/>
+  </wsdl:message>
+  <wsdl:message name="InfoInputMessage">
+    <wsdl:part name="parameters" element="tns:infoRequest"/>
+  </wsdl:message>
+  <wsdl:message name="InfoOutputMessage">
+    <wsdl:part name="parameters" element="tns:infoResponse"/>
+  </wsdl:message>
+  <wsdl:portType name="OpensearchPortType">
+    <wsdl:operation name="search">
+      <wsdl:input wsaw:Action="http://oss.dbc.dk/ns/opensearch/Search" message="tns:SearchInputMessage"/>
+      <wsdl:output wsaw:Action="http://oss.dbc.dk/ns/opensearch/SearchResponse" message="tns:SearchOutputMessage"/>
+    </wsdl:operation>
+    <wsdl:operation name="getObject">
+      <wsdl:input wsaw:Action="http://oss.dbc.dk/ns/opensearch/GetObject" message="tns:GetObjectInputMessage"/>
+      <wsdl:output wsaw:Action="http://oss.dbc.dk/ns/opensearch/GetObjectResponse" message="tns:GetObjectOutputMessage"/>
+    </wsdl:operation>
+    <wsdl:operation name="info">
+      <wsdl:input wsaw:Action="http://oss.dbc.dk/ns/opensearch/Info" message="tns:InfoInputMessage"/>
+      <wsdl:output wsaw:Action="http://oss.dbc.dk/ns/opensearch/InfoResponse" message="tns:InfoOutputMessage"/>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="OpensearchBinding" type="tns:OpensearchPortType">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="search">
+      <soap:operation soapAction="http://oss.dbc.dk/ns/opensearch/Search" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getObject">
+      <soap:operation soapAction="http://oss.dbc.dk/ns/opensearch/GetObject" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="info">
+      <soap:operation soapAction="http://oss.dbc.dk/ns/opensearch/Info" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="OpensearchService">
+    <wsdl:port name="OpensearchPort" binding="tns:OpensearchBinding">
+      <soap:address location="https://opensearch.addi.dk/staging_5.0/"/>
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

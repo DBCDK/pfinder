@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE s [
+<!ENTITY x "hello">
+]>
+<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns="http://oss.dbc.dk/ns/opensearch">
+  <SOAP-ENV:Body>
+    <searchRequest>
+      <query><![CDATA[danmark]]> and &x;</query>
+      <agency>100200</agency>
+      <profile>test</profile>
+      <callback>cb</callback>
+      <userDefinedRanking>
+        <tieValue>0.1</tieValue>
+        <rankField>
+          <!-- fieldName is a required property of rankField -->
+
+          <fieldType>word</fieldType>
+          <weight>2</weight>
+        </rankField>
+      </userDefinedRanking>
+      <collectionType>work-1</collectionType>
+    </searchRequest>
+  </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>
