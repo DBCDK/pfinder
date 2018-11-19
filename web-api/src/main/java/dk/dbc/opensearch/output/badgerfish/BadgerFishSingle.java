@@ -74,7 +74,7 @@ public class BadgerFishSingle {
                 .computeIfAbsent(name.getLocalPart(), n -> {
                              ConcurrentSkipListSet<String> map =
                                      new ConcurrentSkipListSet<>();
-                             if(mapping.all != null)
+                             if (mapping.all != null)
                                  map.addAll(mapping.all);
                              map.addAll(mapping.ns
                                      .getOrDefault(name.getNamespaceURI(), EMPTY_NS_MAP)
@@ -113,5 +113,11 @@ public class BadgerFishSingle {
             this.all = all;
             this.ns = ns;
         }
+
+        @Override
+        public String toString() {
+            return "Mapping{" + "all=" + all + ", ns=" + ns + '}';
+        }
+
     }
 }
