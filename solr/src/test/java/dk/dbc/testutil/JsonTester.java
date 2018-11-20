@@ -63,16 +63,17 @@ public class JsonTester {
     }
 
     public static SolrRules solrRules(String folder) throws IOException {
-        try (InputStream is = JsonTester.class.getResourceAsStream(
-                "/" + folder + "/solr-spec.yml")) {
+        try (InputStream is = JsonTester.class.getClassLoader().getResourceAsStream(
+                 folder + "/solr-spec.yml")) {
+            System.out.println("is = " + is);
             ObjectMapper o = new YAMLMapper();
             SolrConfig config = o.readValue(is, SolrConfig.class);
             return config.makeSolrRules();
         }
     }
     public static SolrRules defaultSolrRules() throws IOException {
-        try (InputStream is = JsonTester.class.getResourceAsStream(
-                "/solr-spec.yml")) {
+        try (InputStream is = JsonTester.class.getClassLoader().getResourceAsStream(
+                "solr-spec.yml")) {
             ObjectMapper o = new YAMLMapper();
             SolrConfig config = o.readValue(is, SolrConfig.class);
             return config.makeSolrRules();

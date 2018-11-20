@@ -28,6 +28,8 @@ import java.util.List;
  */
 public class FlatQueryOr extends FlatQuery {
 
+    private static final long serialVersionUID = -2673604413757864295L;
+
     private final List<FlatQuery> or;
 
     public FlatQueryOr() {

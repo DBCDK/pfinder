@@ -67,7 +67,7 @@ public class Profiles implements Serializable {
     private static final String COLLECTION_IDENTIFIER = "rec.collectionIdentifier";
     private static final CQLException.Position PROFILE_EXCEPTION_LOCATION = new CQLException.Position("FROM PROFILE", 0);
 
-    transient private final Map<String, Profile> profiles;
+    private final Map<String, Profile> profiles;
     private final FieldSpec collectionIdentifierSpec;
     private final String collectionIdentifierIndex;
     private final Map<String, Entry> profileSpecs;
@@ -226,6 +226,11 @@ public class Profiles implements Serializable {
         public String toString() {
             return "{" + "search=" + searchCollectionIdentifiers + ", relation=" + relationCollectionIdentifiers + ", allowed=" + allowedRelations + '}';
         }
+    }
+
+    @Override
+    public String toString() {
+        return "Profiles{" + "profiles=" + profiles + ", collectionIdentifierSpec=" + collectionIdentifierSpec + ", collectionIdentifierIndex=" + collectionIdentifierIndex + ", profileSpecs=" + profileSpecs + '}';
     }
 
 }

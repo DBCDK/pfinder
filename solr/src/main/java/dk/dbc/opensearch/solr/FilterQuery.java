@@ -23,6 +23,7 @@ import dk.dbc.opensearch.solr.flatquery.FlatQueryAndNot;
 import dk.dbc.opensearch.solr.flatquery.FlatQueryNested;
 import dk.dbc.opensearch.solr.flatquery.FlatQueryOr;
 import dk.dbc.opensearch.solr.flatquery.FlatQuerySearch;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -33,7 +34,9 @@ import java.util.Map;
  *
  * @author DBC {@literal <dbc.dk>}
  */
-public class FilterQuery {
+public class FilterQuery implements Serializable {
+
+    private static final long serialVersionUID = 4851629046694498185L;
 
     public static List<FlatQuery> from(FlatQuery query) {
         return new FilterQuery().extractFrom(query).getFilterQueries();

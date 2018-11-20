@@ -28,7 +28,9 @@ import java.util.Set;
  *
  * @author DBC {@literal <dbc.dk>}
  */
-public class Profile {
+public class Profile  implements Serializable {
+
+    private static final long serialVersionUID = -7462331936710472030L;
 
     private final FlatQueryOr searchFilterQuery;
     private final FlatQueryOr relationFilterQuery;

@@ -24,6 +24,7 @@ import dk.dbc.opensearch.cql.CQLException.Position;
 import dk.dbc.opensearch.cql.CQLParser;
 import dk.dbc.opensearch.cql.QueryNode;
 import dk.dbc.opensearch.solr.SolrRules;
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,7 +32,9 @@ import java.util.Map;
  *
  * @author DBC {@literal <dbc.dk>}
  */
-public class SolrConfig {
+public class SolrConfig implements Serializable {
+
+    private static final long serialVersionUID = -6283439939759554597L;
 
     public Map<String, SolrConfigField> fields;
     public Map<String, SolrConfigNested> nested;
@@ -45,9 +48,13 @@ public class SolrConfig {
         return new Rules(this);
     }
 
-    private static class Rules implements SolrRules {
+    private static class Rules implements SolrRules, Serializable {
 
-        private static class Entry {
+        private static final long serialVersionUID = -6452507325143373406L;
+
+        private static class Entry implements Serializable {
+
+            private static final long serialVersionUID = -3844418923489953415L;
 
             private final String indexName;
             private final FieldSpec fieldSpec;

@@ -35,6 +35,8 @@ import static java.util.Collections.EMPTY_MAP;
  */
 public class FlatQuerySearch extends FlatQuery {
 
+    private static final long serialVersionUID = -3459430307474477750L;
+
     private final Position pos;
     private final String index;
     private final String relation;

@@ -26,6 +26,7 @@ import dk.dbc.opensearch.solr.flatquery.FlatQueryAndNot;
 import dk.dbc.opensearch.cql.CQLError;
 import dk.dbc.opensearch.cql.CQLException;
 import dk.dbc.opensearch.cql.CQLException.Position;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
@@ -34,7 +35,9 @@ import java.util.ListIterator;
  *
  * @author DBC {@literal <dbc.dk>}
  */
-public class NestedQueries {
+public class NestedQueries implements Serializable {
+
+    private static final long serialVersionUID = 8706346364547335984L;
 
     static List<FlatQuery> from(FlatQuery query) {
         return new NestedQueries(query).getQueries();

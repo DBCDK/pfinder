@@ -24,12 +24,15 @@ import dk.dbc.opensearch.solr.flatquery.FlatQueryNested;
 import dk.dbc.opensearch.solr.flatquery.FlatQueryAndNot;
 import dk.dbc.opensearch.cql.QueryNode;
 import dk.dbc.opensearch.solr.SolrRules;
+import java.io.Serializable;
 
 /**
  *
  * @author DBC {@literal <dbc.dk>}
  */
-public class FieldSpec {
+public class FieldSpec implements Serializable {
+
+    private static final long serialVersionUID = 6231908032923681819L;
 
     private final SolrRules solrRules;
     private final String nestedGroup;

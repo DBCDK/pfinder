@@ -20,12 +20,13 @@ package dk.dbc.opensearch.solr;
 
 import dk.dbc.opensearch.solr.config.FieldSpec;
 import dk.dbc.opensearch.cql.CQLException.Position;
+import java.io.Serializable;
 
 /**
  *
  * @author DBC {@literal <dbc.dk>}
  */
-public interface SolrRules {
+public interface SolrRules extends Serializable {
 
     String indexName(String index, Position pos);
 
