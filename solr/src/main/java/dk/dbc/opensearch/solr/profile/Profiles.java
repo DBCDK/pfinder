@@ -19,6 +19,7 @@
 package dk.dbc.opensearch.solr.profile;
 
 import dk.dbc.opensearch.cql.CQLException;
+import dk.dbc.opensearch.input.badgerfish.BadgerFishReader;
 import dk.dbc.opensearch.solr.config.FieldSpec;
 import dk.dbc.opensearch.solr.flatquery.FlatQueryOr;
 import dk.dbc.opensearch.solr.flatquery.FlatQuerySearch;
@@ -53,7 +54,7 @@ public class Profiles {
 
     public static Profiles from(SolrRules solrRules, InputStream is) {
         try {
-            OAProfileResponse response = BadgerFish.O.readValue(is, OAProfileResponse.class);
+            OAProfileResponse response = BadgerFishReader.O.readValue(is, OAProfileResponse.class);
             return new Profiles(solrRules, response);
         } catch (IOException ex) {
             throw new IllegalArgumentException("Cannot parse open agency response", ex);

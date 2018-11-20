@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package dk.dbc.opensearch.solr.profile;
+package dk.dbc.opensearch.input.badgerfish;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -24,24 +24,25 @@ import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import java.io.IOException;
+import java.util.Locale;
 
 /**
  *
  * @author DBC {@literal <dbc.dk>}
  */
-public class BadgerFishDeserializerInteger extends StdDeserializer<Integer> {
+public class BadgerFishDeserializerBoolean extends StdDeserializer<Boolean> {
 
     private static final long serialVersionUID = -2564149563067859892L;
 
-    public BadgerFishDeserializerInteger() {
+    public BadgerFishDeserializerBoolean() {
         super(String.class);
     }
 
     @Override
-    public Integer deserialize(JsonParser parser, DeserializationContext context) throws IOException, JsonProcessingException {
+    public Boolean deserialize(JsonParser parser, DeserializationContext context) throws IOException, JsonProcessingException {
 
         if (parser.isExpectedStartObjectToken()) {
-            Integer value = null;
+            Boolean value = null;
             parser.nextToken(); // Skip '{'
             while (!parser.hasToken(JsonToken.END_OBJECT)) {
                 JsonToken token = parser.currentToken();
@@ -53,8 +54,23 @@ public class BadgerFishDeserializerInteger extends StdDeserializer<Integer> {
                             context.reportInputMismatch(String.class, "Expected badgerfish type input string after %s", field);
                         }
                         if (field.equals("$")) {
-                            String intValue = parser.getValueAsString();
-                            value = Integer.parseInt(intValue);
+                            String boolValue = parser.getValueAsString();
+                            switch (boolValue.toLowerCase(Locale.ROOT)) {
+                                case "1":
+                                case "yes":
+                                case "true":
+                                case "t":
+                                    value = true;
+                                    break;
+                                case "0":
+                                case "no":
+                                case "false":
+                                case "f":
+                                    value = false;
+                                    break;
+                                default:
+                                    context.reportInputMismatch(String.class, "Expected badgerfish type cannot make: `%s' into a boolean", boolValue);
+                            }
                         } else if (field.startsWith("@")) {
                             // Namespace
                             break;

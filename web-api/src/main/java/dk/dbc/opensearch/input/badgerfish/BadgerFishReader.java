@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package dk.dbc.opensearch.solr.profile;
+package dk.dbc.opensearch.input.badgerfish;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -26,7 +26,7 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
  *
  * @author DBC {@literal <dbc.dk>}
  */
-public class BadgerFish {
+public class BadgerFishReader {
 
     public static final ObjectMapper O = makeObjectMapper();
 
@@ -42,5 +42,4 @@ public class BadgerFish {
         o.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         return o;
     }
-
 }
