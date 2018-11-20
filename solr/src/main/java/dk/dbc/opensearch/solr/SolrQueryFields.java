@@ -26,6 +26,7 @@ import dk.dbc.opensearch.cql.token.BooleanOpName;
 import dk.dbc.opensearch.cql.token.TokenList;
 import dk.dbc.opensearch.solr.flatquery.FlatQuery;
 import dk.dbc.opensearch.solr.profile.Profile;
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -35,15 +36,19 @@ import org.apache.solr.client.solrj.SolrQuery;
 
 /**
  *
+ * Class for caching of parsed queries
+ *
  * @author DBC {@literal <dbc.dk>}
  */
-public class SolrQueryFields {
+public class SolrQueryFields implements Serializable {
+
+    private static final long serialVersionUID = 5194647199009610759L;
 
     private final String query;
     private final List<String> nestedQueries;
     private final List<String> filterQueries;
 
-    public static dk.dbc.opensearch.solr.SolrQueryFields fromCQL(SolrRules rules, String cql, Profile profile) {
+    public static SolrQueryFields fromCQL(SolrRules rules, String cql, Profile profile) {
         return fromCQL(rules, cql, profile, CQLParser.DEFAULT_RELATIONS, CQLParser.DEFAULT_BOOLEANS, TokenList.BOOLEAN_NAMES);
     }
 
@@ -65,18 +70,11 @@ public class SolrQueryFields {
         this.filterQueries = filterQueries.stream().map(QueryBuilder::queryFrom).collect(Collectors.toList());
     }
 
-    public String getQuery() {
-        return query;
-    }
-
-    public List<String> getNestedQueries() {
-        return nestedQueries;
-    }
-
-    public List<String> getFilterQueries() {
-        return filterQueries;
-    }
-
+    /**
+     * Convert a query into a SolR query with nested queries and filter queries
+     *
+     * @return SolR query
+     */
     public SolrQuery asSolrQuery() {
         SolrQuery solrQuery = new SolrQuery(query);
         int i = 1;
