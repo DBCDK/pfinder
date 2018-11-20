@@ -150,7 +150,7 @@ public class SearchRequest extends CommonRequest {
                              COLLECTION_TYPES);
     }
 
-    public CollectionType getCollectionTypeOrDefault() {
+    public final CollectionType getCollectionTypeOrDefault() {
         return collectionType == null ? CollectionType.WORK : collectionType;
     }
 
@@ -254,7 +254,7 @@ public class SearchRequest extends CommonRequest {
                     s -> Integer.parseUnsignedInt(trimNotEmpty(s)));
     }
 
-    public Integer getStartOrDefault() {
+    public final Integer getStartOrDefault() {
         return start == null ? 1 : Integer.max(1, start);
     }
 
@@ -271,7 +271,7 @@ public class SearchRequest extends CommonRequest {
                         s -> Integer.parseUnsignedInt(trimNotEmpty(s)));
     }
 
-    public Integer getStepValueOrDefault() {
+    public final Integer getStepValueOrDefault() {
         return stepValue == null ? 0 : stepValue;
     }
 
@@ -316,7 +316,7 @@ public class SearchRequest extends CommonRequest {
     @Override
     public String toString() {
         String s = super.toString();
-        return "SearchRequest{" + s.substring(s.indexOf('{') + 1, s.lastIndexOf('}')) + ", query=" + query + ", queryLanguage=" + queryLanguage + ", allObjects=" + allObjects + ", collectionType=" + collectionType + ", facets=" + facets + ", collapseHitsThreshold=" + collapseHitsThreshold + ", objectFormat=" + objectFormat + ", start=" + start + ", stepValue=" + stepValue + ", userDefinedRanking=" + userDefinedRanking + ", sort=" + sort + ", userDefinedBoost=" + userDefinedBoost + ", queryDebug=" + queryDebug + '}';
+        return "SearchRequest{" + s.substring(s.indexOf('{') + 1, s.lastIndexOf('}')) + ", query=" + query + ", queryLanguage=" + queryLanguage + ", allObjects=" + allObjects + ", collectionType=" + getCollectionTypeOrDefault() + ", facets=" + facets + ", collapseHitsThreshold=" + collapseHitsThreshold + ", objectFormat=" + objectFormat + ", start=" + getStartOrDefault() + ", stepValue=" + getStepValueOrDefault() + ", userDefinedRanking=" + userDefinedRanking + ", sort=" + sort + ", userDefinedBoost=" + userDefinedBoost + ", queryDebug=" + queryDebug + '}';
     }
 
 }

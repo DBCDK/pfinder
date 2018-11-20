@@ -76,7 +76,7 @@ public class Facets implements InputPart {
         facetName.add(get("facetName", content, location, s -> trimNotEmptyOneWord(content)));
     }
 
-    public List<String> getFacetNamesOrDefault() {
+    public final List<String> getFacetNamesOrDefault() {
         return facetName == null ? EMPTY_LIST : facetName;
     }
 
@@ -129,7 +129,7 @@ public class Facets implements InputPart {
 
     @Override
     public String toString() {
-        return "Facets{" + "numberOfTerms=" + numberOfTerms + ", facetSort=" + facetSort + ", facetMinCount=" + facetMinCount + ", facetName=" + facetName + ", facetOffset=" + facetOffset + '}';
+        return "Facets{" + "numberOfTerms=" + numberOfTerms + ", facetSort=" + facetSort + ", facetMinCount=" + facetMinCount + ", facetName=" + getFacetNamesOrDefault() + ", facetOffset=" + facetOffset + '}';
     }
 
 }

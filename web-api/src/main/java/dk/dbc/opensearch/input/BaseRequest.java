@@ -105,7 +105,7 @@ public class BaseRequest implements InputPart {
         return profile;
     }
 
-    public List<String> getProfilesOrDefault() {
+    public final List<String> getProfilesOrDefault() {
         return profile == null ? EMPTY_LIST : profile;
     }
 
@@ -127,7 +127,7 @@ public class BaseRequest implements InputPart {
 
     @Override
     public String toString() {
-        return "BaseRequest{" + "agency=" + agency + ", profile=" + profile + ", callback=" + callback + ", outputType=" + outputType + ", trackingId=" + trackingId + '}';
+        return "BaseRequest{" + "agency=" + agency + ", profile=" + getProfilesOrDefault() + ", callback=" + callback + ", outputType=" + outputType + ", trackingId=" + trackingId + '}';
     }
 
 }
