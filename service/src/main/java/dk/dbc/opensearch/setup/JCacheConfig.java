@@ -26,6 +26,9 @@ import com.hazelcast.config.CacheSimpleConfig.ExpiryPolicyFactoryConfig;
 import com.hazelcast.config.CacheSimpleConfig.ExpiryPolicyFactoryConfig.DurationConfig;
 import com.hazelcast.config.CacheSimpleConfig.ExpiryPolicyFactoryConfig.TimedExpiryPolicyFactoryConfig;
 import com.hazelcast.config.CacheSimpleConfig.ExpiryPolicyFactoryConfig.TimedExpiryPolicyFactoryConfig.ExpiryPolicyType;
+import com.hazelcast.config.EvictionConfig;
+import com.hazelcast.config.EvictionConfig.MaxSizePolicy;
+import com.hazelcast.config.EvictionPolicy;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.PostConstruct;
@@ -92,18 +95,26 @@ public class JCacheConfig {
      * Make configuration from rule
      *
      * @param name name of configuration
-     * @param rule ${ExpiryPolicyType}:\d+(time-unit(ms|s|m|h))
+     * @param rule ${ExpiryPolicyType}:\d+(time-unit(ms|s|m|h)):${MaxEntries}
      * @return configuration
      */
     private CacheSimpleConfig cacheConfig(String name, String rule) {
-        String[] split = rule.split(":", 2);
+        String[] split = rule.split(":", 3);
         return new CacheSimpleConfig()
                 .setName(name)
                 .setExpiryPolicyFactoryConfig(
                         new ExpiryPolicyFactoryConfig(
                                 new TimedExpiryPolicyFactoryConfig(
                                         ExpiryPolicyType.valueOf(split[0].toUpperCase(Locale.ROOT)),
-                                        durationConfig(split[1]))));
+                                        durationConfig(split[1]))))
+                .setEvictionConfig(
+                        new EvictionConfig(cacheSize(split),
+                                           MaxSizePolicy.ENTRY_COUNT,
+                                           EvictionPolicy.LFU)); // Least Recently Used
+    }
+
+    public static int cacheSize(String[] split) throws NumberFormatException {
+        return Integer.max(1, Integer.parseInt(split[2]));
     }
 
     private static DurationConfig durationConfig(String spec) {
