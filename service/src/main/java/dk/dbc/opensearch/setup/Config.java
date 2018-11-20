@@ -42,7 +42,6 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
-import org.glassfish.jersey.client.ClientConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,8 +68,8 @@ public class Config {
         this.config = readConfiguration();
         this.badgerFishSingle = makeBadgerFishSingle(); // uses config
         this.client = ClientBuilder.newBuilder()
-                .connectTimeout(5, TimeUnit.SECONDS)
-                .readTimeout(120, TimeUnit.SECONDS)
+                .connectTimeout(config.getHttpClient().connectTimeoutMS(), TimeUnit.MILLISECONDS)
+                .readTimeout(config.getHttpClient().readTimeoutMS(), TimeUnit.MILLISECONDS)
                 .executorService(es)
                 .build();
     }

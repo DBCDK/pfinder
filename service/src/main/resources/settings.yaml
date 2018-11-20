@@ -39,3 +39,7 @@ j-cache:
 
 
 x-forwarded-for: $X_FORWARDED_FOR
+
+http-client:
+    connect-timeout: 2500ms
+    read-timeout: 2m

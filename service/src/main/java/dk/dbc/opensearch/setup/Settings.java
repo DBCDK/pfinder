@@ -35,6 +35,11 @@ public class Settings {
     private Map<String, String> jCache;
     private Map<String, String> defaultNamespaces;
     private String xForwardedFor;
+    private HttpClient httpClient;
+
+    public Settings() {
+        httpClient = new HttpClient();
+    }
 
     public String getDefaultRepository() {
         return defaultRepository;
@@ -82,6 +87,14 @@ public class Settings {
 
     public void setXForwardedFor(String xForwardedFor) {
         this.xForwardedFor = xForwardedFor;
+    }
+
+    public HttpClient getHttpClient() {
+        return httpClient;
+    }
+
+    public void setHttpClient(HttpClient httpClient) {
+        this.httpClient = httpClient;
     }
 
     /*
