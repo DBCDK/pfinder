@@ -27,8 +27,10 @@ import dk.dbc.opensearch.solr.SolrRules;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -36,13 +38,13 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static java.util.Collections.*;
-
 /**
  *
  * @author DBC {@literal <dbc.dk>}
  */
-public class Profiles {
+public class Profiles implements Serializable {
+
+    private static final long serialVersionUID = 9097313033801884638L;
 
     public static Profiles from(SolrRules solrRules, String json) {
         try (ByteArrayInputStream is = new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8))) {
@@ -61,20 +63,23 @@ public class Profiles {
         }
     }
 
+    // This probably shouldn't be hardcoded
     private static final String COLLECTION_IDENTIFIER = "rec.collectionIdentifier";
-    private static final CQLException.Position PROFILE_POSITION = new CQLException.Position("FROM PROFILE", 0);
+    private static final CQLException.Position PROFILE_EXCEPTION_LOCATION = new CQLException.Position("FROM PROFILE", 0);
 
-    private final Map<String, Profile> profiles;
+    transient private final Map<String, Profile> profiles;
     private final FieldSpec collectionIdentifierSpec;
     private final String collectionIdentifierIndex;
     private final Map<String, Entry> profileSpecs;
 
     private Profiles(SolrRules solrRules, OAProfileResponse response) {
-        this.collectionIdentifierSpec = solrRules.fieldSpec(COLLECTION_IDENTIFIER, PROFILE_POSITION);
+        // The field spec
+        this.collectionIdentifierSpec = solrRules.fieldSpec(COLLECTION_IDENTIFIER, PROFILE_EXCEPTION_LOCATION);
         if (collectionIdentifierSpec == null) {
             throw new IllegalStateException("Field: " + COLLECTION_IDENTIFIER + " is undefined in solr-rules");
         }
-        this.collectionIdentifierIndex = solrRules.indexName(COLLECTION_IDENTIFIER, PROFILE_POSITION);
+        // the actual name of the field in SolR
+        this.collectionIdentifierIndex = solrRules.indexName(COLLECTION_IDENTIFIER, PROFILE_EXCEPTION_LOCATION);
         this.profileSpecs = response.openSearchProfileResponse.profile
                 .stream()
                 .collect(Collectors.toMap(profile -> profile.profileName,
@@ -82,6 +87,12 @@ public class Profiles {
         this.profiles = new HashMap<>();
     }
 
+    /**
+     * Given a profile object make an entry
+     *
+     * @param profile OpenAgency profile spec
+     * @return {@link Entry}
+     */
     private Entry makeProfileEntry(OAProfile profile) {
         Set<String> searchCollectionIdentifiers = profile.source.stream()
                 .filter(s -> s.sourceSearchable)
@@ -113,6 +124,12 @@ public class Profiles {
         return profiles.computeIfAbsent(name, s -> makeProfile(names));
     }
 
+    /**
+     * Map a list of names into a profile object
+     *
+     * @param names names of profiles to join
+     * @return combined profile
+     */
     private Profile makeProfile(List<String> names) {
         List<Entry> profileEntries = names.stream()
                 .map(this::fetchProfileSpec)
@@ -125,40 +142,43 @@ public class Profiles {
                 profileEntries,
                 Entry::getRelationCollectionIdentifiers);
 
-        Map<String, Set<String>> relations = profileEntries.stream()
-                .map(Entry::getAllowedRelations)
-                .map(Map::keySet) // collectionIdentifers that has relations
-                .flatMap(Set::stream) // as a string stream
-                .collect(Collectors.toSet()).stream() //UNIQ
-                .collect(Collectors.toMap(
-                        s -> s,
-                        s -> allRelationForCollectionIdentifier(profileEntries, s)));
+        Map<String, Set<String>> allRelations = new HashMap<>();
+        profileEntries.forEach(entry -> {
+            entry.getAllowedRelations().forEach((collection, relations) -> {
+                allRelations.computeIfAbsent(collection, c -> new HashSet<>())
+                        .addAll(relations);
+            });
+        });
 
-        return new Profile(searchFilterQuery, relationFilterQuery, relations);
+        return new Profile(searchFilterQuery, relationFilterQuery, allRelations);
     }
 
+    /**
+     * Construct a flatquery or'ing all collection identifiers
+     *
+     * @param profileEntries all the entries that are in this
+     * @param selector       accessor for the entry object
+     * @return an or node with all collection identifiers
+     */
     private FlatQueryOr flatQueryFromEntriesFor(List<Entry> profileEntries, Function<Entry, Set<String>> selector) {
         FlatQueryOr flatQuery = new FlatQueryOr();
         profileEntries.stream()
-                .map(selector)
+                .map(selector) // Extract the right set of collectionIdentifiers
                 .flatMap(Set::stream)
                 .collect(Collectors.toSet()).stream() //UNIQ
                 .map(collectionIdentifier -> new FlatQuerySearch(
-                        PROFILE_POSITION, collectionIdentifierIndex,
+                        PROFILE_EXCEPTION_LOCATION, collectionIdentifierIndex,
                         collectionIdentifier, collectionIdentifierSpec))
                 .forEach(flatQuery::addOr);
         return flatQuery;
     }
 
-    private static Set<String> allRelationForCollectionIdentifier(List<Entry> entries, String collectionIdentifier) {
-        return entries.stream()
-                .map(Entry::getAllowedRelations) // Foreach Entry take allowedRelations
-                .map(t -> t.getOrDefault(collectionIdentifier,
-                                           (Set<String>) EMPTY_SET)) // For collectionIdentifier
-                .flatMap(Set::stream)
-                .collect(Collectors.toSet()); // turn sets into a set
-    }
-
+    /**
+     * Get profile efntry or Fail if profile is unknown
+     *
+     * @param name name of profile
+     * @return entry
+     */
     private Entry fetchProfileSpec(String name) {
         Entry entry = profileSpecs.get(name);
         if (entry == null)
@@ -166,12 +186,24 @@ public class Profiles {
         return entry;
     }
 
-    private static class Entry {
+    private static class Entry implements Serializable {
+
+        private static final long serialVersionUID = -4130851548622871707L;
 
         private final Set<String> searchCollectionIdentifiers;
         private final Set<String> relationCollectionIdentifiers;
         private final Map<String, Set<String>> allowedRelations;
 
+        /**
+         * Entry
+         *
+         * @param searchCollectionIdentifiers   Collections that are allowed for
+         *                                      simple search
+         * @param relationCollectionIdentifiers Collections that are allowed
+         *                                      when requesting relations
+         * @param allowedRelations              which relations that are allowed
+         *                                      for a given collection
+         */
         public Entry(Set<String> searchCollectionIdentifiers, Set<String> relationCollectionIdentifiers, Map<String, Set<String>> allowedRelations) {
             this.searchCollectionIdentifiers = searchCollectionIdentifiers;
             this.relationCollectionIdentifiers = relationCollectionIdentifiers;

@@ -19,6 +19,7 @@
 package dk.dbc.opensearch.solr.profile;
 
 import dk.dbc.opensearch.solr.flatquery.FlatQueryOr;
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
@@ -33,6 +34,12 @@ public class Profile {
     private final FlatQueryOr relationFilterQuery;
     private final Map<String, Set<String>> relations;
 
+    /**
+     *
+     * @param searchFilterQuery   Query for search profile
+     * @param relationFilterQuery Query for relation profile
+     * @param relations           A group of relations by collectionIdentifier
+     */
     Profile(FlatQueryOr searchFilterQuery, FlatQueryOr relationFilterQuery, Map<String, Set<String>> relations) {
         this.searchFilterQuery = searchFilterQuery;
         this.relationFilterQuery = relationFilterQuery;
