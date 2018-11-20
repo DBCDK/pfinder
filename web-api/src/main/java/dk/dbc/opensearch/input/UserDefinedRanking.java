@@ -60,7 +60,7 @@ public class UserDefinedRanking implements InputPart {
         rankField.add(content);
     }
 
-    public List<RankField> getRankFieldOrDefault() {
+    public final List<RankField> getRankFieldOrDefault() {
         return rankField == null ? EMPTY_LIST : rankField;
     }
 
@@ -86,7 +86,7 @@ public class UserDefinedRanking implements InputPart {
 
     @Override
     public String toString() {
-        return "UserDefinedRanking{" + "tieValue=" + tieValue + ", rankField=" + rankField + '}';
+        return "UserDefinedRanking{" + "tieValue=" + tieValue + ", rankField=" + getRankFieldOrDefault() + '}';
     }
 
 }
