@@ -32,10 +32,17 @@ import java.io.InputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.Arrays;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
 import javax.ejb.EJBException;
+import javax.enterprise.concurrent.ManagedExecutorService;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import org.glassfish.jersey.client.ClientConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,14 +55,24 @@ public class Config {
 
     private static final Logger log = LoggerFactory.getLogger(Config.class);
 
+    @Resource(type = ManagedExecutorService.class)
+    ExecutorService es;
+
+
     private BadgerFishSingle badgerFishSingle;
     private Settings config;
+    private Client client;
 
     @PostConstruct
     public void init() {
         log.info("Creating Config");
         this.config = readConfiguration();
         this.badgerFishSingle = makeBadgerFishSingle(); // uses config
+        this.client = ClientBuilder.newBuilder()
+                .connectTimeout(5, TimeUnit.SECONDS)
+                .readTimeout(120, TimeUnit.SECONDS)
+                .executorService(es)
+                .build();
     }
 
     @Produces
@@ -68,6 +85,12 @@ public class Config {
     @ApplicationScoped
     public BadgerFishSingle getBadgerFishSingle() {
         return badgerFishSingle;
+    }
+
+    @Produces
+    @ApplicationScoped
+    public Client getClient() {
+        return client;
     }
 
     private Settings readConfiguration() {
