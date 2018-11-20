@@ -35,6 +35,9 @@ public class ModifierCollection extends HashMap<String, Modifier> {
     }
 
     public static final ModifierCollection EMPTY = new ModifierCollection() {
+
+        private static final long serialVersionUID = 130701394567992974L;
+
         @Override
         public void clear() {
             throw new IllegalStateException("unmodifiable");

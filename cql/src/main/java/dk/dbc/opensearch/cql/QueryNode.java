@@ -18,9 +18,11 @@
  */
 package dk.dbc.opensearch.cql;
 
+import java.io.Serializable;
+
 /**
  *
  * @author DBC {@literal <dbc.dk>}
  */
-public interface QueryNode {
+public interface QueryNode extends Serializable {
 }

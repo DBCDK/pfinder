@@ -29,6 +29,8 @@ import java.util.stream.Collectors;
  */
 public class BoolQuery implements QueryNode {
 
+    private static final long serialVersionUID = 2003231257534175543L;
+
     private QueryNode left;
     private final BooleanOpName operator;
     private final Position pos;

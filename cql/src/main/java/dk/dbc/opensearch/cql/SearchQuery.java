@@ -28,11 +28,14 @@ import java.util.stream.Collectors;
  */
 public class SearchQuery implements QueryNode {
 
+    private static final long serialVersionUID = -8203560611906805497L;
+
     private final String index;
     private final String relation;
     private final ModifierCollection modifiers;
     private final String searchTerm;
-    private final Position pos;
+
+    transient private final Position pos;
 
     public SearchQuery(Position pos, String searchTerm) {
         this(pos, "default", "=", ModifierCollection.EMPTY, searchTerm);
