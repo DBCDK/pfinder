@@ -1,0 +1,11 @@
+{ 
+    "search": {
+        "agency": "100200",
+        "profile": "test",
+        "start": 1,
+        "stepValue": 10,
+        "callback": "cb",
+        "collectionType": "work-1",
+        "outputType": "SOAP"
+    }
+}

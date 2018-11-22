@@ -36,29 +36,29 @@ public class SearchRequest extends CommonRequest {
     public static final InputPartFactory<SearchRequest> FACTORY =
             new InputPartFactory<>(SearchRequest::new)
                     // Base
-                    .with("agency", obj -> obj::setAgency)
+                    .with("agency", obj -> obj::putAgency)
                     .with("profile", obj -> obj::addProfile)
-                    .with("callback", obj -> obj::setCallback)
-                    .with("outputType", obj -> obj::setOutputType)
-                    .with("trackingId", obj -> obj::setTrackingId)
+                    .with("callback", obj -> obj::putCallback)
+                    .with("outputType", obj -> obj::putOutputType)
+                    .with("trackingId", obj -> obj::putTrackingId)
                     // Common
-                    .with("showAgency", obj -> obj::setShowAgency)
-                    .with("authentication", Authentication.FACTORY, obj -> obj::setAuthentication)
-                    .with("includeHoldingsCount", obj -> obj::setIncludeHoldingsCount)
-                    .with("relationData", obj -> obj::setRelationData)
-                    .with("repository", obj -> obj::setRepository)
+                    .with("showAgency", obj -> obj::putShowAgency)
+                    .with("authentication", Authentication.FACTORY, obj -> obj::putAuthentication)
+                    .with("includeHoldingsCount", obj -> obj::putIncludeHoldingsCount)
+                    .with("relationData", obj -> obj::putRelationData)
+                    .with("repository", obj -> obj::putRepository)
                     // Local
-                    .with("allObjects", obj -> obj::setAllObjects)
-                    .with("collapseHitsThreshold", obj -> obj::setCollapseHitsThreshold)
-                    .with("collectionType", obj -> obj::setCollectionType)
+                    .with("allObjects", obj -> obj::putAllObjects)
+                    .with("collapseHitsThreshold", obj -> obj::putCollapseHitsThreshold)
+                    .with("collectionType", obj -> obj::putCollectionType)
                     .with("facets", Facets.FACTORY, obj -> obj::addFacets)
                     .with("objectFormat", obj -> obj::addObjectFormat)
-                    .with("query", obj -> obj::setQuery)
-                    .with("queryDebug", obj -> obj::setQueryDebug)
-                    .with("queryLanguage", obj -> obj::setQueryLanguage)
+                    .with("query", obj -> obj::putQuery)
+                    .with("queryDebug", obj -> obj::putQueryDebug)
+                    .with("queryLanguage", obj -> obj::putQueryLanguage)
                     .with("sort", obj -> obj::addSort)
-                    .with("start", obj -> obj::setStart)
-                    .with("stepValue", obj -> obj::setStepValue)
+                    .with("start", obj -> obj::putStart)
+                    .with("stepValue", obj -> obj::putStepValue)
                     .with("userDefinedBoost", UserDefinedBoost.FACTORY, obj -> obj::addUserDefinedBoost)
                     .with("userDefinedRanking", UserDefinedRanking.FACTORY, obj -> obj::addUserDefinedRanking);
 
@@ -76,7 +76,7 @@ public class SearchRequest extends CommonRequest {
     private CollectionType collectionType;
     private List<Facets> facets = null;
     private Integer collapseHitsThreshold = null;
-    private final List<String> objectFormat = new ArrayList<>();
+    private List<String> objectFormat = null;
     private Integer start = null;
     private Integer stepValue = null;
     private List<UserDefinedRanking> userDefinedRanking = null;
@@ -92,21 +92,47 @@ public class SearchRequest extends CommonRequest {
         super.validate(location);
         if (query == null)
             throw new XMLStreamException("property 'query' is required in a searchRequest");
+        if(queryLanguage == null)
+            queryLanguage = "cql";
+        switch (queryLanguage) {
+            case "cql":
+            case "cqleng":
+                queryLanguage = "cqleng";
+                break;
+            default:
+                throw new XMLStreamException("unsuppoerted queryLanguang in searchRequest");
+        }
+        if (sort != null && userDefinedRanking != null)
+            throw new XMLStreamException("Only one of sort and userDefinedRanking is supported in searchRequest");
+        if(userDefinedRanking != null) {
+            for (UserDefinedRanking obj : userDefinedRanking) {
+                obj.validate(location);
+            }
+        }
+        if(userDefinedBoost != null) {
+            for (UserDefinedBoost obj : userDefinedBoost) {
+                obj.validate(location);
+            }
+        }
     }
 
     //
     // Setters and getters
     //
-    public void setAllObjects(String content, Location location) throws XMLStreamException {
+    public void putAllObjects(String content, Location location) throws XMLStreamException {
         allObjects = get("allObjects", allObjects, content, location,
-                         s -> Boolean.parseBoolean(trimNotEmpty(s)));
+                         s -> bool(trimNotEmpty(s)));
     }
 
     public Boolean getAllObjects() {
         return allObjects;
     }
 
-    public void setCollapseHitsThreshold(String content, Location location) throws XMLStreamException {
+    public void setAllObjects(Boolean allObjects) {
+        this.allObjects = allObjects;
+    }
+
+    public void putCollapseHitsThreshold(String content, Location location) throws XMLStreamException {
         collapseHitsThreshold = get("collapseHitsThreshold", collapseHitsThreshold, content, location,
                                     s -> Integer.parseUnsignedInt(trimNotEmpty(s)));
     }
@@ -115,13 +141,25 @@ public class SearchRequest extends CommonRequest {
         return collapseHitsThreshold;
     }
 
-    public void setCollectionType(String content, Location location) throws XMLStreamException {
+    public void setCollapseHitsThreshold(Integer collapseHitsThreshold) {
+        this.collapseHitsThreshold = collapseHitsThreshold;
+    }
+
+    public void putCollectionType(String content, Location location) throws XMLStreamException {
         collectionType = get("collectionType", collectionType, content, location,
                              COLLECTION_TYPES);
     }
 
-    public CollectionType getCollectionType() {
+    public final CollectionType getCollectionTypeOrDefault() {
         return collectionType == null ? CollectionType.WORK : collectionType;
+    }
+
+    public CollectionType getCollectionType() {
+        return collectionType;
+    }
+
+    public void setCollectionType(CollectionType collectionType) {
+        this.collectionType = collectionType;
     }
 
     public void addFacets(Facets content, Location location) throws XMLStreamException {
@@ -134,15 +172,29 @@ public class SearchRequest extends CommonRequest {
         return facets;
     }
 
+    public void setFacets(List<Facets> facets) {
+        this.facets = facets;
+    }
+
     public void addObjectFormat(String content, Location location) throws XMLStreamException {
+        if (objectFormat == null)
+            objectFormat = new ArrayList<>();
         objectFormat.add(get("objectFormat", content, location, OBJECT_FORMATS));
     }
 
-    public List<String> getObjectFormats() {
-        return objectFormat.isEmpty() ? Arrays.asList("marcxchange") : objectFormat;
+    public List<String> getObjectFormatOrDerault() {
+        return objectFormat == null || objectFormat.isEmpty() ? Arrays.asList("marcxchange") : objectFormat;
     }
 
-    public void setQuery(String content, Location location) throws XMLStreamException {
+    public List<String> getObjectFormat() {
+        return objectFormat;
+    }
+
+    public void setObjectFormat(List<String> objectFormat) {
+        this.objectFormat = objectFormat;
+    }
+
+    public void putQuery(String content, Location location) throws XMLStreamException {
         query = get("query", query, content, location,
                     s -> trimNotEmpty(s));
     }
@@ -151,22 +203,34 @@ public class SearchRequest extends CommonRequest {
         return query;
     }
 
-    public void setQueryDebug(String content, Location location) throws XMLStreamException {
+    public void setQuery(String query) {
+        this.query = query;
+    }
+
+    public void putQueryDebug(String content, Location location) throws XMLStreamException {
         queryDebug = get("queryDebug", queryDebug, content, location,
-                         s -> Boolean.parseBoolean(trimNotEmpty(s)));
+                         s -> bool(trimNotEmpty(s)));
     }
 
     public Boolean getQueryDebug() {
         return queryDebug;
     }
 
-    public void setQueryLanguage(String content, Location location) throws XMLStreamException {
+    public void setQueryDebug(boolean queryDebug) {
+        this.queryDebug = queryDebug;
+    }
+
+    public void putQueryLanguage(String content, Location location) throws XMLStreamException {
         queryLanguage = get("queryLanguage", queryLanguage, content, location,
                             QUERY_LANGUAGES);
     }
 
     public String getQueryLanguage() {
         return queryLanguage;
+    }
+
+    public void setQueryLanguage(String queryLanguage) {
+        this.queryLanguage = queryLanguage;
     }
 
     public void addSort(String content, Location location) throws XMLStreamException {
@@ -181,22 +245,42 @@ public class SearchRequest extends CommonRequest {
         return sort;
     }
 
-    public void setStart(String content, Location location) throws XMLStreamException {
+    public void setSort(List<String> sort) {
+        this.sort = sort;
+    }
+
+    public void putStart(String content, Location location) throws XMLStreamException {
         start = get("start", start, content, location,
                     s -> Integer.parseUnsignedInt(trimNotEmpty(s)));
     }
 
-    public Integer getStart() {
+    public final Integer getStartOrDefault() {
         return start == null ? 1 : Integer.max(1, start);
     }
 
-    public void setStepValue(String content, Location location) throws XMLStreamException {
+    public Integer getStart() {
+        return start;
+    }
+
+    public void setStart(Integer start) {
+        this.start = start;
+    }
+
+    public void putStepValue(String content, Location location) throws XMLStreamException {
         stepValue = get("stepValue", stepValue, content, location,
                         s -> Integer.parseUnsignedInt(trimNotEmpty(s)));
     }
 
-    public Integer getStepValue() {
+    public final Integer getStepValueOrDefault() {
         return stepValue == null ? 0 : stepValue;
+    }
+
+    public Integer getStepValue() {
+        return stepValue;
+    }
+
+    public void setStepValue(Integer stepValue) {
+        this.stepValue = stepValue;
     }
 
     public void addUserDefinedBoost(UserDefinedBoost content, Location location) {
@@ -207,6 +291,10 @@ public class SearchRequest extends CommonRequest {
 
     public List<UserDefinedBoost> getUserDefinedBoost() {
         return userDefinedBoost;
+    }
+
+    public void setUserDefinedBoost(List<UserDefinedBoost> userDefinedBoost) {
+        this.userDefinedBoost = userDefinedBoost;
     }
 
     public void addUserDefinedRanking(UserDefinedRanking content, Location location) throws XMLStreamException {
@@ -221,10 +309,14 @@ public class SearchRequest extends CommonRequest {
         return userDefinedRanking;
     }
 
+    public void setUserDefinedRanking(List<UserDefinedRanking> userDefinedRanking) {
+        this.userDefinedRanking = userDefinedRanking;
+    }
+
     @Override
     public String toString() {
         String s = super.toString();
-        return "SearchRequest{" + s.substring(s.indexOf('{') + 1, s.lastIndexOf('}')) + ",query=" + query + ", queryLanguage=" + queryLanguage + ", allObjects=" + allObjects + ", collectionType=" + collectionType + ", facets=" + facets + ", collapseHitsThreshold=" + collapseHitsThreshold + ", objectFormat=" + objectFormat + ", start=" + start + ", stepValue=" + stepValue + ", userDefinedRanking=" + userDefinedRanking + ", sort=" + sort + ", userDefinedBoost=" + userDefinedBoost + ", queryDebug=" + queryDebug + '}';
+        return "SearchRequest{" + s.substring(s.indexOf('{') + 1, s.lastIndexOf('}')) + ", query=" + query + ", queryLanguage=" + queryLanguage + ", allObjects=" + allObjects + ", collectionType=" + getCollectionTypeOrDefault() + ", facets=" + facets + ", collapseHitsThreshold=" + collapseHitsThreshold + ", objectFormat=" + objectFormat + ", start=" + getStartOrDefault() + ", stepValue=" + getStepValueOrDefault() + ", userDefinedRanking=" + userDefinedRanking + ", sort=" + sort + ", userDefinedBoost=" + userDefinedBoost + ", queryDebug=" + queryDebug + '}';
     }
 
 }

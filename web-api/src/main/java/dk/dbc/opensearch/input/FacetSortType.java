@@ -18,6 +18,8 @@
  */
 package dk.dbc.opensearch.input;
 
+import java.util.Locale;
+
 /**
  *
  * @author DBC {@literal <dbc.dk>}
@@ -26,7 +28,7 @@ public enum FacetSortType {
     COUNT, INDEX;
 
     public static FacetSortType from(String value) {
-        switch (value) {
+        switch (value.toLowerCase(Locale.ROOT)) {
             case "count":
                 return COUNT;
             case "index":

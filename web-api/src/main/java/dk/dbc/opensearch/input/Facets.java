@@ -25,6 +25,7 @@ import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamException;
 
 import static dk.dbc.opensearch.input.RequestHelpers.*;
+import static java.util.Collections.EMPTY_LIST;
 
 /**
  *
@@ -34,11 +35,11 @@ public class Facets implements InputPart {
 
     public static final InputPartFactory<Facets> FACTORY =
             new InputPartFactory<>(Facets::new)
-                    .with("numberOfTerms", obj -> obj::setNumberOfTerms)
-                    .with("facetSort", obj -> obj::setFacetSort)
-                    .with("facetMinCount", obj -> obj::setFacetMinCount)
+                    .with("numberOfTerms", obj -> obj::putNumberOfTerms)
+                    .with("facetSort", obj -> obj::putFacetSort)
+                    .with("facetMinCount", obj -> obj::putFacetMinCount)
                     .with("facetName", obj -> obj::addFacetName)
-                    .with("facetOffset", obj -> obj::setFacetOffset);
+                    .with("facetOffset", obj -> obj::putFacetOffset);
 
     private static final Function<String, FacetSortType> FACET_SORT_TYPES = mapTo(makeTrimOneOf("facetSort", "count", "index"),
                                                                                   FacetSortType::from);
@@ -56,7 +57,7 @@ public class Facets implements InputPart {
     public void validate(Location location) {
     }
 
-    public void setFacetMinCount(String content, Location location) throws XMLStreamException {
+    public void putFacetMinCount(String content, Location location) throws XMLStreamException {
         facetMinCount = get("facetMinCount", facetMinCount, content, location,
                             s -> Integer.parseUnsignedInt(trimNotEmpty(s)));
     }
@@ -65,17 +66,29 @@ public class Facets implements InputPart {
         return facetMinCount;
     }
 
+    public void setFacetMinCount(Integer facetMinCount) {
+        this.facetMinCount = facetMinCount;
+    }
+
     public void addFacetName(String content, Location location) throws XMLStreamException {
         if (facetName == null)
             facetName = new ArrayList<>();
         facetName.add(get("facetName", content, location, s -> trimNotEmptyOneWord(content)));
     }
 
+    public final List<String> getFacetNamesOrDefault() {
+        return facetName == null ? EMPTY_LIST : facetName;
+    }
+
     public List<String> getFacetNames() {
         return facetName;
     }
 
-    public void setFacetOffset(String content, Location location) throws XMLStreamException {
+    public void setFacetName(List<String> facetName) {
+        this.facetName = facetName;
+    }
+
+    public void putFacetOffset(String content, Location location) throws XMLStreamException {
         facetOffset = get("facetOffset", facetOffset, content, location,
                           s -> Integer.parseUnsignedInt(trimNotEmpty(s)));
     }
@@ -84,7 +97,11 @@ public class Facets implements InputPart {
         return facetOffset;
     }
 
-    public void setFacetSort(String content, Location location) throws XMLStreamException {
+    public void setFacetOffset(Integer facetOffset) {
+        this.facetOffset = facetOffset;
+    }
+
+    public void putFacetSort(String content, Location location) throws XMLStreamException {
         facetSort = get("facetSort", facetSort, content, location,
                         FACET_SORT_TYPES);
     }
@@ -93,7 +110,11 @@ public class Facets implements InputPart {
         return facetSort;
     }
 
-    public void setNumberOfTerms(String content, Location location) throws XMLStreamException {
+    public void setFacetSort(FacetSortType facetSort) {
+        this.facetSort = facetSort;
+    }
+
+    public void putNumberOfTerms(String content, Location location) throws XMLStreamException {
         numberOfTerms = get("numberOfTerms", numberOfTerms, content, location,
                             s -> Integer.parseUnsignedInt(trimNotEmpty(s)));
     }
@@ -102,9 +123,13 @@ public class Facets implements InputPart {
         return numberOfTerms;
     }
 
+    public void setNumberOfTerms(Integer numberOfTerms) {
+        this.numberOfTerms = numberOfTerms;
+    }
+
     @Override
     public String toString() {
-        return "Facets{" + "numberOfTerms=" + numberOfTerms + ", facetSort=" + facetSort + ", facetMinCount=" + facetMinCount + ", facetName=" + facetName + ", facetOffset=" + facetOffset + '}';
+        return "Facets{" + "numberOfTerms=" + numberOfTerms + ", facetSort=" + facetSort + ", facetMinCount=" + facetMinCount + ", facetName=" + getFacetNamesOrDefault() + ", facetOffset=" + facetOffset + '}';
     }
 
 }

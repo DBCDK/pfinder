@@ -31,8 +31,8 @@ public class AgencyAndLocalIdentifier implements InputPart {
 
     public static final InputPartFactory<AgencyAndLocalIdentifier> READER =
             new InputPartFactory<>(AgencyAndLocalIdentifier::new)
-                    .with("agency", obj -> obj::setAgency)
-                    .with("localIdentifier", obj -> obj::setLocalIdentifier);
+                    .with("agency", obj -> obj::putAgency)
+                    .with("localIdentifier", obj -> obj::putLocalIdentifier);
 
     private String agency = null;
     private String localIdentifier = null;
@@ -48,7 +48,7 @@ public class AgencyAndLocalIdentifier implements InputPart {
             throw new XMLStreamException("localIdentifier is a required property of agencyAndLocalIdentifier", location);
     }
 
-    public void setAgency(String content, Location location) throws XMLStreamException {
+    public void putAgency(String content, Location location) throws XMLStreamException {
         agency = get("agency", agency, content, location,
                      s -> trimNotEmpty(s));
     }
@@ -57,13 +57,21 @@ public class AgencyAndLocalIdentifier implements InputPart {
         return agency;
     }
 
-    public void setLocalIdentifier(String content, Location location) throws XMLStreamException {
+    public void setAgency(String agency) {
+        this.agency = agency;
+    }
+
+    public void putLocalIdentifier(String content, Location location) throws XMLStreamException {
         localIdentifier = get("localIdentifier", localIdentifier, content, location,
                               s -> trimNotEmpty(s));
     }
 
     public String getLocalIdentifier() {
         return localIdentifier;
+    }
+
+    public void setLocalIdentifier(String localIdentifier) {
+        this.localIdentifier = localIdentifier;
     }
 
     @Override

@@ -41,6 +41,7 @@ public class RequestParser {
             maskOf(ENTITY_REFERENCE) | maskOf(ATTRIBUTE) |
             maskOf(DTD) | maskOf(NAMESPACE) | maskOf(NOTATION_DECLARATION) |
             maskOf(ENTITY_DECLARATION);
+
     public static final String OS_URI = "http://oss.dbc.dk/ns/opensearch";
     public static final String SOAP_URI = "http://schemas.xmlsoap.org/soap/envelope/";
 
@@ -67,6 +68,13 @@ public class RequestParser {
     private final XMLEventReader reader;
     private BaseRequest request;
 
+    protected RequestParser(BaseRequest request) {
+        this.reader = null;
+        this.request = request;
+        setDefaultOutputType(OutputType.JSON);
+        setDefaultTrackingId();
+    }
+
     public RequestParser(InputStream is) throws XMLStreamException {
         this.reader = I.createFilteredReader(
                 I.createXMLEventReader(is),
@@ -75,7 +83,7 @@ public class RequestParser {
     }
 
     public boolean isGetObjectRequest() {
-        return request instanceof GetObjectRequest;
+        return request != null && request instanceof GetObjectRequest;
     }
 
     public GetObjectRequest asGetObjectRequest() {
@@ -83,7 +91,7 @@ public class RequestParser {
     }
 
     public boolean isInfoRequest() {
-        return request instanceof InfoRequest;
+        return request != null && request instanceof InfoRequest;
     }
 
     public InfoRequest asInfoRequest() {
@@ -91,7 +99,7 @@ public class RequestParser {
     }
 
     public boolean isSearchRequest() {
-        return request instanceof SearchRequest;
+        return request != null && request instanceof SearchRequest;
     }
 
     public SearchRequest asSearchRequest() {

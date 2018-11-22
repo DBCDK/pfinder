@@ -25,6 +25,7 @@ import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamException;
 
 import static dk.dbc.opensearch.input.RequestHelpers.*;
+import static java.util.Collections.EMPTY_LIST;
 
 /**
  *
@@ -36,7 +37,7 @@ public class BaseRequest implements InputPart {
                                                                            OutputType::from);
 
     private Integer agency = null;
-    private final List<String> profile = new ArrayList<>();
+    private List<String> profile;
     private String callback = null;
     private OutputType outputType = null;
     private String trackingId = null;
@@ -48,14 +49,14 @@ public class BaseRequest implements InputPart {
     public void validate(Location location) throws XMLStreamException {
         if (agency == null)
             throw new XMLStreamException("property 'agency' is required in a searchRequest");
-        if (profile.isEmpty())
+        if (profile == null || profile.isEmpty())
             throw new XMLStreamException("property 'profile' is required in a searchRequest");
     }
 
     //
     // Setters and getters
     //
-    public void setAgency(String content, Location location) throws XMLStreamException {
+    public void putAgency(String content, Location location) throws XMLStreamException {
         agency = get("agency", agency, content, location,
                      s -> Integer.parseUnsignedInt(trimNotEmpty(s), 10));
     }
@@ -64,7 +65,11 @@ public class BaseRequest implements InputPart {
         return agency;
     }
 
-    public void setCallback(String content, Location location) throws XMLStreamException {
+    public void setAgency(Integer agency) {
+        this.agency = agency;
+    }
+
+    public void putCallback(String content, Location location) throws XMLStreamException {
         callback = get("callback", callback, content, location);
     }
 
@@ -72,11 +77,11 @@ public class BaseRequest implements InputPart {
         return callback;
     }
 
-    public void setOutputType(OutputType outputType) {
-        this.outputType = outputType;
+    public void setCallback(String callback) {
+        this.callback = callback;
     }
 
-    public void setOutputType(String content, Location location) throws XMLStreamException {
+    public void putOutputType(String content, Location location) throws XMLStreamException {
         outputType = get("outputType", outputType, content, location,
                          OUTPUT_TYPES);
     }
@@ -85,20 +90,30 @@ public class BaseRequest implements InputPart {
         return outputType;
     }
 
+    public void setOutputType(OutputType outputType) {
+        this.outputType = outputType;
+    }
+
     public void addProfile(String content, Location location) throws XMLStreamException {
+        if (profile == null)
+            profile = new ArrayList<>();
         profile.add(get("profile", content, location,
                         s -> trimNotEmptyOneWord(s)));
     }
 
-    public List<String> getProfiles() {
+    public List<String> getProfile() {
         return profile;
     }
 
-    public void setTrackingId(String trackingId) {
-        this.trackingId = trackingId;
+    public final List<String> getProfilesOrDefault() {
+        return profile == null ? EMPTY_LIST : profile;
     }
 
-    public void setTrackingId(String content, Location location) throws XMLStreamException {
+    public void setProfile(List<String> profiles) {
+        this.profile = profiles;
+    }
+
+    public void putTrackingId(String content, Location location) throws XMLStreamException {
         trackingId = get("trackingId", trackingId, content, location);
     }
 
@@ -106,9 +121,13 @@ public class BaseRequest implements InputPart {
         return trackingId;
     }
 
+    public void setTrackingId(String trackingId) {
+        this.trackingId = trackingId;
+    }
+
     @Override
     public String toString() {
-        return "BaseRequest{" + "agency=" + agency + ", profile=" + profile + ", callback=" + callback + ", outputType=" + outputType + ", trackingId=" + trackingId + '}';
+        return "BaseRequest{" + "agency=" + agency + ", profile=" + getProfilesOrDefault() + ", callback=" + callback + ", outputType=" + outputType + ", trackingId=" + trackingId + '}';
     }
 
 }

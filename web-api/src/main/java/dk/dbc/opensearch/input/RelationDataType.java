@@ -18,6 +18,8 @@
  */
 package dk.dbc.opensearch.input;
 
+import java.util.Locale;
+
 /**
  *
  * @author DBC {@literal <dbc.dk>}
@@ -26,7 +28,7 @@ public enum RelationDataType {
     TYPE, URI, FULL;
 
     public static RelationDataType from(String value) {
-        switch (value) {
+        switch (value.toLowerCase(Locale.ROOT)) {
             case "type":
                 return TYPE;
             case "uri":

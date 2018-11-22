@@ -1,0 +1,9 @@
+{ 
+    "search": {
+        "query": "danmark and hello",
+        "profile": "test",
+        "start": 1,
+        "stepValue": 10,
+        "collectionType": "work-1"
+    }
+}

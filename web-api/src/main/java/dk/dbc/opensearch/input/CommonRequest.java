@@ -50,7 +50,7 @@ public class CommonRequest extends BaseRequest {
     //
     // Setters and getters
     //
-    public void setAuthentication(Authentication content, Location location) throws XMLStreamException {
+    public void putAuthentication(Authentication content, Location location) throws XMLStreamException {
         authentication = get("authentication", authentication, content, location);
     }
 
@@ -58,16 +58,24 @@ public class CommonRequest extends BaseRequest {
         return authentication;
     }
 
-    public void setIncludeHoldingsCount(String content, Location location) throws XMLStreamException {
+    public void setAuthentication(Authentication authentication) {
+        this.authentication = authentication;
+    }
+
+    public void putIncludeHoldingsCount(String content, Location location) throws XMLStreamException {
         includeHoldingsCount = get("includeHoldingsCount", includeHoldingsCount, content, location,
-                                   s -> Boolean.parseBoolean(trimNotEmpty(s)));
+                                   s -> bool(trimNotEmpty(s)));
     }
 
     public Boolean getIncludeHoldingsCount() {
         return includeHoldingsCount;
     }
 
-    public void setRepository(String content, Location location) throws XMLStreamException {
+    public void setIncludeHoldingsCount(Boolean includeHoldingsCount) {
+        this.includeHoldingsCount = includeHoldingsCount;
+    }
+
+    public void putRepository(String content, Location location) throws XMLStreamException {
         repository = get("repository", repository, content, location,
                          s -> trimNotEmptyOneWord(s));
     }
@@ -76,7 +84,11 @@ public class CommonRequest extends BaseRequest {
         return repository;
     }
 
-    public void setRelationData(String content, Location location) throws XMLStreamException {
+    public void setRepository(String repository) {
+        this.repository = repository;
+    }
+
+    public void putRelationData(String content, Location location) throws XMLStreamException {
         relationData = get("relationData", relationData, content, location,
                            RELATION_DATAS);
     }
@@ -85,7 +97,11 @@ public class CommonRequest extends BaseRequest {
         return relationData;
     }
 
-    public void setShowAgency(String content, Location location) throws XMLStreamException {
+    public void setRelationData(RelationDataType relationData) {
+        this.relationData = relationData;
+    }
+
+    public void putShowAgency(String content, Location location) throws XMLStreamException {
         showAgency = get("showAgency", showAgency, content, location,
                          s -> Integer.parseUnsignedInt(trimNotEmpty(s), 10));
     }
@@ -94,12 +110,16 @@ public class CommonRequest extends BaseRequest {
         return showAgency;
     }
 
+    public void setShowAgency(Integer showAgency) {
+        this.showAgency = showAgency;
+    }
+
     @Override
     public String toString() {
         String s = super.toString();
         return "CommonRequest{" +
-               "showAgency=" + showAgency + ", authentication=" + authentication + ", includeHoldingsCount=" + includeHoldingsCount + ", relationData=" + relationData + ", repository=" + repository +
-               s.substring(s.indexOf('{'));
+               s.substring(s.indexOf('{') + 1, s.lastIndexOf('}')) +
+               ", showAgency=" + showAgency + ", authentication=" + authentication + ", includeHoldingsCount=" + includeHoldingsCount + ", relationData=" + relationData + ", repository=" + repository + '}';
     }
 
 }

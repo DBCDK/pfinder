@@ -34,17 +34,17 @@ public class GetObjectRequest extends CommonRequest {
     public static final InputPartFactory<GetObjectRequest> FACTORY =
             new InputPartFactory<>(GetObjectRequest::new)
                     // Base
-                    .with("agency", obj -> obj::setAgency)
+                    .with("agency", obj -> obj::putAgency)
                     .with("profile", obj -> obj::addProfile)
-                    .with("callback", obj -> obj::setCallback)
-                    .with("outputType", obj -> obj::setOutputType)
-                    .with("trackingId", obj -> obj::setTrackingId)
+                    .with("callback", obj -> obj::putCallback)
+                    .with("outputType", obj -> obj::putOutputType)
+                    .with("trackingId", obj -> obj::putTrackingId)
                     // Common
-                    .with("showAgency", obj -> obj::setShowAgency)
-                    .with("authentication", Authentication.FACTORY, obj -> obj::setAuthentication)
-                    .with("includeHoldingsCount", obj -> obj::setIncludeHoldingsCount)
-                    .with("relationData", obj -> obj::setRelationData)
-                    .with("repository", obj -> obj::setRepository)
+                    .with("showAgency", obj -> obj::putShowAgency)
+                    .with("authentication", Authentication.FACTORY, obj -> obj::putAuthentication)
+                    .with("includeHoldingsCount", obj -> obj::putIncludeHoldingsCount)
+                    .with("relationData", obj -> obj::putRelationData)
+                    .with("repository", obj -> obj::putRepository)
                     // Local
                     .with("identifier", obj -> obj::addIdentifier)
                     .with("localIdentifier", obj -> obj::addLocalIdentifier)
@@ -65,7 +65,10 @@ public class GetObjectRequest extends CommonRequest {
         if (identifier == null ||
             localIdentifier == null ||
             agencyAndLocalIdentifier == null)
-            throw new XMLStreamException("one of identifier, localIdentifier or agencyAndLocalIdentifier iw required");
+            throw new XMLStreamException("one of identifier, localIdentifier or agencyAndLocalIdentifier is required");
+        if (identifier != null && ( localIdentifier != null || agencyAndLocalIdentifier != null ) ||
+            ( localIdentifier != null && agencyAndLocalIdentifier != null ))
+            throw new XMLStreamException("only one of identifier, localIdentifier or agencyAndLocalIdentifier is allowed");
     }
 
     //
@@ -86,6 +89,10 @@ public class GetObjectRequest extends CommonRequest {
         return identifier;
     }
 
+    public void setIdentifier(List<String> identifier) {
+        this.identifier = identifier;
+    }
+
     public void addLocalIdentifier(String content, Location location) throws XMLStreamException {
         if (identifier != null)
             throw new XMLStreamException("Cannot have both identifier and localIdentifier", location);
@@ -99,6 +106,10 @@ public class GetObjectRequest extends CommonRequest {
 
     public List<String> getLocalIdentifier() {
         return localIdentifier;
+    }
+
+    public void setLocalIdentifier(List<String> localIdentifier) {
+        this.localIdentifier = localIdentifier;
     }
 
     public void addAgencyAndLocalIdentifier(AgencyAndLocalIdentifier content, Location location) throws XMLStreamException {
@@ -115,6 +126,10 @@ public class GetObjectRequest extends CommonRequest {
         return agencyAndLocalIdentifier;
     }
 
+    public void setAgencyAndLocalIdentifier(List<AgencyAndLocalIdentifier> agencyAndLocalIdentifier) {
+        this.agencyAndLocalIdentifier = agencyAndLocalIdentifier;
+    }
+
     public void addObjectFormat(String content, Location location) throws XMLStreamException {
         this.objectFormat.add(get("objectFormat", content, location,
                                   s -> trimNotEmptyOneWord(s)));
@@ -124,12 +139,14 @@ public class GetObjectRequest extends CommonRequest {
         return objectFormat;
     }
 
+    public void setObjectFormat(List<String> objectFormat) {
+        this.objectFormat = objectFormat;
+    }
+
     @Override
     public String toString() {
         String s = super.toString();
-        return "GetObjectRequest{" +
-               "identifier=" + identifier + ", localIdentifier=" + localIdentifier + ", agencyAndLocalIdentifier=" + agencyAndLocalIdentifier + ", objectFormat=" + objectFormat +
-               s.substring(s.indexOf('{') + 1);
+        return "GetObjectRequest{" + s.substring(s.indexOf('{') + 1, s.lastIndexOf('}')) + ", identifier=" + identifier + ", localIdentifier=" + localIdentifier + ", agencyAndLocalIdentifier=" + agencyAndLocalIdentifier + ", objectFormat=" + objectFormat + '}';
     }
 
 }

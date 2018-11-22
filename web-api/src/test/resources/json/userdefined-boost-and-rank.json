@@ -1,0 +1,35 @@
+{
+    "search": {
+        "query": "angora",
+        "agency": 100200,
+        "profile": "test",
+        "collectionType": "MaNifestation",
+        "start": 1,
+        "stepValue": 10,
+        "outputType": "SOAP",
+        "trackingId": "xxx",
+        "userDefinedRanking": [
+            {
+                "tieValue": 0.1,
+                "rankField": [
+                    {
+                        "fieldName": "dkcclterm.ti",
+                        "fieldType": "word",
+                        "weight": 4
+                    },
+                    {
+                        "fieldName": "dkcclterm.ti",
+                        "fieldType": "phrase",
+                        "weight": 8
+                    }
+                ]
+            }
+        ],
+        "userDefinedBoost": {
+            "fieldName": "term.workType",
+            "fieldValue": "literature",
+            "weight": 20
+        },
+        "queryDebug": true
+    }
+}

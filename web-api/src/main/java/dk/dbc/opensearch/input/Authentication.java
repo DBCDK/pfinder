@@ -31,9 +31,9 @@ public class Authentication implements InputPart {
 
     public static final InputPartFactory<Authentication> FACTORY =
             new InputPartFactory<>(Authentication::new)
-                    .with("groupIdAut", obj -> obj::setGroupIdAut)
-                    .with("passwordAut", obj -> obj::setPasswordAut)
-                    .with("userIdAut", obj -> obj::setUserIdAut);
+                    .with("groupIdAut", obj -> obj::putGroupIdAut)
+                    .with("passwordAut", obj -> obj::putPasswordAut)
+                    .with("userIdAut", obj -> obj::putUserIdAut);
 
     private String groupIdAut = null;
     private String passwordAut = null;
@@ -52,7 +52,7 @@ public class Authentication implements InputPart {
             throw new XMLStreamException("userIdAut is a required property of authentication", location);
     }
 
-    public void setGroupIdAut(String content, Location location) throws XMLStreamException {
+    public void putGroupIdAut(String content, Location location) throws XMLStreamException {
         groupIdAut = get("groupIdAut", groupIdAut, content, location,
                          s -> trimNotEmpty(s));
     }
@@ -61,7 +61,11 @@ public class Authentication implements InputPart {
         return groupIdAut;
     }
 
-    public void setPasswordAut(String content, Location location) throws XMLStreamException {
+    public void setGroupIdAut(String groupIdAut) {
+        this.groupIdAut = groupIdAut;
+    }
+
+    public void putPasswordAut(String content, Location location) throws XMLStreamException {
         passwordAut = get("passwordAut", passwordAut, content, location);
     }
 
@@ -69,13 +73,21 @@ public class Authentication implements InputPart {
         return passwordAut;
     }
 
-    public void setUserIdAut(String content, Location location) throws XMLStreamException {
+    public void setPasswordAut(String passwordAut) {
+        this.passwordAut = passwordAut;
+    }
+
+    public void putUserIdAut(String content, Location location) throws XMLStreamException {
         userIdAut = get("userIdAut", userIdAut, content, location,
                         s -> trimNotEmpty(s));
     }
 
     public String getUserIdAut() {
         return userIdAut;
+    }
+
+    public void setUserIdAut(String userIdAut) {
+        this.userIdAut = userIdAut;
     }
 
     @Override
