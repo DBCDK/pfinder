@@ -18,7 +18,6 @@
  */
 package dk.dbc.opensearch.solr.flatquery;
 
-import dk.dbc.opensearch.solr.flatquery.FlatQuery;
 import dk.dbc.opensearch.cql.CQLParser;
 import dk.dbc.opensearch.solr.SolrRules;
 import java.util.List;
