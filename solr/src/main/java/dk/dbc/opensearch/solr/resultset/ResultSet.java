@@ -67,7 +67,7 @@ public abstract class ResultSet implements Serializable {
 
     public static final String WORK_ID = "rec.workId";
     public static final String UNIT_ID = "rec.unitId";
-    public static final String MANIFESTATION_ID = "rec.repositoryId";
+    public static final String MANIFESTATION_ID = "rec.manifestationId";
 
     private final Map<String, List<String>> workToUnits;
     private final Map<String, Set<String>> unitToManifestations;
@@ -224,10 +224,10 @@ public abstract class ResultSet implements Serializable {
      */
     protected void registerManifestation(SolrDocument doc) {
         Map<String, Collection<Object>> values = doc.getFieldValuesMap();
-        String work = extractValue(values, nameOfWorkField());
-        String unit = extractValue(values, nameOfUnitField());
-        String manifestation = extractValue(values, nameOfManifestationField());
-        registerManifestation(work, unit, manifestation);
+        String work = extractValue(values, nameOfWorkField(), true).iterator().next();
+        String unit = extractValue(values, nameOfUnitField(), true).iterator().next();
+        Collection<String> manifestations = extractValue(values, nameOfManifestationField(), false);
+        manifestations.forEach(manifestation -> registerManifestation(work, unit, manifestation));
         // At this point you could record the values from the doc, for mapping into solr-formats
         // It could be done on manifestation or unit level.
     }
@@ -235,18 +235,23 @@ public abstract class ResultSet implements Serializable {
     /**
      * Extract a value from a SolRDocument
      *
-     * @param values The map of SolR values as returned by
-     *               {@link SolrDocument#getFieldValuesMap()}
-     * @param field  The name of the field wanted
+     * @param values     The map of SolR values as returned by
+     *                   {@link SolrDocument#getFieldValuesMap()}
+     * @param field      The name of the field wanted
+     * @param exactlyOne If one and only one value is allowed
      * @return A String representation of the wanted value
      */
-    private String extractValue(Map<String, Collection<Object>> values, String field) {
+    private Collection<String> extractValue(Map<String, Collection<Object>> values, String field, boolean exactlyOne) {
         Collection workValues = values.getOrDefault(field, EMPTY_LIST);
         if (workValues.isEmpty()) {
             log.error("SolrError no value for field: `{}' in: {}", field, values);
             throw new UserMessageExecption(UserMessage.BACKEND_SOLR);
         }
-        return String.valueOf(workValues.iterator().next());
+        if (exactlyOne && workValues.size() != 1) {
+            log.error("SolrError too many values for field: `{}' in: {}", field, values);
+            throw new UserMessageExecption(UserMessage.BACKEND_SOLR);
+        }
+        return workValues;
     }
 
     /**
