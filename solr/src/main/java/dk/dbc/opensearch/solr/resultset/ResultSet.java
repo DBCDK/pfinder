@@ -176,6 +176,20 @@ public abstract class ResultSet implements Serializable {
     }
 
     /**
+     * Lookup work at a given position in the result set
+     *
+     * @param index position of work (starting at 1)
+     * @return id of work
+     */
+    public String workAtIndex(int index) {
+        log.debug("index = {}", index);
+        log.debug("worksExpanded.size() = {}", worksExpanded.size());
+        if (index - 1 >= worksExpanded.size())
+            throw new IllegalStateException("Asking for a work that isn't expanded");
+        return workOrder.get(index - 1);
+    }
+
+    /**
      * Get a collection of manifestations seen for a given unit
      *
      * @param unit The unit the manifestations belong to
@@ -430,12 +444,12 @@ public abstract class ResultSet implements Serializable {
      */
     protected QueryResponse performQuery(SolrQuery query, QueryType queryType) {
         try {
-            log.debug("fetching: {}", query);
+            log.trace("fetching: {}", query);
             QueryResponse response;
             try (Timing timer = recorder.timer(queryType.getTimingName())) {
                 response = client.query(query, POST);
             }
-            log.debug("retrieved: {}", response);
+            log.trace("retrieved: {}", response);
             if (response.getStatus() != 0)
                 throw new SolrServerException(String.valueOf(response.getResponse().get("error")));
             return response;
