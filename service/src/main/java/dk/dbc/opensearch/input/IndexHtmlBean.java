@@ -75,7 +75,6 @@ public class IndexHtmlBean {
     }
 
     private void buildOptions(ByteArrayOutputStream bos) throws IOException, XMLStreamException {
-        XMLEventWriter writer = O.createXMLEventWriter(bos);
         Iterator<String> ini = Arrays.asList(readFile("example_requests.ini").split("(?ms:(?=^))")).iterator();
 
         StringBuilder sb = new StringBuilder();
@@ -83,14 +82,15 @@ public class IndexHtmlBean {
         while (title != null) {
             sb = new StringBuilder();
             String nextTitle = nextTitle(ini, sb);
+            XMLEventWriter writer = O.createXMLEventWriter(bos);
             writer.add(E.createStartElement("", "", "option"));
             String content = sb.toString().trim() + "\n";
             writer.add(E.createAttribute("value", content));
             writer.add(E.createCharacters(title));
             writer.add(E.createEndElement("", "", "option"));
+            writer.close();
             title = nextTitle;
         }
-        writer.close();
     }
 
     private String nextTitle(Iterator<String> ini, StringBuilder sb) {

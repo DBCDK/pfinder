@@ -24,6 +24,7 @@ import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Locale;
 import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.CacheControl;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
@@ -51,8 +52,11 @@ public class ResourceStreamingOutput implements StreamingOutput {
                 .toLowerCase(Locale.ROOT);
         log.trace("extension = {}", extension);
         log.info("GET /{}", path);
+        CacheControl cacheControl = new CacheControl();
+        cacheControl.setMaxAge(600);
         return Response.ok(new ResourceStreamingOutput(is))
                 .type(MIME_TYPES.getOrDefault(extension, MediaType.TEXT_PLAIN))
+                .cacheControl(cacheControl)
                 .build();
     }
 

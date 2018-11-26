@@ -54,6 +54,7 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.CacheControl;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
@@ -105,8 +106,11 @@ public class ServiceBean {
                 .withPeer(peer)) {
             MultivaluedMap<String, String> params = context.getQueryParameters();
             if (params.isEmpty()) {
+                CacheControl cacheControl = new CacheControl();
+                cacheControl.setMaxAge(600);
                 return Response.ok(indexHtml.getBytes())
                         .type(MediaType.TEXT_HTML_TYPE)
+                        .cacheControl(cacheControl)
                         .build();
             } else {
                 return badRequest("Support for uri parameters not implemented yet");
@@ -169,7 +173,7 @@ public class ServiceBean {
         String peer = remoteIPAddress.ip(headers, httpRequest);
         try {
             MDCLog mdc = mdc()
-                .withPeer(peer);
+                    .withPeer(peer);
             StatisticsRecorder statistics = new StatisticsRecorder();
             RequestParser request;
             try (Timing timerRequestParse = statistics.timer("requestParse")) {
