@@ -24,19 +24,6 @@ package dk.dbc.opensearch.utils;
  */
 public interface Timing extends AutoCloseable {
 
-//    private final Map<String, Long> timings;
-//    private final String name;
-//    private final long start;
-//
-//    Timing(Map<String, Long> timings, String name) {
-//        this.timings = timings;
-//        this.name = name;
-//        this.start = System.nanoTime();
-//    }
-
     @Override
     public void close();
-//        long ms = ( System.nanoTime() - start ) / 1_000_000L;
-//        timings.compute(name, (k, v) -> ms + v);
-//    }
 }
