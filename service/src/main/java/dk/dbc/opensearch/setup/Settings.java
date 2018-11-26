@@ -18,16 +18,22 @@
  */
 package dk.dbc.opensearch.setup;
 
-import dk.dbc.opensearch.tools.UserException;
+import dk.dbc.opensearch.utils.UserMessage;
+import dk.dbc.opensearch.utils.UserMessageException;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
  * @author DBC {@literal <dbc.dk>}
  */
 public class Settings {
+
+    private static final Logger log = LoggerFactory.getLogger(Settings.class);
 
     private String defaultRepository;
     private String badgerfishRulesLocation;
@@ -36,6 +42,7 @@ public class Settings {
     private Map<String, String> defaultNamespaces;
     private String xForwardedFor;
     private HttpClient httpClient;
+    private EnumMap<UserMessage, String> UserMessages;
 
     public Settings() {
         httpClient = new HttpClient();
@@ -97,6 +104,14 @@ public class Settings {
         this.httpClient = httpClient;
     }
 
+    public EnumMap<UserMessage, String> getUserMessages() {
+        return UserMessages;
+    }
+
+    public void setUserMessages(EnumMap<UserMessage, String> UserMessages) {
+        this.UserMessages = UserMessages;
+    }
+
     /*
      *      _____________   ____________  ___  ________________
      *     / ____/ ____/ | / / ____/ __ \/   |/_  __/ ____/ __ \
@@ -115,10 +130,12 @@ public class Settings {
      * @return real name
      * @throws UserException if repo is unknown
      */
-    public String lookupRealRepoName(String symbolicRepoName) throws UserException {
+    public String lookupRealRepoName(String symbolicRepoName) {
         String realRepoName = repositoryNamesInverse.get(symbolicRepoName);
-        if (realRepoName == null)
-            throw new UserException("Unknown repository: " + symbolicRepoName);
+        if (realRepoName == null) {
+            log.error("Error looking up repository: {}", symbolicRepoName);
+            throw new UserMessageException(UserMessage.UNKNOWN_REPOSITORY);
+        }
         return realRepoName;
     }
 
@@ -172,7 +189,7 @@ public class Settings {
 
     @Override
     public String toString() {
-        return "Configuration{" + "defaultRepository=" + defaultRepository + ",\n badgerfishRulesLocation=" + badgerfishRulesLocation + ",\n repositoryNames=" + repositoryNames + ",\n jCache=" + jCache + ",\n defaultNamespaces=" + defaultNamespaces + '}';
+        return "Settings{" + "defaultRepository=" + defaultRepository + ", badgerfishRulesLocation=" + badgerfishRulesLocation + ", repositoryNames=" + repositoryNames + ", jCache=" + jCache + ", defaultNamespaces=" + defaultNamespaces + ", xForwardedFor=" + xForwardedFor + ", UserMessages=" + UserMessages + '}';
     }
 
 }

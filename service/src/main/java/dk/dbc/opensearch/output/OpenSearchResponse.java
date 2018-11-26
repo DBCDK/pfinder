@@ -18,10 +18,7 @@
  */
 package dk.dbc.opensearch.output;
 
-import dk.dbc.opensearch.output.Root;
-import dk.dbc.opensearch.tools.MDCLog;
-import dk.dbc.opensearch.tools.StatisticsRecorder;
-import dk.dbc.opensearch.tools.Timing;
+import dk.dbc.opensearch.utils.StatisticsRecorder;
 import java.io.IOException;
 import java.io.OutputStream;
 import javax.ws.rs.WebApplicationException;

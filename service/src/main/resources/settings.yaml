@@ -43,3 +43,11 @@ x-forwarded-for: $X_FORWARDED_FOR
 http-client:
     connect-timeout: 2500ms
     read-timeout: 2m
+
+user-messages:
+    BACKEND_CONTENT_SERVICE: "Error retrieving record content"
+    BACKEND_SOLR: "Error performing search"
+    BAD_PROFILE: "An unknown profile is used"
+    INTERNAL_SERVER_ERROR: "Internal server error"
+    MALFORMED_REQUEST: "The request couldn't be decoded"
+    UNKNOWN_REPOSITORY: "The specified repository is unknown"

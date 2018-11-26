@@ -19,13 +19,14 @@
 package dk.dbc.opensearch.reponse;
 
 import dk.dbc.opensearch.input.GetObjectRequest;
-import dk.dbc.opensearch.tools.MDCLog;
 import dk.dbc.opensearch.output.Root;
 import dk.dbc.opensearch.output.SearchResponse;
 import dk.dbc.opensearch.setup.Settings;
-import dk.dbc.opensearch.tools.Timing;
-import dk.dbc.opensearch.tools.StatisticsRecorder;
-import dk.dbc.opensearch.tools.UserException;
+import dk.dbc.opensearch.utils.MDCLog;
+import dk.dbc.opensearch.utils.StatisticsRecorder;
+import dk.dbc.opensearch.utils.Timing;
+import dk.dbc.opensearch.utils.UserMessage;
+import dk.dbc.opensearch.utils.UserMessageException;
 import java.io.IOException;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
@@ -65,23 +66,21 @@ public class GetObjectProcessorBean {
     private void process(SearchResponse response) throws XMLStreamException, IOException {
         try {
             compute();
-        } catch (UserException ex) {
-            log.error("Error processing search request: {} / {}", ex.getUserMessage(), ex.getMessage());
-            log.info("{}", request);
-            log.debug("Error processing search request: ", ex);
-            response.error(ex.getUserMessage());
+        } catch (UserMessageException ex) {
+            response.error(ex.getUserMessage(settings.getUserMessages()));
             return;
         } catch (RuntimeException ex) {
-            log.error("Error processing search request: {}", ex.getMessage());
+            log.error("Error processing getObject request: {}", ex.getMessage());
             log.info("{}", request);
-            log.debug("Error processing search request: ", ex);
-            response.error("Internal Server Error - the incident has been logged");
+            log.debug("Error processing getObject request: ", ex);
+            response.error(new UserMessageException(UserMessage.INTERNAL_SERVER_ERROR)
+                    .getUserMessage(settings.getUserMessages()));
             return;
         }
         outputResponse(response);
     }
 
-    private void compute() throws UserException {
+    private void compute() {
         if (request.getProfilesOrDefault().contains("bad")) {
             throw new RuntimeException("Bad profile");
         }

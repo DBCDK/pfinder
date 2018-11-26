@@ -23,8 +23,10 @@ package dk.dbc.opensearch.utils;
  * @author DBC {@literal <dbc.dk>}
  */
 public enum UserMessage {
-    MALFORMED_REQUEST,
-    INTERNAL_SERVER_ERROR,
+    BACKEND_CONTENT_SERVICE,
     BACKEND_SOLR,
-    BACKEND_CONTENT_SERVICE
+    BAD_PROFILE,
+    INTERNAL_SERVER_ERROR,
+    MALFORMED_REQUEST,
+    UNKNOWN_REPOSITORY,
 }

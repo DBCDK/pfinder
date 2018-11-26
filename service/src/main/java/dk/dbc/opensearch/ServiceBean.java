@@ -35,13 +35,14 @@ import dk.dbc.opensearch.output.badgerfish.BadgerFishSingle;
 import dk.dbc.opensearch.reponse.GetObjectProcessorBean;
 import dk.dbc.opensearch.reponse.InfoProcessorBean;
 import dk.dbc.opensearch.setup.Settings;
-import dk.dbc.opensearch.tools.MDCLog;
-import dk.dbc.opensearch.tools.Timing;
-import dk.dbc.opensearch.tools.StatisticsRecorder;
+import dk.dbc.opensearch.utils.MDCLog;
+import dk.dbc.opensearch.utils.StatisticsRecorder;
+import dk.dbc.opensearch.utils.Timing;
+import dk.dbc.opensearch.utils.UserMessageException;
+import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PushbackInputStream;
 import java.nio.charset.StandardCharsets;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
@@ -63,6 +64,7 @@ import javax.xml.stream.XMLStreamException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static dk.dbc.opensearch.utils.MDCLog.mdc;
 import static javax.ws.rs.core.Response.Status.*;
 
 /**
@@ -126,7 +128,7 @@ public class ServiceBean {
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public Response post(@FormParam("req") String req, @Context HttpHeaders headers, @Context HttpServletRequest httpRequest) {
         try (ByteArrayInputStream bis = new ByteArrayInputStream(req.getBytes(StandardCharsets.UTF_8))) {
-            try (PushbackInputStream is = new PushbackInputStream(bis, 1024)) {
+            try (BufferedInputStream is = new BufferedInputStream(bis, 1024)) {
                 is.mark(1024);
                 int c = is.read();
                 while (Character.isWhitespace(0)) {
@@ -165,8 +167,9 @@ public class ServiceBean {
 
     private Response processInputStream(HttpHeaders headers, HttpServletRequest httpRequest, InputStream is, RequestProvider requestProvider) {
         String peer = remoteIPAddress.ip(headers, httpRequest);
-        try (MDCLog mdc = MDCLog.mdc()
-                .withPeer(peer)) {
+        try {
+            MDCLog mdc = mdc()
+                .withPeer(peer);
             StatisticsRecorder statistics = new StatisticsRecorder();
             RequestParser request;
             try (Timing timerRequestParse = statistics.timer("requestParse")) {
@@ -185,6 +188,8 @@ public class ServiceBean {
             // to after output in completed, hence, passing the timer on to
             // the response processor
             return response.build(statistics);
+        } catch (UserMessageException ex) {
+            return Response.status(INTERNAL_SERVER_ERROR).entity(ex.getMessage()).build();
         } catch (XMLStreamException ex) {
             log.error("Error processing request: {}", ex.getMessage());
             log.debug("Error processing request: ", ex);

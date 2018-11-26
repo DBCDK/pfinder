@@ -32,13 +32,13 @@ import java.util.Map;
  *
  * @author DBC {@literal <dbc.dk>}
  */
-public class UserMessageExecption extends RuntimeException {
+public class UserMessageException extends RuntimeException {
 
     private static final long serialVersionUID = 8466072039399258842L;
 
     private final UserMessage userMessage;
 
-    public UserMessageExecption(UserMessage userMessage) {
+    public UserMessageException(UserMessage userMessage) {
         this.userMessage = userMessage;
     }
 

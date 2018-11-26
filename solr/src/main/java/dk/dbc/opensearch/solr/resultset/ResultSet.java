@@ -22,7 +22,7 @@ import dk.dbc.opensearch.solr.SolrQueryFields;
 import dk.dbc.opensearch.utils.StatisticsRecorder;
 import dk.dbc.opensearch.utils.Timing;
 import dk.dbc.opensearch.utils.UserMessage;
-import dk.dbc.opensearch.utils.UserMessageExecption;
+import dk.dbc.opensearch.utils.UserMessageException;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -260,11 +260,11 @@ public abstract class ResultSet implements Serializable {
         Collection workValues = values.getOrDefault(field, EMPTY_LIST);
         if (workValues.isEmpty()) {
             log.error("SolrError no value for field: `{}' in: {}", field, values);
-            throw new UserMessageExecption(UserMessage.BACKEND_SOLR);
+            throw new UserMessageException(UserMessage.BACKEND_SOLR);
         }
         if (exactlyOne && workValues.size() != 1) {
             log.error("SolrError too many values for field: `{}' in: {}", field, values);
-            throw new UserMessageExecption(UserMessage.BACKEND_SOLR);
+            throw new UserMessageException(UserMessage.BACKEND_SOLR);
         }
         return workValues;
     }
@@ -444,7 +444,7 @@ public abstract class ResultSet implements Serializable {
             log.error("SolrError: {}: {}", logName, ex.getMessage());
             log.error("SolrError: {}: Query: {}", logName, query.getQuery());
             log.debug("SolrError: {}:", logName, ex);
-            throw new UserMessageExecption(UserMessage.BACKEND_SOLR);
+            throw new UserMessageException(UserMessage.BACKEND_SOLR);
         }
     }
 

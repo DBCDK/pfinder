@@ -22,15 +22,16 @@ import dk.dbc.opensearch.input.InfoRequest;
 import dk.dbc.opensearch.output.InfoNameSpaces;
 import dk.dbc.opensearch.output.InfoObjectFormats;
 import dk.dbc.opensearch.output.InfoRepositories;
-import dk.dbc.opensearch.tools.MDCLog;
 import dk.dbc.opensearch.output.InfoResponse;
 import dk.dbc.opensearch.output.InfoSearchProfile;
 import dk.dbc.opensearch.output.InfoSorts;
 import dk.dbc.opensearch.output.Root;
 import dk.dbc.opensearch.setup.Settings;
-import dk.dbc.opensearch.tools.Timing;
-import dk.dbc.opensearch.tools.StatisticsRecorder;
-import dk.dbc.opensearch.tools.UserException;
+import dk.dbc.opensearch.utils.MDCLog;
+import dk.dbc.opensearch.utils.StatisticsRecorder;
+import dk.dbc.opensearch.utils.Timing;
+import dk.dbc.opensearch.utils.UserMessage;
+import dk.dbc.opensearch.utils.UserMessageException;
 import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -39,6 +40,8 @@ import javax.inject.Inject;
 import javax.xml.stream.XMLStreamException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static java.util.Collections.EMPTY_MAP;
 
 /**
  *
@@ -68,16 +71,13 @@ public class InfoProcessorBean {
         };
     }
 
-    private void compute() throws UserException {
+    private void compute() {
     }
 
     private void process(InfoResponse response) throws XMLStreamException, IOException {
         try {
             compute();
-        } catch (UserException ex) {
-            log.error("Error processing info request: {} / {}", ex.getUserMessage(), ex.getMessage());
-            log.info("{}", request);
-            log.debug("Error processing info request: ", ex);
+        } catch (UserMessageException ex) {
             throw new IOException("INTERNAL SERVER ERROR");
         } catch (RuntimeException ex) {
             log.error("Error processing info request: {}", ex.getMessage());
