@@ -142,7 +142,7 @@ public abstract class ResultSet implements Serializable {
      * <p>
      * This value is set by {@link #approximateHitCount(int, long)},
      * which should be called after the 1st call to SolR in
-     * {@link #fetchMore(org.apache.solr.client.solrj.SolrClient, org.apache.solr.client.solrj.SolrQuery)}
+     * {@link #fetchMore(org.apache.solr.client.solrj.SolrQuery, boolean)}
      *
      * @return Hit count from SolR
      */
@@ -208,7 +208,7 @@ public abstract class ResultSet implements Serializable {
      * Has no works been found yet?
      * <p>
      * ie. the state is that
-     * {@link #fetchMore(org.apache.solr.client.solrj.SolrClient, org.apache.solr.client.solrj.SolrQuery)}
+     * {@link #fetchMore(org.apache.solr.client.solrj.SolrQuery, boolean)}
      * should call {@link #approximateHitCount(int, long)}
      *
      * @return If this is before anything has been fetched
