@@ -128,7 +128,6 @@ public class Settings {
      *
      * @param symbolicRepoName repo alias
      * @return real name
-     * @throws UserException if repo is unknown
      */
     public String lookupRealRepoName(String symbolicRepoName) {
         String realRepoName = repositoryNamesInverse.get(symbolicRepoName);
