@@ -19,12 +19,15 @@
 package dk.dbc.opensearch.setup;
 
 import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.cfg.MapperConfig;
 import com.fasterxml.jackson.databind.introspect.AnnotatedMethod;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import dk.dbc.opensearch.output.badgerfish.BadgerFishSingle;
 import dk.dbc.opensearch.setup.yaml.EnvExpander;
+import dk.dbc.opensearch.solr.SolrRules;
+import dk.dbc.opensearch.solr.config.SolrConfig;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -34,6 +37,7 @@ import java.io.StringWriter;
 import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.ejb.EJBException;
@@ -57,7 +61,6 @@ public class Config {
     @Resource(type = ManagedExecutorService.class)
     ExecutorService es;
 
-
     private BadgerFishSingle badgerFishSingle;
     private Settings config;
     private Client client;
@@ -72,6 +75,7 @@ public class Config {
                 .readTimeout(config.getHttpClient().readTimeoutMS(), TimeUnit.MILLISECONDS)
                 .executorService(es)
                 .build();
+
     }
 
     @Produces
@@ -108,7 +112,7 @@ public class Config {
         } catch (IOException | RuntimeException ex) {
             log.debug("Error loading configuration file: {}", ex.getMessage());
             log.debug("Error loading configuration file: ", ex);
-            throw new EJBException("Error loading configuration file", ex);
+            throw new EJBException("Error loading configuration file");
         }
     }
 
@@ -122,11 +126,11 @@ public class Config {
         } catch (IOException ex) {
             log.debug("Error loading badgerfish rules file: {}", ex.getMessage());
             log.debug("Error loading badgerfish rules file: ", ex);
-            throw new EJBException("Error loading badgerfish rules file", ex);
+            throw new EJBException("Error loading badgerfish rules file");
         }
     }
 
-    private InputStream openInputStream(String... paths) throws FileNotFoundException {
+    static  InputStream openInputStream(String... paths) throws FileNotFoundException {
         for (String path : paths) {
             if (path == null || path.isEmpty())
                 continue;
@@ -135,7 +139,7 @@ public class Config {
                     String classPath = path.substring(10);
                     if (classPath.startsWith("/"))
                         classPath = classPath.substring(1);
-                    InputStream is = getClass().getClassLoader().getResourceAsStream(classPath);
+                    InputStream is = Config.class.getClassLoader().getResourceAsStream(classPath);
                     if (is == null)
                         throw new FileNotFoundException("Cannot open classpath:" + classPath);
                     return is;
@@ -153,7 +157,7 @@ public class Config {
         throw new FileNotFoundException("Locate file from:" + Arrays.toString(paths));
     }
 
-    private class DashedPropertyNamingStrategy extends PropertyNamingStrategy {
+    static class DashedPropertyNamingStrategy extends PropertyNamingStrategy {
 
         public DashedPropertyNamingStrategy() {
         }

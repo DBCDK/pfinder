@@ -27,6 +27,11 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
+            <artifactId>${project.parent.artifactId}-solr</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
             <artifactId>${project.parent.artifactId}-utils</artifactId>
             <version>${project.version}</version>
         </dependency>

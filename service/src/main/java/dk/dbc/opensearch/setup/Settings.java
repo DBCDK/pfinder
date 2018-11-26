@@ -37,12 +37,15 @@ public class Settings {
 
     private String defaultRepository;
     private String badgerfishRulesLocation;
-    private Map<String, Set<String>> repositoryNames;
+    private String solrRulesLocation;
     private Map<String, String> jCache;
     private Map<String, String> defaultNamespaces;
     private String xForwardedFor;
     private HttpClient httpClient;
     private EnumMap<UserMessage, String> UserMessages;
+    private String userAgent;
+    private String openagencyProfileUrl;
+    private Map<String, RepositorySettings> repositories;
 
     public Settings() {
         httpClient = new HttpClient();
@@ -64,12 +67,20 @@ public class Settings {
         this.badgerfishRulesLocation = badgerfishRulesLocation;
     }
 
-    public Map<String, Set<String>> getRepositoryNames() {
-        return repositoryNames;
+    public String getSolrRulesLocation() {
+        return solrRulesLocation;
     }
 
-    public void setRepositoryNames(Map<String, Set<String>> repositoryNames) {
-        this.repositoryNames = repositoryNames;
+    public void setSolrRulesLocation(String solrRulesLocation) {
+        this.solrRulesLocation = solrRulesLocation;
+    }
+
+    public String getOpenagencyProfileUrl() {
+        return openagencyProfileUrl;
+    }
+
+    public void setOpenagencyProfileUrl(String openagencyProfileUrl) {
+        this.openagencyProfileUrl = openagencyProfileUrl;
     }
 
     public Map<String, String> getJCache() {
@@ -112,30 +123,51 @@ public class Settings {
         this.UserMessages = UserMessages;
     }
 
+    public String getUserAgent() {
+        return userAgent;
+    }
+
+    public void setUserAgent(String userAgency) {
+        this.userAgent = userAgency;
+    }
+
+    public String getUserAgentOrDrefault() {
+        return userAgent != null ? userAgent : "OpenSearch (unknown/0.0)";
+    }
+
+    public Map<String, RepositorySettings> getRepositories() {
+        return repositories;
+    }
+
+    public void setRepositories(Map<String, RepositorySettings> repositories) {
+        this.repositories = repositories;
+    }
+
+
     /*
-     *      _____________   ____________  ___  ________________
-     *     / ____/ ____/ | / / ____/ __ \/   |/_  __/ ____/ __ \
-     *    / / __/ __/ /  |/ / __/ / /_/ / /| | / / / __/ / / / /
-     *   / /_/ / /___/ /|  / /___/ _, _/ ___ |/ / / /___/ /_/ /
-     *   \____/_____/_/ |_/_____/_/ |_/_/  |_/_/ /_____/_____/
-     *
+    *      _____________   ____________  ___  ________________
+    *     / ____/ ____/ | / / ____/ __ \/   |/_  __/ ____/ __ \
+    *    / / __/ __/ /  |/ / __/ / /_/ / /| | / / / __/ / / / /
+    *   / /_/ / /___/ /|  / /___/ _, _/ ___ |/ / / /___/ /_/ /
+    *   \____/_____/_/ |_/_____/_/ |_/_/  |_/_/ /_____/_____/
+    *
      */
     private Map<String, String> defaultNamespacesInverse;
-    private Map<String, String> repositoryNamesInverse;
+    private Map<String, RepositorySettings> repositoryByAlias;
 
     /**
      * Given a repo name (from the request) get the configured repo name
      *
-     * @param symbolicRepoName repo alias
-     * @return real name
+     * @param alias Name of repository as supplied by user
+     * @return the settings for that repository
      */
-    public String lookupRealRepoName(String symbolicRepoName) {
-        String realRepoName = repositoryNamesInverse.get(symbolicRepoName);
-        if (realRepoName == null) {
-            log.error("Error looking up repository: {}", symbolicRepoName);
+    public RepositorySettings lookupRepositoryByAlias(String alias) {
+        RepositorySettings settings = repositoryByAlias.get(alias);
+        if (settings == null) {
+            log.error("Error looking up repository: {}", alias);
             throw new UserMessageException(UserMessage.UNKNOWN_REPOSITORY);
         }
-        return realRepoName;
+        return settings;
     }
 
     /**
@@ -159,21 +191,22 @@ public class Settings {
         defaultRepository = defaultRepository.trim();
         if (defaultRepository == null || defaultRepository.isEmpty())
             throw new IllegalArgumentException("Required parameter defaultRepository is missing from configuration.yaml");
-        if (repositoryNames == null || repositoryNames.isEmpty())
-            throw new IllegalArgumentException("Required parameter repositoryNames is missing from configuration.yaml");
-        generateRepositoryNamesInverse();
+        if (repositories == null || repositories.isEmpty())
+            throw new IllegalArgumentException("Required parameter repositories is missing from configuration.yaml");
+        repositories.forEach((name, settings) -> settings.validateAndProcess(name));
+        if (openagencyProfileUrl == null || openagencyProfileUrl.isEmpty())
+            throw new IllegalArgumentException("Required parameter openAgencyProfileUrl is missing from configuration.yaml");
+        generateRepositoryByAlias();
         generateDefaultNamespacesInverse();
         if (jCache == null)
             throw new IllegalArgumentException("Required parameter jCache is missing from configuration.yaml");
     }
 
-    private void generateRepositoryNamesInverse() {
-        repositoryNamesInverse = new HashMap<>();
-        repositoryNames.forEach((realRepo, set) -> {
-            set.forEach(repoName -> {
-                if (repositoryNamesInverse.put(repoName, realRepo) != null) {
-                    throw new IllegalArgumentException("repository name: " + repoName + " is set for more than one repo");
-                }
+    private void generateRepositoryByAlias() {
+        repositoryByAlias = new HashMap<>();
+        repositories.forEach((name, settings) -> {
+            settings.getAliases().forEach(alias -> {
+                repositoryByAlias.put(alias, settings);
             });
         });
     }
@@ -188,7 +221,7 @@ public class Settings {
 
     @Override
     public String toString() {
-        return "Settings{" + "defaultRepository=" + defaultRepository + ", badgerfishRulesLocation=" + badgerfishRulesLocation + ", repositoryNames=" + repositoryNames + ", jCache=" + jCache + ", defaultNamespaces=" + defaultNamespaces + ", xForwardedFor=" + xForwardedFor + ", UserMessages=" + UserMessages + '}';
+        return "Settings{" + "defaultRepository=" + defaultRepository + ", badgerfishRulesLocation=" + badgerfishRulesLocation + ", solrRulesLocation=" + solrRulesLocation + ", jCache=" + jCache + ", defaultNamespaces=" + defaultNamespaces + ", xForwardedFor=" + xForwardedFor + ", httpClient=" + httpClient + ", UserMessages=" + UserMessages + ", userAgent=" + userAgent + ", openagencyProfileUrl=" + openagencyProfileUrl + ", repositories=" + repositories + '}';
     }
 
 }

@@ -136,7 +136,7 @@ public abstract class ExpandingDeserializer<T> extends StdDeserializer<T> {
         }
     }
 
-    static <T extends ObjectMapper> T objectMapperOf(EnvExpander instance, T mapper) {
+    public static <T extends ObjectMapper> T objectMapperOf(EnvExpander instance, T mapper) {
         SimpleModule module = new SimpleModule("env-expanding");
         module.addDeserializer(String.class, new StringExpander(instance));
         module.addDeserializer(Boolean.class, new BooleanExpander(instance));
