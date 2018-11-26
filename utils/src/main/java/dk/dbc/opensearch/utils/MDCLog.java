@@ -24,6 +24,26 @@ import java.util.Map;
 import org.slf4j.MDC;
 
 /**
+ * This is somewhat along the lines of
+ * {@link MDC#putCloseable(java.lang.String, java.lang.String)} however, with
+ * the MDC version you need a closable for each property set leaving bulky
+ * code like this
+ * <pre>
+ *        try (MDC.MDCCloseable k1 = MDC.putCloseable("key1", "value1") ;
+ *             MDC.MDCCloseable k2 = MDC.putCloseable("key2", String.valueOf(value2)) ;
+ *             MDC.MDCCloseable k2 = MDC.putCloseable("key3", String.valueOf(value3))) {
+ *            ...
+ *        }
+ * </pre>
+ * instead of:
+ * <pre>
+ *        try (MDCLog mdc = mdc().withKey1("value1")
+ *                .withKey2(value2)
+ *                .withKey3(value3)) {
+ *            ...
+ *        }
+ * </pre>
+ * Which also ensures that no key typos occurs (or at least they're consistent)
  *
  * @author DBC {@literal <dbc.dk>}
  */
