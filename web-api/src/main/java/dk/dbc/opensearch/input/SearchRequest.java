@@ -92,7 +92,7 @@ public class SearchRequest extends CommonRequest {
         super.validate(location);
         if (query == null)
             throw new XMLStreamException("property 'query' is required in a searchRequest");
-        if(queryLanguage == null)
+        if (queryLanguage == null)
             queryLanguage = "cql";
         switch (queryLanguage) {
             case "cql":
@@ -104,12 +104,12 @@ public class SearchRequest extends CommonRequest {
         }
         if (sort != null && userDefinedRanking != null)
             throw new XMLStreamException("Only one of sort and userDefinedRanking is supported in searchRequest");
-        if(userDefinedRanking != null) {
+        if (userDefinedRanking != null) {
             for (UserDefinedRanking obj : userDefinedRanking) {
                 obj.validate(location);
             }
         }
-        if(userDefinedBoost != null) {
+        if (userDefinedBoost != null) {
             for (UserDefinedBoost obj : userDefinedBoost) {
                 obj.validate(location);
             }
@@ -126,6 +126,10 @@ public class SearchRequest extends CommonRequest {
 
     public Boolean getAllObjects() {
         return allObjects;
+    }
+
+    public boolean getAllObjectsOrDefault() {
+        return allObjects == null ? false : allObjects;
     }
 
     public void setAllObjects(Boolean allObjects) {
@@ -254,7 +258,7 @@ public class SearchRequest extends CommonRequest {
                     s -> Integer.parseUnsignedInt(trimNotEmpty(s)));
     }
 
-    public final Integer getStartOrDefault() {
+    public final int getStartOrDefault() {
         return start == null ? 1 : Integer.max(1, start);
     }
 
@@ -271,7 +275,7 @@ public class SearchRequest extends CommonRequest {
                         s -> Integer.parseUnsignedInt(trimNotEmpty(s)));
     }
 
-    public final Integer getStepValueOrDefault() {
+    public final int getStepValueOrDefault() {
         return stepValue == null ? 0 : stepValue;
     }
 
