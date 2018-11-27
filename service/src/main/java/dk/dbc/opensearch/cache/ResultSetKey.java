@@ -41,7 +41,6 @@ public class ResultSetKey implements Serializable {
     private final String query;
     private final String queryLanguage;
     private final String repository;
-    private final Integer showAgencyId;
     private final List<String> sort;
     private final List<UserDefinedBoost> userDefinedBoost;
     private final List<UserDefinedRanking> userDefinedRanking;
@@ -58,7 +57,6 @@ public class ResultSetKey implements Serializable {
         this.query = req.getQuery();
         this.queryLanguage = req.getQueryLanguageOrDefault();
         this.repository = req.getRepository();
-        this.showAgencyId = req.getShowAgency();
         this.sort = req.getSort();
         this.userDefinedBoost = req.getUserDefinedBoost();
         this.userDefinedRanking = req.getUserDefinedRanking();
@@ -92,10 +90,6 @@ public class ResultSetKey implements Serializable {
         return repository;
     }
 
-    public Integer getShowAgencyId() {
-        return showAgencyId;
-    }
-
     public List<String> getSort() {
         return sort;
     }
@@ -118,7 +112,6 @@ public class ResultSetKey implements Serializable {
         hash = 59 * hash + Objects.hashCode(this.query);
         hash = 59 * hash + Objects.hashCode(this.queryLanguage);
         hash = 59 * hash + Objects.hashCode(this.repository);
-        hash = 59 * hash + Objects.hashCode(this.showAgencyId);
         hash = 59 * hash + Objects.hashCode(this.sort);
         hash = 59 * hash + Objects.hashCode(this.userDefinedBoost);
         hash = 59 * hash + Objects.hashCode(this.userDefinedRanking);
@@ -139,7 +132,6 @@ public class ResultSetKey implements Serializable {
                Objects.equals(this.query, other.query) &&
                Objects.equals(this.queryLanguage, other.queryLanguage) &&
                Objects.equals(this.repository, other.repository) &&
-               Objects.equals(this.showAgencyId, other.showAgencyId) &&
                Objects.equals(this.sort, other.sort) &&
                Objects.equals(this.userDefinedBoost, other.userDefinedBoost) &&
                Objects.equals(this.userDefinedRanking, other.userDefinedRanking);
