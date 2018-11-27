@@ -19,15 +19,12 @@
 package dk.dbc.opensearch.setup;
 
 import com.fasterxml.jackson.databind.MapperFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.cfg.MapperConfig;
 import com.fasterxml.jackson.databind.introspect.AnnotatedMethod;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import dk.dbc.opensearch.output.badgerfish.BadgerFishSingle;
 import dk.dbc.opensearch.setup.yaml.EnvExpander;
-import dk.dbc.opensearch.solr.SolrRules;
-import dk.dbc.opensearch.solr.config.SolrConfig;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -37,7 +34,6 @@ import java.io.StringWriter;
 import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.ejb.EJBException;
@@ -130,7 +126,7 @@ public class Config {
         }
     }
 
-    static  InputStream openInputStream(String... paths) throws FileNotFoundException {
+    static InputStream openInputStream(String... paths) throws FileNotFoundException {
         for (String path : paths) {
             if (path == null || path.isEmpty())
                 continue;

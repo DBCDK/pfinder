@@ -30,7 +30,6 @@ import dk.dbc.opensearch.setup.Settings;
 import dk.dbc.opensearch.utils.MDCLog;
 import dk.dbc.opensearch.utils.StatisticsRecorder;
 import dk.dbc.opensearch.utils.Timing;
-import dk.dbc.opensearch.utils.UserMessage;
 import dk.dbc.opensearch.utils.UserMessageException;
 import java.io.IOException;
 import java.util.List;
@@ -40,8 +39,6 @@ import javax.inject.Inject;
 import javax.xml.stream.XMLStreamException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static java.util.Collections.EMPTY_MAP;
 
 /**
  *
@@ -63,12 +60,10 @@ public class InfoProcessorBean {
         this.request = request;
         this.statistics = statistics;
         this.mdc = mdc;
-        mdc.withAgencyId(request.getAgency())
+        this.mdc.withAgencyId(request.getAgency())
                 .withProfiles(request.getProfilesOrDefault())
                 .withTrackingId(request.getTrackingId());
-        return (scope) -> {
-            scope.infoResponse(this::process);
-        };
+        return (scope) -> scope.infoResponse(this::process);
     }
 
     private void compute() {
@@ -100,19 +95,19 @@ public class InfoProcessorBean {
         }
     }
 
-    private  InfoRepositories infoRepositories(InfoRepositories infoRepositories) throws IOException, XMLStreamException {
+    private InfoRepositories infoRepositories(InfoRepositories infoRepositories) throws IOException, XMLStreamException {
         return infoRepositories._skipInfoRepository();
     }
 
-    private  InfoObjectFormats infoObjectFormats(InfoObjectFormats infoObjectFormats) throws XMLStreamException, IOException {
+    private InfoObjectFormats infoObjectFormats(InfoObjectFormats infoObjectFormats) throws XMLStreamException, IOException {
         return infoObjectFormats._skipObjectFormat();
     }
 
-    private  InfoSearchProfile infoSearchProfile(InfoSearchProfile infoSearchProfile) throws IOException, XMLStreamException {
+    private InfoSearchProfile infoSearchProfile(InfoSearchProfile infoSearchProfile) throws IOException, XMLStreamException {
         return infoSearchProfile._skipSearchCollection();
     }
 
-    private  InfoSorts infoSorts(InfoSorts infoSorts) throws XMLStreamException, IOException {
+    private InfoSorts infoSorts(InfoSorts infoSorts) throws XMLStreamException, IOException {
         return infoSorts._skipInfoSort();
     }
 

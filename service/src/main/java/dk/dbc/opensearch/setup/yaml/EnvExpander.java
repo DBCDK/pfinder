@@ -30,7 +30,7 @@ public class EnvExpander extends Expander {
 
     public static final YAMLMapper YAML_MAPPER =
             ExpandingDeserializer.objectMapperOf(INSTANCE,
-                                               new YAMLMapper());
+                                                 new YAMLMapper());
 
     @Override
     protected String resolveVariable(String variable) {

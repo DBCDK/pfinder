@@ -25,9 +25,6 @@ import dk.dbc.opensearch.setup.yaml.ExpandingDeserializer;
 import java.util.HashMap;
 import org.junit.Test;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
-
 /**
  *
  * @author DBC {@literal <dbc.dk>}

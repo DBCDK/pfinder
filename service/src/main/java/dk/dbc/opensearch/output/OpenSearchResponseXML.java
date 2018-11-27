@@ -18,7 +18,6 @@
  */
 package dk.dbc.opensearch.output;
 
-import dk.dbc.opensearch.output.Root;
 import java.io.IOException;
 import java.io.OutputStream;
 import javax.ws.rs.WebApplicationException;

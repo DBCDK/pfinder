@@ -18,7 +18,6 @@
  */
 package dk.dbc.opensearch.output;
 
-import dk.dbc.opensearch.output.Root;
 import dk.dbc.opensearch.output.badgerfish.BadgerFishSingle;
 import dk.dbc.opensearch.output.badgerfish.BadgerFishWriter;
 import java.io.IOException;

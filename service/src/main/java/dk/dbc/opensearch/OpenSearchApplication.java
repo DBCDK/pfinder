@@ -50,6 +50,4 @@ public class OpenSearchApplication extends Application {
 
         return props;
     }
-
-
 }

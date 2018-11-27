@@ -47,20 +47,17 @@ public class GetObjectProcessorBean {
     Settings settings;
 
     private GetObjectRequest request;
-    private StatisticsRecorder statistics;
+    private StatisticsRecorder timings;
     private MDCLog mdc;
 
-    public Root.Scope<Root.EntryPoint> builder(GetObjectRequest request, StatisticsRecorder statistics, MDCLog mdc) {
+    public Root.Scope<Root.EntryPoint> builder(GetObjectRequest request, StatisticsRecorder timings, MDCLog mdc) {
         this.request = request;
-        this.statistics = statistics;
+        this.timings = timings;
         this.mdc = mdc;
-        mdc.withAgencyId(request.getAgency())
+        this.mdc.withAgencyId(request.getAgency())
                 .withProfiles(request.getProfilesOrDefault())
                 .withTrackingId(request.getTrackingId());
-        return (scope) -> {
-            scope.searchResponse(this::process);
-            statistics.log();
-        };
+        return (scope) -> scope.searchResponse(this::process);
     }
 
     private void process(SearchResponse response) throws XMLStreamException, IOException {
@@ -81,13 +78,10 @@ public class GetObjectProcessorBean {
     }
 
     private void compute() {
-        if (request.getProfilesOrDefault().contains("bad")) {
-            throw new RuntimeException("Bad profile");
-        }
     }
 
     private void outputResponse(SearchResponse response) throws IOException, XMLStreamException {
-        try (Timing timerOutput = statistics.timer("output")) {
+        try (Timing timerOutput = timings.timer("output")) {
             response.error("NOT IMPLEMENTED");
         }
     }

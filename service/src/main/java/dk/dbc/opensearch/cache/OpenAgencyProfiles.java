@@ -18,7 +18,6 @@
  */
 package dk.dbc.opensearch.cache;
 
-import dk.dbc.opensearch.setup.RepositorySettings;
 import dk.dbc.opensearch.setup.Settings;
 import dk.dbc.opensearch.solr.SolrRules;
 import dk.dbc.opensearch.solr.profile.Profiles;
