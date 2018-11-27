@@ -55,7 +55,13 @@ import static org.apache.solr.client.solrj.util.ClientUtils.escapeQueryChars;
  * Level 2: unit id
  * <p>
  * Level 3: manifestations
- *
+ * <p>
+ * The works should be ordered by appearance, within each work the units should
+ * be ordered by appearance too. All the units for a work should be present
+ * before showing the unit.
+ * <p>
+ * The manifestations should not be ordered at this point. When presented, the
+ * order is determined by OpenAgency showOrder.
  *
  * @author DBC {@literal <dbc.dk>}
  */
@@ -69,13 +75,22 @@ public abstract class ResultSet implements Serializable {
     public static final String UNIT_ID = "rec.unitId";
     public static final String MANIFESTATION_ID = "rec.manifestationId";
 
+    private static final int SOLR_CLOUD_MAX_ROWS = 10000;
+
+    // The reason for the List is that we need the units in the order they appear
     private final Map<String, List<String>> workToUnits;
     private final Map<String, Set<String>> unitToManifestations;
+    // workOrder is the order in which work-id's are added to workToUnit.
+    // They could be handled by a ordererd map, however some claim
+    // that when a ordered map has been Serialized the order is not always kept
+    // - this seems unlikely to me, however tracking an error like that will be
+    // expensive and we need access to work-ids by position anyway.
     private final List<String> workOrder;
     private final Set<String> worksExpanded;
     private final SolrQueryFields solrQuery;
     private final boolean allObjects;
     private boolean complete;
+    // Estimated number of works until complete, then exact number of works
     private long hitCount;
     private long solrHitCount;
 
@@ -320,7 +335,7 @@ public abstract class ResultSet implements Serializable {
             boolean firstRun = noWorksFound();
             complete = fetchMore(query, firstRun);
             if (complete) {
-                hitCount = worksFound();
+                hitCount = worksFound(); // Exact work count
                 if (firstRun && !allObjects)
                     // Not allAbjects and complete without skipping seen works (firstRun)
                     // everything is fetched from SolR, all works are fully
@@ -377,7 +392,7 @@ public abstract class ResultSet implements Serializable {
         query.setShowDebugInfo(false);
         query.setTerms(false);
         setQueryFields(query);
-        query.setRows(10000);
+        query.setRows(SOLR_CLOUD_MAX_ROWS);
         expandWorksQuery(query, worksWanted);
         log.debug("Expanding works: {}", worksWanted);
         expandWorks(query);
