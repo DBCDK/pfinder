@@ -39,6 +39,7 @@ public class ResultSetKey implements Serializable {
     private final CollectionType collectionType;
     private final List<String> profiles;
     private final String query;
+    private final String queryLanguage;
     private final String repository;
     private final Integer showAgencyId;
     private final List<String> sort;
@@ -51,15 +52,60 @@ public class ResultSetKey implements Serializable {
 
     private ResultSetKey(SearchRequest req) {
         this.agencyId = req.getAgency();
-        this.allObjects = req.getAllObjects();
+        this.allObjects = req.getAllObjectsOrDefault();
         this.collectionType = req.getCollectionTypeOrDefault();
         this.profiles = req.getProfilesOrDefault();
         this.query = req.getQuery();
+        this.queryLanguage = req.getQueryLanguageOrDefault();
         this.repository = req.getRepository();
         this.showAgencyId = req.getShowAgency();
         this.sort = req.getSort();
         this.userDefinedBoost = req.getUserDefinedBoost();
         this.userDefinedRanking = req.getUserDefinedRanking();
+    }
+
+    public Integer getAgencyId() {
+        return agencyId;
+    }
+
+    public Boolean getAllObjects() {
+        return allObjects;
+    }
+
+    public CollectionType getCollectionType() {
+        return collectionType;
+    }
+
+    public List<String> getProfiles() {
+        return profiles;
+    }
+
+    public String getQuery() {
+        return query;
+    }
+
+    public String getQueryLanguage() {
+        return queryLanguage;
+    }
+
+    public String getRepository() {
+        return repository;
+    }
+
+    public Integer getShowAgencyId() {
+        return showAgencyId;
+    }
+
+    public List<String> getSort() {
+        return sort;
+    }
+
+    public List<UserDefinedBoost> getUserDefinedBoost() {
+        return userDefinedBoost;
+    }
+
+    public List<UserDefinedRanking> getUserDefinedRanking() {
+        return userDefinedRanking;
     }
 
     @Override
@@ -70,6 +116,7 @@ public class ResultSetKey implements Serializable {
         hash = 59 * hash + Objects.hashCode(this.collectionType);
         hash = 59 * hash + Objects.hashCode(this.profiles);
         hash = 59 * hash + Objects.hashCode(this.query);
+        hash = 59 * hash + Objects.hashCode(this.queryLanguage);
         hash = 59 * hash + Objects.hashCode(this.repository);
         hash = 59 * hash + Objects.hashCode(this.showAgencyId);
         hash = 59 * hash + Objects.hashCode(this.sort);
@@ -85,12 +132,13 @@ public class ResultSetKey implements Serializable {
         if (obj == null || getClass() != obj.getClass())
             return false;
         final ResultSetKey other = (ResultSetKey) obj;
-        return Objects.equals(this.query, other.query) &&
-               Objects.equals(this.repository, other.repository) &&
-               Objects.equals(this.agencyId, other.agencyId) &&
+        return Objects.equals(this.agencyId, other.agencyId) &&
                Objects.equals(this.allObjects, other.allObjects) &&
                Objects.equals(this.collectionType, other.collectionType) &&
                Objects.equals(this.profiles, other.profiles) &&
+               Objects.equals(this.query, other.query) &&
+               Objects.equals(this.queryLanguage, other.queryLanguage) &&
+               Objects.equals(this.repository, other.repository) &&
                Objects.equals(this.showAgencyId, other.showAgencyId) &&
                Objects.equals(this.sort, other.sort) &&
                Objects.equals(this.userDefinedBoost, other.userDefinedBoost) &&

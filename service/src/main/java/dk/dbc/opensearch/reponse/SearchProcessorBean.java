@@ -113,7 +113,7 @@ public class SearchProcessorBean {
         ResultSetKey key = ResultSetKey.of(request);
         resultSet = resultSetCache.get(key);
         if (resultSet == null)
-            resultSet = makeResultSet(repoSettings, trackingId);
+            resultSet = makeResultSet(key, repoSettings, trackingId);
 
         // Make it visible to others while we're working on it
         // So that others don't make the same object
@@ -168,28 +168,35 @@ public class SearchProcessorBean {
     /**
      * Make a new cacheable resultset
      *
+     * @param key          The cache key to use, This is used for carrying
+     *                     parameters that are needed to make the resultSet, to
+     *                     ensure all fields that have influence on the structure
+     *                     of the resultset are present to avoid key collision
      * @param repoSettings The settings to use for this resultset
      * @param trackingId   trackingId for open-agency http requests
      * @return new ResultSet with a query
      */
-    private ResultSet makeResultSet(RepositorySettings repoSettings, String trackingId) {
+    private ResultSet makeResultSet(ResultSetKey key, RepositorySettings repoSettings, String trackingId) {
         SolrRules solrRules = repoSettings.getSolrRules();
-        Profiles profiles = oaProfiles.getProfileFor(request.getAgency(), repoSettings.getName(),
+        Profiles profiles = oaProfiles.getProfileFor(key.getAgencyId(), repoSettings.getName(),
                                                      timings, trackingId, solrRules);
-        Profile profile = profiles.getProfile(request.getProfilesOrDefault());
+        Profile profile = profiles.getProfile(key.getProfiles());
         SolrQueryFields solrQuery;
-        switch (request.getQueryLanguage()) {
+        switch (key.getQueryLanguage()) {
             case "cql":
             case "cqleng":
-                solrQuery = SolrQueryFields.fromCQL(solrRules, request.getQuery(), profile);
+                solrQuery = SolrQueryFields.fromCQL(solrRules, key.getQuery(), profile);
                 break;
             default:
                 throw new UserMessageException(UserMessage.UNSUPPORTED_QUERY_LANGUAGE);
         }
+        ResultSet newResultSet;
         if (request.getCollectionTypeOrDefault() == CollectionType.MANIFESTATION)
-            return new ResultSetManifestation(solrQuery, request.getAllObjectsOrDefault());
+            newResultSet = new ResultSetManifestation(solrQuery, key.getAllObjects());
         else
-            return new ResultSetWork(solrQuery, request.getAllObjectsOrDefault());
+            newResultSet = new ResultSetWork(solrQuery, key.getAllObjects());
+        resultSetCache.put(key, newResultSet);
+        return newResultSet;
     }
 
     /**

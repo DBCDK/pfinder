@@ -233,6 +233,10 @@ public class SearchRequest extends CommonRequest {
         return queryLanguage;
     }
 
+    public String getQueryLanguageOrDefault() {
+        return queryLanguage == null ? "cqleng" : queryLanguage;
+    }
+
     public void setQueryLanguage(String queryLanguage) {
         this.queryLanguage = queryLanguage;
     }
