@@ -55,3 +55,4 @@ user-messages:
     INTERNAL_SERVER_ERROR: "Internal server error"
     MALFORMED_REQUEST: "The request couldn't be decoded"
     UNKNOWN_REPOSITORY: "The specified repository is unknown"
+    UNSUPPORTED_QUERY_LANGUAGE: "The query language defined is not supported"
