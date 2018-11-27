@@ -18,11 +18,11 @@
  */
 package dk.dbc.opensearch;
 
-import dk.dbc.opensearch.input.IndexHtmlBean;
+import dk.dbc.opensearch.output.IndexHtmlBean;
 import dk.dbc.opensearch.input.RemoteIPAddress;
 import dk.dbc.opensearch.input.RequestParser;
 import dk.dbc.opensearch.input.RequestParserJSON;
-import dk.dbc.opensearch.input.ResourceStreamingOutput;
+import dk.dbc.opensearch.output.ResourceStreamingOutput;
 import dk.dbc.opensearch.output.OpenSearchResponse;
 import dk.dbc.opensearch.output.OpenSearchResponseJSON;
 import dk.dbc.opensearch.output.OpenSearchResponseSOAP;
