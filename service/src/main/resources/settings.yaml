@@ -1,5 +1,15 @@
 default-repository: $DEFAULT_REPOSITORY
 
+openagency-profile-url: "$OPEN_AGENCY_URL?action=openSearchProfile&profileVersion=3&outputType=json&agencyId={agencyId}&trackingId={trackingId}"
+
+repositories:
+    corepo:
+        aliases:
+            - $DEFAULT_REPOSITORY
+            - corepo
+        solr-url: "$COREPO_SOLR_URL"
+        solr-rules-location: classpath:solr-rules-corepo.yaml
+
 #badgerfish-rules-location: file:/tmp/badger-fish-rules.yaml
    
 # as used by badgerfish output and InfoRequest  
@@ -27,20 +37,11 @@ default-namespaces:
 
 # Configuration of timeout for each cache type
 j-cache:
-    openagency: CREATED:10m
-    work: ACCESSED:5m
+    profile: CREATED:5h:1000
+    profile_error: CREATED:1m:1000
+    resultset: ACCESSED:5m:10000
 
 x-forwarded-for: $X_FORWARDED_FOR
-
-repositories:
-    corepo:
-        aliases:
-            - $DEFAULT_REPOSITORY
-            - corepo
-        solr-url: "$COREPO_SOLR_URL"
-        solr-rules-location: classpath:solr-rules-corepo.yaml
-
-openagency-profile-url: "$OPEN_AGENCY_URL?action=openSearchProfile&profileVersion=3&outputType=json&agencyId={agencyId}&trackingId={trackingId}"
 
 http-client:
     connect-timeout: 2500ms

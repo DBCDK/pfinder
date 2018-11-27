@@ -82,31 +82,29 @@ public class JCacheConfig {
     }
 
     private void setupCache(Config cacheConfigs, String name, String rule) {
-        CacheSimpleConfig configTime = cacheConfigs.getCacheConfig(name);
-        if (configTime == null) {
+        CacheSimpleConfig config = cacheConfigs.getCacheConfig(name);
+        if (config == null) {
             log.info("Setting up cache: {} with rule: {}", name, rule);
-            cacheConfigs.addCacheConfig(cacheConfig(name, rule));
-        } else {
-            log.info("Cache: {} is already set up", name);
+            config = new CacheSimpleConfig()
+                    .setName(name);
         }
+        cacheConfig(config, rule);
     }
 
     /**
      * Make configuration from rule
      *
-     * @param name name of configuration
-     * @param rule ${ExpiryPolicyType}:\d+(time-unit(ms|s|m|h)):${MaxEntries}
+     * @param config configuration
+     * @param rule   ${ExpiryPolicyType}:\d+(time-unit(ms|s|m|h)):${MaxEntries}
      * @return configuration
      */
-    private CacheSimpleConfig cacheConfig(String name, String rule) {
+    private void cacheConfig(CacheSimpleConfig config, String rule) {
         String[] split = rule.split(":", 3);
-        return new CacheSimpleConfig()
-                .setName(name)
-                .setExpiryPolicyFactoryConfig(
-                        new ExpiryPolicyFactoryConfig(
-                                new TimedExpiryPolicyFactoryConfig(
-                                        ExpiryPolicyType.valueOf(split[0].toUpperCase(Locale.ROOT)),
-                                        durationConfig(split[1]))))
+        config.setExpiryPolicyFactoryConfig(
+                new ExpiryPolicyFactoryConfig(
+                        new TimedExpiryPolicyFactoryConfig(
+                                ExpiryPolicyType.valueOf(split[0].toUpperCase(Locale.ROOT)),
+                                durationConfig(split[1]))))
                 .setEvictionConfig(
                         new EvictionConfig(cacheSize(split),
                                            MaxSizePolicy.ENTRY_COUNT,
