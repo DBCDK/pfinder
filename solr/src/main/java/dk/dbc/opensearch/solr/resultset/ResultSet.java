@@ -381,6 +381,7 @@ public abstract class ResultSet implements Serializable {
         expandWorksQuery(query, worksWanted);
         log.debug("Expanding works: {}", worksWanted);
         expandWorks(query);
+        worksExpanded.addAll(worksWanted);
     }
 
     /**
