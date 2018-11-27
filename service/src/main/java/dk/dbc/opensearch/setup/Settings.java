@@ -23,7 +23,6 @@ import dk.dbc.opensearch.utils.UserMessageException;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -181,8 +180,11 @@ public class Settings {
     public String lookupNamespacePrefix(String namespace, Map<String, String> generatedNamespaces) {
         String prefix = defaultNamespaces.get(namespace);
         if (prefix == null) {
-            prefix = generatedNamespaces.computeIfAbsent(prefix,
-                                                         p -> "ns" + ( generatedNamespaces.size() + 1 ));
+            prefix = generatedNamespaces.computeIfAbsent(namespace,
+                                                         p -> {
+                                                     log.error("Registering unspecified namespace: {} - please fix settings.yaml", p);
+                                                     return "ns" + ( generatedNamespaces.size() + 1 );
+                                                 });
         }
         return prefix;
     }
