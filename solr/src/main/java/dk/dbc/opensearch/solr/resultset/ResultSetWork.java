@@ -19,9 +19,11 @@
 package dk.dbc.opensearch.solr.resultset;
 
 import dk.dbc.opensearch.solr.SolrQueryFields;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 
 /**
  *
@@ -32,6 +34,10 @@ public class ResultSetWork extends ResultSet {
     private static final long serialVersionUID = -4788723847583007565L;
 
     private static final Logger log = LoggerFactory.getLogger(ResultSetWork.class);
+
+    private static final Collection<String> REQUIRED_FIELDS =
+            Collections.unmodifiableCollection(
+                    Arrays.asList(WORK_ID, UNIT_ID, MANIFESTATION_ID));
 
     public ResultSetWork(SolrQueryFields solrQuery, boolean allObjects) {
         super(solrQuery, allObjects);
@@ -50,6 +56,11 @@ public class ResultSetWork extends ResultSet {
     @Override
     protected String nameOfManifestationField() {
         return MANIFESTATION_ID;
+    }
+
+    @Override
+    protected Collection<String> namesOfFieldsRequired() {
+        return REQUIRED_FIELDS;
     }
 
 }

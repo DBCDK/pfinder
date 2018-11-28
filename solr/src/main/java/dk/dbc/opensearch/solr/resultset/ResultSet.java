@@ -129,6 +129,15 @@ public abstract class ResultSet implements Serializable {
     protected abstract String nameOfManifestationField();
 
     /**
+     * List all the fields required by this logic
+     * <p>
+     * Should contain all of Work-, Unit- and ManifestationField
+     *
+     * @return Collection of fields wanted from the SolR for work construction
+     */
+    protected abstract Collection<String> namesOfFieldsRequired();
+
+    /**
      * If all the work ids of the resultset are found
      *
      * @return true/false
@@ -540,7 +549,8 @@ public abstract class ResultSet implements Serializable {
      * @param query The query to set the field names upon
      */
     protected void setQueryFields(SolrQuery query) {
-        query.setFields(WORK_ID, UNIT_ID, MANIFESTATION_ID);
+        query.setFields();
+        namesOfFieldsRequired().forEach(query::addField);
     }
 
     /**
