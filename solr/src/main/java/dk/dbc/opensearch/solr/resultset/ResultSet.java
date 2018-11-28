@@ -226,6 +226,7 @@ public abstract class ResultSet implements Serializable {
         int last = Integer.min(start - 1 + step, workCount);
         List<String> worksInRange = workOrder.subList(first, last);
         ensureWorksAreExpanded(worksInRange, trackingId);
+        worksExpanded.addAll(worksInRange);
         return unmodifiableList(worksInRange);
     }
 
@@ -392,7 +393,7 @@ public abstract class ResultSet implements Serializable {
      * @param worksInRange Collection of works the user wants
      * @param trackingId   The tracking id - added to SolR requests
      */
-    public void ensureWorksAreExpanded(List<String> worksInRange, String trackingId) {
+    protected void ensureWorksAreExpanded(List<String> worksInRange, String trackingId) {
         Set<String> worksWanted = new HashSet<>(worksInRange);
         worksWanted.removeAll(worksExpanded);
         if (worksWanted.isEmpty())
@@ -410,7 +411,6 @@ public abstract class ResultSet implements Serializable {
         expandWorksQuery(query, worksWanted);
         log.debug("Expanding works: {}", worksWanted);
         expandWorks(query);
-        worksExpanded.addAll(worksWanted);
     }
 
     /**
