@@ -71,7 +71,8 @@ public class SolrQueryFields implements Serializable {
         FlatQuery query = FlatQuery.from(rules, cqlTree);
         List<FlatQuery> nestedQueries = NestedQueries.from(query);
         List<FlatQuery> filterQueries = FilterQuery.from(query);
-        filterQueries.add(profile.getSearchFilterQuery());
+        if (profile != null)
+            filterQueries.add(profile.getSearchFilterQuery());
         return new SolrQueryFields(query, nestedQueries, filterQueries);
     }
 
