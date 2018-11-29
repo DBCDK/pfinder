@@ -110,6 +110,10 @@ public class CommonRequest extends BaseRequest {
         return showAgency;
     }
 
+    public int getShowAgencyOrDefault() {
+        return showAgency == null ? getAgency() : showAgency;
+    }
+
     public void setShowAgency(Integer showAgency) {
         this.showAgency = showAgency;
     }
