@@ -18,24 +18,24 @@
  */
 package dk.dbc.opensearch.reponse;
 
+import dk.dbc.opensearch.cache.HttpFetcher;
 import dk.dbc.opensearch.cache.OpenAgencyProfiles;
 import dk.dbc.opensearch.cache.ResultSetKey;
 import dk.dbc.opensearch.input.CollectionType;
 import dk.dbc.opensearch.input.SearchRequest;
 import dk.dbc.opensearch.output.Collection;
-import dk.dbc.opensearch.output.Result;
+import dk.dbc.opensearch.output.Object;
 import dk.dbc.opensearch.output.Root;
 import dk.dbc.opensearch.output.SearchResponse;
 import dk.dbc.opensearch.output.SearchResult;
+import dk.dbc.opensearch.repository.RecordContent;
+import dk.dbc.opensearch.repository.RepositoryAbstraction;
+import dk.dbc.opensearch.repository.XMLScope;
 import dk.dbc.opensearch.setup.RepositorySettings;
 import dk.dbc.opensearch.setup.Settings;
-import dk.dbc.opensearch.solr.SolrQueryFields;
-import dk.dbc.opensearch.solr.SolrRules;
 import dk.dbc.opensearch.solr.profile.Profile;
 import dk.dbc.opensearch.solr.profile.Profiles;
 import dk.dbc.opensearch.solr.resultset.ResultSet;
-import dk.dbc.opensearch.solr.resultset.ResultSetManifestation;
-import dk.dbc.opensearch.solr.resultset.ResultSetWork;
 import dk.dbc.opensearch.utils.StatisticsRecorder;
 import dk.dbc.opensearch.utils.Timing;
 import dk.dbc.opensearch.utils.MDCLog;
@@ -43,14 +43,24 @@ import dk.dbc.opensearch.utils.UserMessage;
 import dk.dbc.opensearch.utils.UserMessageException;
 import fish.payara.cdi.jsr107.impl.NamedCache;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import javax.annotation.Resource;
 import javax.cache.Cache;
 import javax.ejb.Stateless;
+import javax.enterprise.concurrent.ManagedExecutorService;
 import javax.inject.Inject;
 import javax.xml.stream.XMLStreamException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static dk.dbc.opensearch.solr.resultset.ResultSet.EMPTY_RESULT_SET;
+import static java.util.Collections.EMPTY_LIST;
 
 /**
  *
@@ -67,20 +77,28 @@ public class SearchProcessorBean {
     @Inject
     OpenAgencyProfiles oaProfiles;
 
-    @NamedCache(cacheName = "resultset", managementEnabled = true)
     @Inject
+    HttpFetcher fetcher;
+
+    @Inject
+    @NamedCache(cacheName = "resultset", managementEnabled = true)
     Cache<ResultSetKey, ResultSet> resultSetCache;
+
+    @Resource(type = ManagedExecutorService.class)
+    ExecutorService es;
 
     private SearchRequest request;
     private StatisticsRecorder timings;
     private MDCLog mdc;
     private ResultSet resultSet;
+    private HashMap<String, Future<RecordContent>> recordFecthing;
 
     public Root.Scope<Root.EntryPoint> builder(SearchRequest request, StatisticsRecorder timings, MDCLog mdc) {
         this.request = request;
         this.timings = timings;
         this.mdc = mdc;
         this.resultSet = null;
+        this.recordFecthing = new HashMap<>();
         this.mdc.withAgencyId(request.getAgency())
                 .withProfiles(request.getProfilesOrDefault())
                 .withTrackingId(request.getTrackingId());
@@ -108,21 +126,62 @@ public class SearchProcessorBean {
     private void compute() {
         String trackingId = request.getTrackingId();
         RepositorySettings repoSettings = getRepoSettings();
+        RepositoryAbstraction abstraction = repoSettings.abstraction();
+        ResultSetKey key = ResultSetKey.of(request);
+        getResultSet(key, repoSettings, trackingId, abstraction);
+
         int start = request.getStartOrDefault();
         int step = request.getStepValueOrDefault();
-        ResultSetKey key = ResultSetKey.of(request);
-        resultSet = resultSetCache.get(key);
-        if (resultSet == null)
-            resultSet = makeResultSet(key, repoSettings, trackingId);
-
-        // Make it visible to others while we're working on it
-        // So that others don't make the same object
-        resultSetCache.put(key, resultSet);
-
-        resultSet.fetchWorks(repoSettings.solrClient(),
+        resultSet.fetchWorks(abstraction.getSolrClient(),
                              timings, start, step,
                              trackingId);
+        log.trace("resultSet = {}", resultSet);
+
         resultSetCache.put(key, resultSet);
+
+        fetchRecordsAndFormatThem(step, start, repoSettings, abstraction, trackingId);
+    }
+
+    private void fetchRecordsAndFormatThem(int step, int start, RepositorySettings repoSettings, RepositoryAbstraction abstraction, String trackingId) {
+        for (int i = 0 ; i < step ; i++) {
+            int index = start + i;
+            if (index > resultSet.getHitCount())
+                break;
+            String work = resultSet.workAtIndex(index);
+            List<String> units = resultSet.unitsForWork(work);
+            boolean formatThisUnit = true;
+            boolean formatMoreThanOne = formatMoreThanOneUnit();
+            for (String unit : units) {
+                List<String> openFormatFormatsForThisUnit =
+                        formatThisUnit ? getOpenFormatFormats(repoSettings) : EMPTY_LIST;
+
+                Future recordContent = es.submit(() -> abstraction.recordContent(
+                        fetcher, timings, trackingId,
+                        resultSet, request.getShowAgencyOrDefault(), unit,
+                        openFormatFormatsForThisUnit));
+                recordFecthing.put(unit, recordContent);
+                formatThisUnit = formatMoreThanOne;
+            }
+        }
+    }
+
+    private void getResultSet(ResultSetKey key, RepositorySettings repoSettings, String trackingId, RepositoryAbstraction abstraction) {
+        if (resultSetCache.putIfAbsent(key, EMPTY_RESULT_SET)) {
+            Profiles profiles = oaProfiles.getProfileFor(
+                    key.getAgencyId(), repoSettings.getName(),
+                    timings, trackingId, repoSettings.getSolrRules());
+            Profile profile = profiles.getProfile(key.getProfiles());
+            resultSet = abstraction.resultSetFor(key, profile);
+        } else {
+            resultSet = resultSetCache.get(key);
+        }
+    }
+
+    private List<String> getOpenFormatFormats(RepositorySettings repoSettings) {
+        HashSet<String> set = new HashSet<>(request.getObjectFormatOrDerault());
+        set.removeAll(repoSettings.getRawFormatsOrDefault().keySet());
+        set.removeAll(repoSettings.getSolrFormatsOrDefault().keySet());
+        return new ArrayList<>(set);
     }
 
     private void outputResponse(SearchResponse response) throws IOException, XMLStreamException {
@@ -166,40 +225,6 @@ public class SearchProcessorBean {
     }
 
     /**
-     * Make a new cacheable resultset
-     *
-     * @param key          The cache key to use, This is used for carrying
-     *                     parameters that are needed to make the resultSet, to
-     *                     ensure all fields that have influence on the structure
-     *                     of the resultset are present to avoid key collision
-     * @param repoSettings The settings to use for this resultset
-     * @param trackingId   trackingId for open-agency http requests
-     * @return new ResultSet with a query
-     */
-    private ResultSet makeResultSet(ResultSetKey key, RepositorySettings repoSettings, String trackingId) {
-        SolrRules solrRules = repoSettings.getSolrRules();
-        Profiles profiles = oaProfiles.getProfileFor(key.getAgencyId(), repoSettings.getName(),
-                                                     timings, trackingId, solrRules);
-        Profile profile = profiles.getProfile(key.getProfiles());
-        SolrQueryFields solrQuery;
-        switch (key.getQueryLanguage()) {
-            case "cql":
-            case "cqleng":
-                solrQuery = SolrQueryFields.fromCQL(solrRules, key.getQuery(), profile);
-                break;
-            default:
-                throw new UserMessageException(UserMessage.UNSUPPORTED_QUERY_LANGUAGE);
-        }
-        ResultSet newResultSet;
-        if (request.getCollectionTypeOrDefault() == CollectionType.MANIFESTATION)
-            newResultSet = new ResultSetManifestation(solrQuery, key.getAllObjects());
-        else
-            newResultSet = new ResultSetWork(solrQuery, key.getAllObjects());
-        resultSetCache.put(key, newResultSet);
-        return newResultSet;
-    }
-
-    /**
      * Output the units for a work
      *
      * @param objects The output writer
@@ -208,25 +233,57 @@ public class SearchProcessorBean {
      * @throws IOException        If connection is closed and so on
      */
     private void outputUnits(Collection.Stage.NumberOfObjects objects, List<String> units) throws XMLStreamException, IOException {
-        boolean outputContent = true;
-        boolean outputContentNext = request.getCollectionTypeOrDefault() != CollectionType.WORK1;
+        boolean formatCurrent = true;
+        boolean formatMoreThanOne = formatMoreThanOneUnit();
         for (String unit : units) {
-            Set<String> manifestations = resultSet.manifestationsForUnit(unit);
-            boolean outputThisContent = outputContent;
-            objects.object(object -> {
-                if (outputThisContent) {
-                    // Output data
-                }
-                object.identifier(resultSet.manifestationsForUnit(unit).iterator().next())
-                        .objectsAvailable(avail -> {
-                            for (String manifestation : manifestations) {
-                                avail.identifier(manifestation);
-                            }
-                        });
-            });
-            // Wether 2nd and the rest should the be outputted
-            outputContent = outputContentNext;
+            log.trace("outputting unit: {}", unit);
+            Future<RecordContent> future = recordFecthing.get(unit);
+            try {
+                boolean formatThisRecord = formatCurrent;
+                RecordContent content = future.get();
+                objects.object(object -> showContent(object, content, formatThisRecord));
+            } catch (InterruptedException | ExecutionException ex) {
+                log.error("Error fetching async record content: {}", ex.getMessage());
+                log.debug("Error fetching async record content: ", ex);
+                objects.object(object -> object.error("Internal error showing record"));
+            }
+            formatCurrent = formatMoreThanOne;
         }
+    }
+
+    private boolean formatMoreThanOneUnit() {
+        return request.getCollectionTypeOrDefault() != CollectionType.WORK1;
+    }
+
+    @SuppressWarnings("CheckReturnValue")
+    private void showContent(Object object, RecordContent content, boolean showContent) throws XMLStreamException, IOException {
+        log.debug("Showing from content = {}", content);
+        if (showContent) {
+            for (String format : request.getObjectFormatOrDerault()) {
+                XMLScope reader = content.getRawFormat(format);
+                if (reader == null)
+                    continue;
+                Object.Stage._Choice_any suppressWarning =
+                        object._any(reader);
+            }
+            request.getObjectFormatOrDerault()
+                    .stream()
+                    .map(content::getFormattedRecord)
+                    .filter(rec -> rec != null);
+        }
+        object.identifier(content.getObjectsAvailable().get(0))
+                .creationDate(content.getCreationDate())
+                .formatsAvailable(formatsAvailable -> {
+                    for (String formatAvailable : content.getFormatsAvailable()) {
+                        formatsAvailable.format(formatAvailable);
+                    }
+                })
+                .objectsAvailable(objectsAvailable -> {
+                    for (String objectAvailable : content.getObjectsAvailable()) {
+                        objectsAvailable.identifier(objectAvailable);
+                    }
+                })
+                .queryResultExplanation("No explain");
     }
 
 }
