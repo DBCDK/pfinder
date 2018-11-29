@@ -31,6 +31,7 @@ import javax.inject.Inject;
 import javax.ws.rs.ClientErrorException;
 import javax.ws.rs.ServerErrorException;
 import javax.ws.rs.client.Client;
+import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 import org.slf4j.Logger;
@@ -52,25 +53,37 @@ public class HttpFetcher {
     Settings settings;
 
     /**
+     * Make a post request
+     *
+     * @param uriTemplate Template for substituting in
+     * @param trackingId  tracking id, to add to requests
+     * @return Request context for adding values
+     */
+    public PostContext post(String uriTemplate, String trackingId) {
+        UriBuilder uriBuilder = UriBuilder.fromUri(uriTemplate);
+        return new PostContext(client, uriBuilder, settings.getUserAgentOrDrefault(), trackingId);
+    }
+
+    /**
      * Make a get request
      *
      * @param uriTemplate Template for substituting in
      * @param trackingId  tracking id, to add to requests
      * @return Request context for adding values
      */
-    public Context get(String uriTemplate, String trackingId) {
+    public GetContext get(String uriTemplate, String trackingId) {
         UriBuilder uriBuilder = UriBuilder.fromUri(uriTemplate);
-        return new Context(client, uriBuilder, settings.getUserAgentOrDrefault(), trackingId);
+        return new GetContext(client, uriBuilder, settings.getUserAgentOrDrefault(), trackingId);
     }
 
-    public final static class Context {
+    public final static class GetContext {
 
         private final Client client;
         private final UriBuilder uriBuilder;
         private final HashMap<String, String> values;
         private final String userAgent;
 
-        private Context(Client client, UriBuilder uriBuilder, String userAgent, String trackingId) {
+        private GetContext(Client client, UriBuilder uriBuilder, String userAgent, String trackingId) {
             this.client = client;
             this.uriBuilder = uriBuilder;
             this.values = new HashMap<>();
@@ -85,7 +98,7 @@ public class HttpFetcher {
          * @param value what to place instead
          * @return self for chaining
          */
-        public Context with(String key, String value) {
+        public GetContext with(String key, String value) {
             values.put(key, value);
             return this;
         }
@@ -97,16 +110,93 @@ public class HttpFetcher {
          * @param name  request name for statistics
          * @return InputStream and throws runtime exception in case of an error
          */
-        public InputStream request(StatisticsRecorder stats, String name) {
+        public java.io.InputStream request(StatisticsRecorder stats, String name) {
+            return request(MediaType.APPLICATION_JSON_TYPE, stats, name);
+        }
+
+        /**
+         * Get the request as an InputStream
+         *
+         * @param acceptType the content type wanted from the remote server
+         * @param stats      Statistics module
+         * @param name       request name for statistics
+         * @return InputStream and throws runtime exception in case of an error
+         */
+        public InputStream request(MediaType acceptType, StatisticsRecorder stats, String name) {
             InputStream is = null;
             URI uri = uriBuilder.buildFromMap(values);
-            log.debug("Fetching: {}", uri);
-            try (Timing timer = stats.timer(name)) {
+            log.debug("Fetching: (GET) {}", uri);
+            try (final Timing timer = stats.timer(name)) {
                 is = client.target(uri)
-                        .request()
-                        .accept(MediaType.APPLICATION_JSON_TYPE)
-                        .header("User-Agent", userAgent)
-                        .get(InputStream.class);
+                        .request().accept(acceptType).header("User-Agent", userAgent).get(InputStream.class);
+            } catch (ClientErrorException | ServerErrorException ex) {
+                log.error("Error fetching resource: {}: {}", uri, ex.getMessage());
+                log.debug("Error fetching resource: ", ex);
+                throw new UserMessageException(UserMessage.BAD_RESPONSE);
+            }
+            if (is == null) {
+                log.error("Error fetching resource: {}: No content");
+                throw new UserMessageException(UserMessage.BAD_RESPONSE);
+            }
+            return is;
+        }
+    }
+
+    public final static class PostContext {
+
+        private final Client client;
+        private final UriBuilder uriBuilder;
+        private final HashMap<String, String> values;
+        private final String userAgent;
+
+        private PostContext(Client client, UriBuilder uriBuilder, String userAgent, String trackingId) {
+            this.client = client;
+            this.uriBuilder = uriBuilder;
+            this.values = new HashMap<>();
+            this.userAgent = userAgent;
+            this.values.put("trackingId", trackingId);
+        }
+
+        /**
+         * Set path parameters (substitution)
+         *
+         * @param key   name of the parameter
+         * @param value what to place instead
+         * @return self for chaining
+         */
+        public PostContext with(String key, String value) {
+            values.put(key, value);
+            return this;
+        }
+
+        /**
+         * Get the request as an InputStream
+         *
+         * @param entity the entity to post
+         * @param stats  Statistics module
+         * @param name   request name for statistics
+         * @return InputStream and throws runtime exception in case of an error
+         */
+        public InputStream request(Entity entity, StatisticsRecorder stats, String name) {
+            return request(entity, MediaType.APPLICATION_JSON_TYPE, stats, name);
+        }
+
+        /**
+         * Get the request as an InputStream
+         *
+         * @param entity     the entity to post
+         * @param acceptType the content type wanted from the remote server
+         * @param stats      Statistics module
+         * @param name       request name for statistics
+         * @return InputStream and throws runtime exception in case of an error
+         */
+        public InputStream request(Entity entity, MediaType acceptType, StatisticsRecorder stats, String name) {
+            InputStream is = null;
+            URI uri = uriBuilder.buildFromMap(values);
+            log.debug("Fetching: (POST) {}", uri);
+            try (final Timing timer = stats.timer(name)) {
+                is = client.target(uri)
+                        .request().accept(acceptType).header("User-Agent", userAgent).post(entity, InputStream.class);
             } catch (ClientErrorException | ServerErrorException ex) {
                 log.error("Error fetching resource: {}: {}", uri, ex.getMessage());
                 log.debug("Error fetching resource: ", ex);
