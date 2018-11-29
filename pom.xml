@@ -23,9 +23,13 @@
     
     <properties>
         <solrj.version>7.5.0</solrj.version>
-        <jackson.version>2.9.6</jackson.version>
         <mockito.version>1.10.19</mockito.version>
+        <!-- Make sure these are confirming -->
         <payara-micro.version>5.183</payara-micro.version>
+        <jackson.version>2.9.6</jackson.version>
+        <jersey.version>2.27</jersey.version>
+        <cache-api.version>1.1.0</cache-api.version>
+        <hazelcast.version>3.10.5</hazelcast.version>
     </properties>
 
     <modules>
