@@ -163,7 +163,8 @@ public class ServiceBean {
     }
 
     @POST
-    @Consumes({MediaType.APPLICATION_JSON,
+    @Consumes({MediaType.APPLICATION_JSON})
+    @Produces({MediaType.APPLICATION_XML,
                MediaType.APPLICATION_JSON})
     public Response postJSON(InputStream is, @Context HttpHeaders headers, @Context HttpServletRequest httpRequest) {
         return processInputStream(headers, httpRequest, is, RequestParserJSON::new);
