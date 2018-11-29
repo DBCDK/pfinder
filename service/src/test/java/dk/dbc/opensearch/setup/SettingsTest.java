@@ -41,7 +41,8 @@ public class SettingsTest {
         HashMap<String, String> env = mapOf("DEFAULT_REPOSITORY=foo",
                                             "X_FORWARDED_FOR=",
                                             "OPEN_AGENCY_URL=http://localhost/oa",
-                                            "COREPO_SOLR_URL=http://localhost/co/so");
+                                            "COREPO_SOLR_URL=http://localhost/co/so",
+                                            "COREPO_CONTENT_SERVICE_URL=http://localhost/co/co");
 
         YAMLMapper mapper = ExpandingDeserializer.objectMapperOf(new EnvExpander() {
             @Override

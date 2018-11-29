@@ -67,9 +67,9 @@ public class Config {
         this.config = readConfiguration();
         this.badgerFishSingle = makeBadgerFishSingle(); // uses config
         this.client = ClientBuilder.newBuilder()
-                .connectTimeout(config.getHttpClient().connectTimeoutMS(), TimeUnit.MILLISECONDS)
-                .readTimeout(config.getHttpClient().readTimeoutMS(), TimeUnit.MILLISECONDS)
-                .executorService(es)
+//                .connectTimeout(config.getHttpClient().connectTimeoutMS(), TimeUnit.MILLISECONDS)
+//                .readTimeout(config.getHttpClient().readTimeoutMS(), TimeUnit.MILLISECONDS)
+//                .executorService(es)
                 .build();
 
     }
@@ -153,7 +153,7 @@ public class Config {
         throw new FileNotFoundException("Locate file from:" + Arrays.toString(paths));
     }
 
-    static class DashedPropertyNamingStrategy extends PropertyNamingStrategy {
+    public static class DashedPropertyNamingStrategy extends PropertyNamingStrategy {
 
         public DashedPropertyNamingStrategy() {
         }

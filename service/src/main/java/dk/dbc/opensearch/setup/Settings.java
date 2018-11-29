@@ -180,7 +180,7 @@ public class Settings {
      * @return a prefix
      */
     public String lookupNamespacePrefix(String namespace, Map<String, String> generatedNamespaces) {
-        String prefix = defaultNamespaces.get(namespace);
+        String prefix = defaultNamespacesInverse.get(namespace);
         if (prefix == null) {
             prefix = generatedNamespaces.computeIfAbsent(namespace,
                                                          p -> {
@@ -191,19 +191,21 @@ public class Settings {
         return prefix;
     }
 
-    void validateAndProcess() {
+    public void validateAndProcess() {
         defaultRepository = defaultRepository.trim();
         if (defaultRepository == null || defaultRepository.isEmpty())
             throw new IllegalArgumentException("Required parameter defaultRepository is missing from configuration.yaml");
         if (repositories == null || repositories.isEmpty())
             throw new IllegalArgumentException("Required parameter repositories is missing from configuration.yaml");
-        repositories.forEach((name, settings) -> settings.validateAndProcess(name));
         if (openagencyProfileUrl == null || openagencyProfileUrl.isEmpty())
             throw new IllegalArgumentException("Required parameter openAgencyProfileUrl is missing from configuration.yaml");
         generateRepositoryByAlias();
         generateDefaultNamespacesInverse();
         if (jCache == null)
             throw new IllegalArgumentException("Required parameter jCache is missing from configuration.yaml");
+
+        // This requires everything to be validated / computed, since values are extracted
+        repositories.forEach((name, settings) -> settings.validateAndProcess(this, name));
     }
 
     private void generateRepositoryByAlias() {
