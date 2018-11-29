@@ -68,7 +68,7 @@ public class RemoteIPAddress {
         String peer = request.getRemoteAddr();
         String xForwardedFor = headers.getHeaderString("x-forwarded-for");
         // X-Forwarded-For syntax is client-ip[, proxy-ip ...]
-        log.debug("xForwardedFor header: {}", xForwardedFor);
+        log.trace("xForwardedFor header: {}", xForwardedFor);
 
         if (xForwardedFor != null && !xForwardedFor.isEmpty() &&
             inIpRange(peer)) {

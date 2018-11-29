@@ -78,8 +78,8 @@ public class OpenAgencyProfiles {
                 return Profiles.from(solrRules, is);
             }
         } catch (IOException ex) {
-            log.error("Cannot handle prodfile response for: {}: {}", agencyId, ex.getMessage());
-            log.debug("Cannot handle prodfile response for: {}: ", agencyId, ex);
+            log.error("Cannot handle profile response for: {}: {}", agencyId, ex.getMessage());
+            log.debug("Cannot handle profile response for: {}: ", agencyId, ex);
             throw new UserMessageException(UserMessage.BAD_RESPONSE);
         }
     }
