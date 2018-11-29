@@ -100,7 +100,7 @@ public class ResponseTest {
                                         .object(object -> object
                                                 ._any(record())
                                                 .identifier("foo-bar:bug")
-                                                .creationDate(new Date())
+                                                .creationDate(new Date().toString())
                                         )
                                 )
                         )
