@@ -29,12 +29,24 @@ import org.apache.solr.client.solrj.impl.HttpSolrClient;
 
 /**
  *
+ * Helper class for creating SolrClient from a URL.
+ *
  * @author DBC {@literal <dbc.dk>}
  */
 public class Solr {
 
-    private static final Pattern ZK = Pattern.compile("zk://([^/]*)(/.*)?/([^/]*)");
+    private static final Pattern ZK = Pattern.compile("zk://([^/]+)(/.*)?/([^/]*)");
 
+    /**
+     * Create a solr client
+     * <p>
+     * The URL parameter can be of zookeeper type:
+     * zk://[host,host,...][/chroot]/collection
+     * or web type: http://host[:port]/solr/collection
+     *
+     * @param solrUrl SolR collection location
+     * @return SolrClient
+     */
     public static SolrClient client(String solrUrl) {
 
         Matcher zkMatcher = ZK.matcher(solrUrl);

@@ -39,6 +39,20 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
+ * This contains a mapping of the OpenAgency response, that explains which
+ * profiles an agency has, and what they contain.
+ * <p>
+ * A profile is held in an intermediate format, which allows for fast generation
+ * of a profile (union of profiles).
+ * <p>
+ * There's a penalty for storing at this, when fetching from OpenAgency (1st
+ * time a profile for an agency is accessed), however the generation of
+ * profiles is fast
+ * <p>
+ * It could be made faster by fetching one profile (instead of all) at the time,
+ * however, the penalty for fetching a new profile (first time it's accessed) is
+ * at an unpredicted time. and the complexity of joining profiles would increase
+ * tremendously.
  *
  * @author DBC {@literal <dbc.dk>}
  */
@@ -63,7 +77,7 @@ public class Profiles implements Serializable {
         }
     }
 
-    // This probably shouldn't be hardcoded
+    // This probably shouldn't be hardcoded, but is unlikely to change
     private static final String COLLECTION_IDENTIFIER = "rec.collectionIdentifier";
     private static final CQLException.Position PROFILE_EXCEPTION_LOCATION = new CQLException.Position("FROM PROFILE", 0);
 
@@ -120,7 +134,12 @@ public class Profiles implements Serializable {
      * @return the profile covering all specs
      */
     public Profile getProfile(List<String> names) {
-        String name = names.stream().sorted().collect(Collectors.joining(" "));
+        // Defensive programming if someone wishes to explode the size of this
+        // map by requesting profile: a & a,a & a,a,a & a,a,a,a & ... producing
+        // the same result over an over again, but eating memory
+        String name = new HashSet<>(names).stream() // Uniq
+                .sorted()
+                .collect(Collectors.joining(" "));
         return profiles.computeIfAbsent(name, s -> makeProfile(names));
     }
 

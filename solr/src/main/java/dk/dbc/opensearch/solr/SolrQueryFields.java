@@ -36,7 +36,18 @@ import org.apache.solr.client.solrj.SolrQuery;
 
 /**
  *
- * Class for caching of parsed queries
+ * Class for caching of parsed queries based upon the SolrRules
+ * (mapping/information about SolR fields), the actual query (CQL) and the
+ * Profile (filtering of results to what a user is allowed to see)
+ * <p>
+ * The query is flattened and split into nested queries for nested documents
+ * filtering, and filter-queries that are cached for performance gains.
+ * <p>
+ * The filter queries match profile (static) and fx. material types a part used
+ * across many queries, and matches a vast part of the collection.
+ * <p>
+ * This is cachable, for sharing across instances. When prepared it can be used
+ * for paging, without recalculating the query.
  *
  * @author DBC {@literal <dbc.dk>}
  */

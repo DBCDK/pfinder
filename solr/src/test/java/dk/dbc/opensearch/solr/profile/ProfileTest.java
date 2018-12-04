@@ -56,17 +56,17 @@ public class ProfileTest {
             Profile profileAB = profiles.getProfile(Arrays.asList("a", "b"));
             System.out.println("profileAB = " + profileAB);
 
-            assertThat(profileA.hasRelation("100000", "dbcaddi:isSomething"), is(true));
-            assertThat(profileA.hasRelation("100000", "dbcaddi:isSomethingElse"), is(false));
-            assertThat(profileA.hasRelation("100000", "dbcaddi:hasSomethingElse"), is(false));
+            assertThat(profileA.allowsRelation("100000", "dbcaddi:isSomething"), is(true));
+            assertThat(profileA.allowsRelation("100000", "dbcaddi:isSomethingElse"), is(false));
+            assertThat(profileA.allowsRelation("100000", "dbcaddi:hasSomethingElse"), is(false));
 
-            assertThat(profileB.hasRelation("100000", "dbcaddi:isSomething"), is(false));
-            assertThat(profileB.hasRelation("100000", "dbcaddi:isSomethingElse"), is(true));
-            assertThat(profileB.hasRelation("100000", "dbcaddi:hasSomethingElse"), is(false));
+            assertThat(profileB.allowsRelation("100000", "dbcaddi:isSomething"), is(false));
+            assertThat(profileB.allowsRelation("100000", "dbcaddi:isSomethingElse"), is(true));
+            assertThat(profileB.allowsRelation("100000", "dbcaddi:hasSomethingElse"), is(false));
 
-            assertThat(profileAB.hasRelation("100000", "dbcaddi:isSomething"), is(true));
-            assertThat(profileAB.hasRelation("100000", "dbcaddi:isSomethingElse"), is(true));
-            assertThat(profileAB.hasRelation("100000", "dbcaddi:hasSomethingElse"), is(false));
+            assertThat(profileAB.allowsRelation("100000", "dbcaddi:isSomething"), is(true));
+            assertThat(profileAB.allowsRelation("100000", "dbcaddi:isSomethingElse"), is(true));
+            assertThat(profileAB.allowsRelation("100000", "dbcaddi:hasSomethingElse"), is(false));
         }
     }
 

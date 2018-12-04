@@ -25,10 +25,23 @@ import java.util.Map;
 import java.util.Set;
 
 /**
+ * A (stacked) profile collection.
+ * <p>
+ * This contains the union of one or more profiles, as stored in
+ * {@link Profiles}.
+ * <p>
+ * This is mapped into 2 queries (used as filter queries, since they don't
+ * change, and caching of this group is wanted for performance. The 2 queries
+ * are:
+ * Search and Relation. the search filter is: what is allowed to be searched for
+ * results, the Relation is all that is allowed to fetch relations from.
+ * <p>
+ * Also for each collection is is possible to check is a given relation type is
+ * allowed to be shown.
  *
  * @author DBC {@literal <dbc.dk>}
  */
-public class Profile  implements Serializable {
+public class Profile implements Serializable {
 
     private static final long serialVersionUID = -7462331936710472030L;
 
@@ -37,6 +50,7 @@ public class Profile  implements Serializable {
     private final Map<String, Set<String>> relations;
 
     /**
+     * Store the values
      *
      * @param searchFilterQuery   Query for search profile
      * @param relationFilterQuery Query for relation profile
@@ -63,7 +77,7 @@ public class Profile  implements Serializable {
      * @param relationName         the name of the outbound relation
      * @return does this exist?
      */
-    public boolean hasRelation(String collectionIdentifier, String relationName) {
+    public boolean allowsRelation(String collectionIdentifier, String relationName) {
         return relations.getOrDefault(collectionIdentifier, Collections.EMPTY_SET)
                 .contains(relationName);
     }
