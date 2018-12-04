@@ -19,12 +19,15 @@
 package dk.dbc.opensearch.cql;
 
 import dk.dbc.opensearch.cql.CQLException.Position;
+import java.io.Serializable;
 
 /**
  *
  * @author DBC {@literal <dbc.dk>}
  */
-public class Modifier {
+public class Modifier implements Serializable{
+
+    private static final long serialVersionUID = -559329766805007245L;
 
     private final Position pos;
     private final String name;

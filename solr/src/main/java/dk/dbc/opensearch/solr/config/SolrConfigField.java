@@ -18,13 +18,16 @@
  */
 package dk.dbc.opensearch.solr.config;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 /**
  *
  * @author DBC {@literal <dbc.dk>}
  */
-public class SolrConfigField {
+public class SolrConfigField implements Serializable {
+
+    private static final long serialVersionUID = -7402450587724108494L;
 
     public String solrName;
     public SolrConfigFieldType type;

@@ -30,6 +30,8 @@ import java.util.List;
  */
 public class FlatQueryAndNot extends FlatQuery {
 
+    private static final long serialVersionUID = 261890044665713707L;
+
     private final List<FlatQuery> and;
     private final List<FlatQuery> not;
 

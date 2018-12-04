@@ -24,13 +24,16 @@ import dk.dbc.opensearch.cql.SearchQuery;
 import dk.dbc.opensearch.cql.token.BooleanOpName;
 import dk.dbc.opensearch.solr.config.FieldSpec;
 import dk.dbc.opensearch.solr.SolrRules;
+import java.io.Serializable;
 
 /**
  * Abstract class representing flattened query.
  *
  * @author DBC {@literal <dbc.dk>}
  */
-public abstract class  FlatQuery {
+public abstract class  FlatQuery implements Serializable {
+
+    private static final long serialVersionUID = 426525762493114051L;
 
     /**
      * Map a Query Tree to a Flat tree given a set of rules

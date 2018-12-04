@@ -18,11 +18,15 @@
  */
 package dk.dbc.opensearch.solr.config;
 
+import java.io.Serializable;
+
 /**
  *
  * @author DBC {@literal <dbc.dk>}
  */
-public class SolrConfigNested {
+public class SolrConfigNested implements Serializable {
+
+    private static final long serialVersionUID = -9015420816370159030L;
 
     public String query;
     public String cql;

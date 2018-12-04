@@ -22,7 +22,7 @@
     <packaging>pom</packaging>
     
     <properties>
-        <solrj.version>7.1.0</solrj.version>
+        <solrj.version>7.5.0</solrj.version>
         <jackson.version>2.9.6</jackson.version>
     </properties>
 

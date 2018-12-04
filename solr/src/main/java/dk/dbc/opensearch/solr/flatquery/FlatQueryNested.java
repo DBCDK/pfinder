@@ -26,6 +26,8 @@ import dk.dbc.opensearch.solr.config.FieldSpec;
  */
 public class FlatQueryNested extends FlatQuery {
 
+    private static final long serialVersionUID = -7224083879492100687L;
+
     private final String query;
     private final FlatQuery nested;
     private final String filterQuery;

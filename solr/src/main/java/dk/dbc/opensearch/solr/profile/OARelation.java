@@ -16,19 +16,20 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package dk.dbc.opensearch.solr;
-
-import dk.dbc.opensearch.solr.config.FieldSpec;
-import dk.dbc.opensearch.cql.CQLException.Position;
-import java.io.Serializable;
+package dk.dbc.opensearch.solr.profile;
 
 /**
  *
  * @author DBC {@literal <dbc.dk>}
  */
-public interface SolrRules extends Serializable {
+public class OARelation {
 
-    String indexName(String index, Position pos);
+    public String rdfLabel;
+    public String rdfInverse;
 
-    FieldSpec fieldSpec(String index, Position pos);
+    @Override
+    public String toString() {
+        return "OARelation{" + "rdfLabel=" + rdfLabel + ", rdfInverse=" + rdfInverse + '}';
+    }
+
 }

@@ -1,0 +1,97 @@
+{
+    "openSearchProfileResponse": {
+        "profile": [{
+                "profileName": {
+                    "$": "a",
+                    "@": "oa"
+                },
+                "source": [{
+                        "sourceName": {
+                            "$": "something-with-a",
+                            "@": "oa"
+                        },
+                        "sourceSearchable": {
+                            "$": "1",
+                            "@": "oa"
+                        },
+                        "sourceIdentifier": {
+                            "$": "100001-a",
+                            "@": "oa"
+                        },
+                        "@": "oa"
+                    }, {
+                        "sourceName": {
+                            "$": "something-other-with-a",
+                            "@": "oa"
+                        },
+                        "sourceSearchable": {
+                            "$": "0",
+                            "@": "oa"
+                        },
+                        "sourceIdentifier": {
+                            "$": "100000",
+                            "@": "oa"
+                        },
+                        "relation": [{
+                                "rdfLabel": {
+                                    "$": "dbcaddi:isSomething",
+                                    "@": "oa"
+                                },
+                                "@": "oa"
+                            }],
+                        "@": "oa"
+                    }],
+                "@": "oa"
+            },{
+                "profileName": {
+                    "$": "b",
+                    "@": "oa"
+                },
+                "source": [{
+                        "sourceName": {
+                            "$": "something-with-b",
+                            "@": "oa"
+                        },
+                        "sourceSearchable": {
+                            "$": "1",
+                            "@": "oa"
+                        },
+                        "sourceIdentifier": {
+                            "$": "100001-b",
+                            "@": "oa"
+                        },
+                        "@": "oa"
+                    }, {
+                        "sourceName": {
+                            "$": "something-other-with-b",
+                            "@": "oa"
+                        },
+                        "sourceSearchable": {
+                            "$": "0",
+                            "@": "oa"
+                        },
+                        "sourceIdentifier": {
+                            "$": "100000",
+                            "@": "oa"
+                        },
+                        "relation": [{
+                                "rdfLabel": {
+                                    "$": "dbcaddi:isSomethingElse",
+                                    "@": "oa"
+                                },
+                                "rdfInverse": {
+                                    "$": "dbcaddi:hasSomethingElse",
+                                    "@": "oa"
+                                },
+                                "@": "oa"
+                            }],
+                        "@": "oa"
+                    }],
+                "@": "oa"
+            }],
+        "@": "oa"
+    },
+    "@namespaces": {
+        "oa": "http:\/\/oss.dbc.dk\/ns\/openagency"
+    }
+}

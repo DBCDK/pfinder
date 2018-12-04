@@ -1,0 +1,18 @@
+
+fields:
+    rec.collectionIdentifier:
+        
+    default:
+        solrName: term.default
+
+    agency:
+        solrName: holdingsitem.agencyId
+        type: NUMBER
+        nestedGroup: holdings
+    t:
+        internal: true
+
+nested:
+    holdings:
+        query: '{!parent which="t:m" v=$q%d}'
+        cql: 't=h'

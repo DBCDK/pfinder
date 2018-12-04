@@ -18,6 +18,8 @@
  */
 package dk.dbc.opensearch.cql;
 
+import java.io.Serializable;
+
 /**
  *
  * @author DBC {@literal <dbc.dk>}
@@ -26,7 +28,9 @@ public class CQLException extends RuntimeException {
 
     private static final long serialVersionUID = -1737736039680126129L;
 
-    public static class Position {
+    public static class Position implements Serializable {
+
+        private static final long serialVersionUID = -5255304122052942508L;
 
         private final String query;
         private final int pos;
