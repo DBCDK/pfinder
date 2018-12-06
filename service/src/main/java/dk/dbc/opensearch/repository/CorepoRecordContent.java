@@ -21,6 +21,10 @@ package dk.dbc.opensearch.repository;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dk.dbc.opensearch.setup.Settings;
+import dk.dbc.opensearch.xml.DefaultPrefix;
+import dk.dbc.opensearch.xml.XMLCacheElement;
+import dk.dbc.opensearch.xml.XMLCacheReader;
+import dk.dbc.opensearch.xml.XMLElementFilter;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -58,14 +62,14 @@ public class CorepoRecordContent implements RecordContent {
             maskOf(DTD) | maskOf(NAMESPACE) | maskOf(NOTATION_DECLARATION) |
             maskOf(ENTITY_DECLARATION);
 
-    private final HashMap<String, XMLScope> rawRecords;
-    private final HashMap<String, XMLScope> formattedRecords;
+    private final HashMap<String, XMLCacheReader> rawRecords;
+    private final HashMap<String, XMLCacheReader> formattedRecords;
     private String recordStatus;
     private String creationDate;
     private final List<String> objectsAvailable;
     private final String primaryObjectIdentifier;
 
-    public CorepoRecordContent(InputStream is, Map<QName, String> formatSpecs, Settings settings) throws IOException, XMLStreamException {
+    public CorepoRecordContent(InputStream is, Map<QName, String> formatSpecs, DefaultPrefix defaultPrefix) throws IOException, XMLStreamException {
         this.rawRecords = new HashMap<>();
         this.formattedRecords = new HashMap<>();
         Payload payload = O.readValue(is, Payload.class);
@@ -74,8 +78,8 @@ public class CorepoRecordContent implements RecordContent {
         log.trace("payload = {}", payload);
         byte[] bytes = payload.getDataStream().getBytes(StandardCharsets.UTF_8);
         try (ByteArrayInputStream bis = new ByteArrayInputStream(bytes)) {
-            XMLEventReader reader = filteredReader(bis);
-            parseXML(reader, formatSpecs, settings);
+            XMLEventReader reader = XMLElementFilter.elementReader(I.createXMLEventReader(bis));
+            parseXML(reader, formatSpecs, defaultPrefix);
             reader.close();
         }
     }
@@ -92,16 +96,16 @@ public class CorepoRecordContent implements RecordContent {
     }
 
     @Override
-    public XMLScope getRawFormat(String format) {
+    public XMLCacheReader getRawFormat(String format) {
         return rawRecords.get(format);
     }
 
     @Override
-    public XMLScope getFormattedRecord(String format) {
+    public XMLCacheReader getFormattedRecord(String format) {
         return formattedRecords.get(format);
     }
 
-    public void addFormattedRecord(String format, XMLScope content) {
+    public void addFormattedRecord(String format, XMLCacheReader content) {
         formattedRecords.put(format, content);
     }
 
@@ -135,7 +139,7 @@ public class CorepoRecordContent implements RecordContent {
      * @throws XMLStreamException in case of syntax/semantic errors in the XML
      *                            stream
      */
-    private void parseXML(XMLEventReader reader, Map<QName, String> formatSpecs, Settings settings) throws XMLStreamException {
+    private void parseXML(XMLEventReader reader, Map<QName, String> formatSpecs, DefaultPrefix defaultPrefix) throws XMLStreamException {
         while (reader.hasNext()) {
             XMLEvent tag = reader.nextEvent();
             if (tag.isStartElement()) {
@@ -147,7 +151,7 @@ public class CorepoRecordContent implements RecordContent {
                 } else {
                     String format = formatSpecs.get(name);
                     if (format != null) {
-                        rawRecords.put(format, XMLScope.of(start, reader, settings));
+                        rawRecords.put(format, XMLCacheElement.of(start, reader, defaultPrefix).toReader());
                     }
                 }
             }

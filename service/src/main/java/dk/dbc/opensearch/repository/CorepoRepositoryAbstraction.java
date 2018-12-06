@@ -33,6 +33,7 @@ import dk.dbc.opensearch.solr.resultset.ResultSetWork;
 import dk.dbc.opensearch.utils.StatisticsRecorder;
 import dk.dbc.opensearch.utils.UserMessage;
 import dk.dbc.opensearch.utils.UserMessageException;
+import dk.dbc.opensearch.xml.DefaultPrefix;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
@@ -50,14 +51,14 @@ import org.apache.solr.client.solrj.SolrClient;
  */
 public class CorepoRepositoryAbstraction implements RepositoryAbstraction {
 
-    private final Settings settings;
+    private final DefaultPrefix defaultPrefix;
     private final SolrClient solrClient;
     private final String contentUriTemplate;
     private final SolrRules solrRules;
     private final Map<QName, String> knownFormats;
 
-    public CorepoRepositoryAbstraction(Settings settings, RepositorySettings repositorySettings) {
-        this.settings = settings;
+    public CorepoRepositoryAbstraction(DefaultPrefix defaultPrefix, RepositorySettings repositorySettings) {
+        this.defaultPrefix = defaultPrefix;
         this.solrRules = repositorySettings.getSolrRules();
         this.solrClient = Solr.client(repositorySettings.getSolrUrl());
         this.contentUriTemplate = repositorySettings.getContentServiceUrl();
@@ -96,7 +97,7 @@ public class CorepoRepositoryAbstraction implements RepositoryAbstraction {
                 .with("unit", unitId)
                 .with("manifestations", String.join(",", manifestations))
                 .request(recorder, "corepo-content-service")) {
-            CorepoRecordContent recordContent = new CorepoRecordContent(is, knownFormats, settings);
+            CorepoRecordContent recordContent = new CorepoRecordContent(is, knownFormats, defaultPrefix);
             //! TODO openFormatFormats
             return recordContent;
         }

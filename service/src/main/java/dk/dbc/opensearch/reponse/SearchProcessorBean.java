@@ -30,7 +30,6 @@ import dk.dbc.opensearch.output.SearchResponse;
 import dk.dbc.opensearch.output.SearchResult;
 import dk.dbc.opensearch.repository.RecordContent;
 import dk.dbc.opensearch.repository.RepositoryAbstraction;
-import dk.dbc.opensearch.repository.XMLScope;
 import dk.dbc.opensearch.setup.RepositorySettings;
 import dk.dbc.opensearch.setup.Settings;
 import dk.dbc.opensearch.solr.profile.Profile;
@@ -41,6 +40,7 @@ import dk.dbc.opensearch.utils.Timing;
 import dk.dbc.opensearch.utils.MDCLog;
 import dk.dbc.opensearch.utils.UserMessage;
 import dk.dbc.opensearch.utils.UserMessageException;
+import dk.dbc.opensearch.xml.XMLCacheReader;
 import fish.payara.cdi.jsr107.impl.NamedCache;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -260,7 +260,7 @@ public class SearchProcessorBean {
         log.debug("Showing from content = {}", content);
         if (showContent) {
             for (String format : request.getObjectFormatOrDerault()) {
-                XMLScope reader = content.getRawFormat(format);
+                XMLCacheReader reader = content.getRawFormat(format);
                 if (reader == null)
                     continue;
                 Object.Stage._Choice_any suppressWarning =

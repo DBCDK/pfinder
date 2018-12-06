@@ -18,6 +18,7 @@
  */
 package dk.dbc.opensearch.repository;
 
+import dk.dbc.opensearch.xml.XMLCacheReader;
 import java.util.List;
 
 /**
@@ -41,7 +42,7 @@ public interface RecordContent {
      * @param format name of format
      * @return XMLEventReader type content stream
      */
-    XMLScope getRawFormat(String format);
+    XMLCacheReader getRawFormat(String format);
 
     /**
      * Given a format supply a XMLEventReader that contains the format
@@ -51,7 +52,7 @@ public interface RecordContent {
      * @param format name of format
      * @return XMLEventReader type content stream
      */
-    XMLScope getFormattedRecord(String format);
+    XMLCacheReader getFormattedRecord(String format);
 
     List<String> getFormatsAvailable();
 
