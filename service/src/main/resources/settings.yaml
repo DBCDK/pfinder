@@ -9,7 +9,7 @@ repositories:
             - corepo
         solr-url: "$COREPO_SOLR_URL"
         solr-rules-location: classpath:solr-rules-corepo.yaml
-        content-service-url: "$COREPO_CONTENT_SERVICE_URL/rest/opensearch/unit?unit={unit}&pids={manifestations}&agencyId={agency}"
+        content-service-url: "$COREPO_CONTENT_SERVICE_URL/rest/opensearch/unit?unit={unit}&pids={manifestations}&agencyId={agency}&trackingId={trackingId}"
         raw-formats:
             # Syntax is format name -> namespace {SPACE} root-tag
             dkabm: "http://biblstandard.dk/abm/namespace/dkabm/ record"
