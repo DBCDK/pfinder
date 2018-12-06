@@ -30,6 +30,8 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 
+import static java.util.Collections.EMPTY_LIST;
+
 /**
  *
  * @author DBC {@literal <dbc.dk>}
@@ -52,7 +54,7 @@ public class XsdPlugin extends AbstractMojo {
     @Parameter(defaultValue = "Root", property = "xsd.root.class")
     protected String rootClass;
 
-    @Parameter(alias = "skipNamespaces", defaultValue = "http://www.w3.org/2001/XMLSchema")
+    @Parameter(alias = "skipNamespaces")
     protected List<String> skipNamespaces;
 
     @Parameter(defaultValue = "${project}", readonly = true)
@@ -69,6 +71,8 @@ public class XsdPlugin extends AbstractMojo {
         log.debug("skipNamespaces: " + skipNamespaces);
 
         try {
+            if(skipNamespaces == null)
+                skipNamespaces = EMPTY_LIST;
             Generator generator = new Generator(log, sourceFile, packageName, elements, targetFolder, rootClass, skipNamespaces);
             generator.run();
             project.addCompileSourceRoot(targetFolder.getAbsolutePath());
