@@ -187,7 +187,7 @@ public class SearchRequest extends CommonRequest {
     }
 
     public List<String> getObjectFormatOrDerault() {
-        return objectFormat == null || objectFormat.isEmpty() ? Arrays.asList("marcxchange") : objectFormat;
+        return objectFormat == null || objectFormat.isEmpty() ? Arrays.asList("dkabm") : objectFormat;
     }
 
     public List<String> getObjectFormat() {
