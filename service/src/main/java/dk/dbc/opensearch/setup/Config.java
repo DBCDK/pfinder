@@ -25,6 +25,7 @@ import com.fasterxml.jackson.databind.introspect.AnnotatedMethod;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import dk.dbc.opensearch.output.badgerfish.BadgerFishSingle;
 import dk.dbc.opensearch.setup.yaml.EnvExpander;
+import dk.dbc.opensearch.xml.DefaultPrefix;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -58,26 +59,22 @@ public class Config {
     ExecutorService es;
 
     private BadgerFishSingle badgerFishSingle;
-    private Settings config;
+    private Settings settings;
     private Client client;
 
     @PostConstruct
     public void init() {
         log.info("Creating Config");
-        this.config = readConfiguration();
-        this.badgerFishSingle = makeBadgerFishSingle(); // uses config
+        this.settings = readConfiguration();
+        this.badgerFishSingle = makeBadgerFishSingle(settings);
         this.client = ClientBuilder.newBuilder()
-//                .connectTimeout(config.getHttpClient().connectTimeoutMS(), TimeUnit.MILLISECONDS)
-//                .readTimeout(config.getHttpClient().readTimeoutMS(), TimeUnit.MILLISECONDS)
-//                .executorService(es)
                 .build();
-
     }
 
     @Produces
     @ApplicationScoped
     public Settings getConfiguration() {
-        return config;
+        return settings;
     }
 
     @Produces
@@ -92,7 +89,7 @@ public class Config {
         return client;
     }
 
-    private Settings readConfiguration() {
+    private static Settings readConfiguration() {
         try (InputStream is = openInputStream(System.getenv("CONFIG_FILE"),
                                               "classpath:settings.yaml")) {
             YAMLMapper mapper = EnvExpander.YAML_MAPPER.copy();
@@ -112,9 +109,9 @@ public class Config {
         }
     }
 
-    private BadgerFishSingle makeBadgerFishSingle() {
+    private static BadgerFishSingle makeBadgerFishSingle(Settings settings) {
         try (InputStream is = openInputStream(System.getenv("BADGERFISH_RULES_LOCATION"),
-                                              config.getBadgerfishRulesLocation(),
+                                              settings.getBadgerfishRulesLocation(),
                                               "classpath:opensearch-badgerfish-rules.yaml")) {
             BadgerFishSingle repeated = BadgerFishSingle.from(is);
             log.debug("repeated = {}", repeated);

@@ -159,7 +159,7 @@ public class RepositorySettings {
             });
         }
 
-        repositoryAbstraction = new CorepoRepositoryAbstraction(settings, this);
+        repositoryAbstraction = new CorepoRepositoryAbstraction(settings.getDefaultPrefix(), this);
 
     }
 
