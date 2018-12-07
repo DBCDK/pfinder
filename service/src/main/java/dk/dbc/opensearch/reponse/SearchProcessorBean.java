@@ -239,9 +239,24 @@ public class SearchProcessorBean {
             log.trace("outputting unit: {}", unit);
             Future<RecordContent> future = recordFecthing.get(unit);
             try {
-                boolean formatThisRecord = formatCurrent;
+                boolean showContent = formatCurrent;
                 RecordContent content = future.get();
-                objects.object(object -> showContent(object, content, formatThisRecord));
+                objects.object(object -> object.
+                        _any_repeated(o -> outputObjects(o, content, showContent))
+                        .identifier(content.getObjectsAvailable().get(0))
+                        .creationDate(content.getCreationDate())
+                        .formatsAvailable(formatsAvailable -> {
+                            for (String formatAvailable : content.getFormatsAvailable()) {
+                                formatsAvailable.format(formatAvailable);
+                            }
+                        })
+                        .objectsAvailable(objectsAvailable -> {
+                            for (String objectAvailable : content.getObjectsAvailable()) {
+                                objectsAvailable.identifier(objectAvailable);
+                            }
+                        })
+                        .queryResultExplanation("No explain")
+                );
             } catch (InterruptedException | ExecutionException ex) {
                 log.error("Error fetching async record content: {}", ex.getMessage());
                 log.debug("Error fetching async record content: ", ex);
@@ -255,35 +270,14 @@ public class SearchProcessorBean {
         return request.getCollectionTypeOrDefault() != CollectionType.WORK1;
     }
 
-    @SuppressWarnings("CheckReturnValue")
-    private void showContent(Object object, RecordContent content, boolean showContent) throws XMLStreamException, IOException {
-        log.debug("Showing from content = {}", content);
+    private void outputObjects(Object.Stage._any_repeated objectInstance, RecordContent content, boolean showContent) throws IOException, XMLStreamException {
         if (showContent) {
             for (String format : request.getObjectFormatOrDerault()) {
                 XMLCacheReader reader = content.getRawFormat(format);
-                if (reader == null)
-                    continue;
-                Object.Stage._Choice_any suppressWarning =
-                        object._any(reader);
+                if (reader != null)
+                    objectInstance._any(reader);
             }
-            request.getObjectFormatOrDerault()
-                    .stream()
-                    .map(content::getFormattedRecord)
-                    .filter(rec -> rec != null);
         }
-        object.identifier(content.getObjectsAvailable().get(0))
-                .creationDate(content.getCreationDate())
-                .formatsAvailable(formatsAvailable -> {
-                    for (String formatAvailable : content.getFormatsAvailable()) {
-                        formatsAvailable.format(formatAvailable);
-                    }
-                })
-                .objectsAvailable(objectsAvailable -> {
-                    for (String objectAvailable : content.getObjectsAvailable()) {
-                        objectsAvailable.identifier(objectAvailable);
-                    }
-                })
-                .queryResultExplanation("No explain");
     }
 
 }

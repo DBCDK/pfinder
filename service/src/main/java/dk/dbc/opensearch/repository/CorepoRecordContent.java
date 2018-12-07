@@ -20,7 +20,6 @@ package dk.dbc.opensearch.repository;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import dk.dbc.opensearch.setup.Settings;
 import dk.dbc.opensearch.xml.DefaultPrefix;
 import dk.dbc.opensearch.xml.XMLCacheElement;
 import dk.dbc.opensearch.xml.XMLCacheReader;
@@ -82,12 +81,6 @@ public class CorepoRecordContent implements RecordContent {
             parseXML(reader, formatSpecs, defaultPrefix);
             reader.close();
         }
-    }
-
-    private XMLEventReader filteredReader(InputStream is) throws XMLStreamException {
-        return I.createFilteredReader(
-                I.createXMLEventReader(is),
-                e -> isWanted(e.getEventType()));
     }
 
     @Override
