@@ -82,7 +82,7 @@ public class RequestParserJSONTest {
             }
             String xmlReq;
             try {
-                xmlReq = new RequestParser(xml).asBaseRequest().toString();
+                xmlReq = new RequestParserXML(xml).asBaseRequest().toString();
                 xmlReq = xmlReq.replaceFirst("trackingId=[^,]*", "trackingId=***");
             } catch (XMLStreamException ex) {
                 xmlReq = ex.getMessage();

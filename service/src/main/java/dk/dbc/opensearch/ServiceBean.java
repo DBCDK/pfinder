@@ -22,6 +22,7 @@ import dk.dbc.opensearch.output.IndexHtmlBean;
 import dk.dbc.opensearch.input.RemoteIPAddress;
 import dk.dbc.opensearch.input.RequestParser;
 import dk.dbc.opensearch.input.RequestParserJSON;
+import dk.dbc.opensearch.input.RequestParserXML;
 import dk.dbc.opensearch.output.ResourceStreamingOutput;
 import dk.dbc.opensearch.output.OpenSearchResponse;
 import dk.dbc.opensearch.output.OpenSearchResponseJSON;
@@ -144,7 +145,7 @@ public class ServiceBean {
                 if (c == '{')
                     return processInputStream(headers, httpRequest, is, RequestParserJSON::new);
                 else
-                    return processInputStream(headers, httpRequest, is, RequestParser::new);
+                    return processInputStream(headers, httpRequest, is, RequestParserXML::new);
             }
         } catch (IOException ex) {
             log.error("post (form): {}", ex.getMessage());
@@ -159,7 +160,7 @@ public class ServiceBean {
     @Produces({MediaType.APPLICATION_XML,
                MediaType.APPLICATION_JSON})
     public Response postXML(InputStream is, @Context HttpHeaders headers, @Context HttpServletRequest httpRequest) {
-        return processInputStream(headers, httpRequest, is, RequestParser::new);
+        return processInputStream(headers, httpRequest, is, RequestParserXML::new);
     }
 
     @POST

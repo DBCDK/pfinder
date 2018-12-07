@@ -87,7 +87,7 @@ public class InputPartFactory<T extends InputPart> {
         for (;;) {
             XMLEvent event = reader.nextTag();
             Location location = event.getLocation();
-            if (isClose(event, RequestParser.OS_URI, tagName))
+            if (isClose(event, RequestParserXML.OS_URI, tagName))
                 break;
             if (!event.isStartElement())
                 throw new XMLStreamException("Expected " + tagName + " close or " + tagName + " parameter", location);
