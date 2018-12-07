@@ -27,6 +27,8 @@ import dk.dbc.opensearch.solr.SolrRules;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -35,6 +37,8 @@ import java.util.Map;
 public class SolrConfig implements Serializable {
 
     private static final long serialVersionUID = -6283439939759554597L;
+
+    private static final Logger log = LoggerFactory.getLogger(SolrConfig.class);
 
     public Map<String, SolrConfigField> fields;
     public Map<String, SolrConfigNested> nested;
@@ -112,6 +116,7 @@ public class SolrConfig implements Serializable {
         private String indexName(String index, Position pos, boolean allowInternal) {
             Entry entry = indexes.computeIfAbsent(index, this::computeEntry);
             if (entry == null || entry.isInternal() && !allowInternal) {
+                log.warn("Tried to access field: {}", index);
                 throw new CQLException(CQLError.UNSUPPORTED_INDEX, pos);
             }
             return entry.getIndexName();
@@ -125,6 +130,7 @@ public class SolrConfig implements Serializable {
         private FieldSpec fieldSpec(String index, Position pos, boolean allowInternal) {
             Entry entry = indexes.computeIfAbsent(index, this::computeEntry);
             if (entry == null || entry.isInternal() && !allowInternal) {
+                log.warn("Tried to access field: {}", index);
                 throw new CQLException(CQLError.UNSUPPORTED_INDEX, pos);
             }
             return entry.getNestedSpec();

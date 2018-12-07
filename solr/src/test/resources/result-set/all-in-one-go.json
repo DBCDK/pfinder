@@ -1,0 +1,57 @@
+{
+    "query": "myQuery",
+    "solr": {
+        "default:myQuery": {
+            "records": [
+                { "rec.workId": "work:1", "rec.unitId": "unit:1", "rec.manifestationId": ["m:2", "m:22"] },
+                { "rec.workId": "work:1", "rec.unitId": "unit:1", "rec.manifestationId": "m:1"},
+                { "rec.workId": "work:7", "rec.unitId": "unit:6", "rec.manifestationId": "m:4"},
+                { "rec.workId": "work:1", "rec.unitId": "unit:2", "rec.manifestationId": "m:7"},
+                { "rec.workId": "work:3", "rec.unitId": "unit:3", "rec.manifestationId": "m:5"}
+            ]
+        }
+    },
+    "works": [
+        {
+            "work": "work:1",
+            "units": [
+                {
+                    "unit": "unit:1",
+                    "manifestations": [
+                        "m:1",
+                        "m:2",
+                        "m:22"
+                    ]
+                },
+                {
+                    "unit": "unit:2",
+                    "manifestations": [
+                        "m:7"
+                    ]
+                }
+            ]
+        },
+        {
+            "work": "work:7",
+            "units": [
+                {
+                    "unit": "unit:6",
+                    "manifestations": [
+                        "m:4"
+                    ]
+                }
+            ]
+        },
+        {
+            "work": "work:3",
+            "units": [
+                {
+                    "unit": "unit:3",
+                    "manifestations": [
+                        "m:5"
+                    ]
+                }
+            ]
+        }
+    ]
+}
