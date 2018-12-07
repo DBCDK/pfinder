@@ -31,6 +31,12 @@ public class QName {
     private final String name;
     private final String namespace;
 
+    public QName(String prefix, String name, String namespace) {
+        this.prefix = prefix;
+        this.name = name;
+        this.namespace = namespace;
+    }
+
     public QName(String in, Map<String, String> namespaces, String targetNamespace) {
         String[] a = in.split(":", 2);
         if (a.length == 1) {
@@ -53,6 +59,10 @@ public class QName {
 
     public String getNamespace() {
         return namespace;
+    }
+
+    public QName withNewName(String name) {
+        return new QName(prefix, name, namespace);
     }
 
     @Override

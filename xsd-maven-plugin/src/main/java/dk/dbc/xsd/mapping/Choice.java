@@ -42,4 +42,9 @@ public class Choice {
         choice = new ArrayList<>();
     }
 
+    @Override
+    public String toString() {
+        return "Choice{" + choice + '}';
+    }
+
 }

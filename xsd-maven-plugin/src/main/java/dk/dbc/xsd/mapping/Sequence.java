@@ -42,4 +42,9 @@ public class Sequence {
         sequence = new ArrayList<>();
     }
 
+    @Override
+    public String toString() {
+        return "Sequence{" + sequence + '}';
+    }
+
 }

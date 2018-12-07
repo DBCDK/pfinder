@@ -58,7 +58,7 @@ public class ClassBuilder {
     }
 
     public Set<QName> build() throws IOException {
-        System.out.println("Building: " + className);
+        cxt.info("Building: " + className);
         E e = new E(element.complexType);
         Map<QName, String> returnValue = new LinkedHashMap<>();
         Map<String, Set<QName>> methodsInStage = new LinkedHashMap<>();
@@ -124,6 +124,16 @@ public class ClassBuilder {
                             .add(method);
                 }
                 returnValue.put(method, currentStage);
+                if (e.isRepeatable()) {
+                    QName ref = method;
+                    QName ref1 = ref.withNewName(ref.getName() + "_repeated");
+                    returnValue.put(ref1, currentStage);
+                    methodsInStage.computeIfAbsent(ref1.getName(), s -> new LinkedHashSet<>())
+                            .add(ref);
+                    stages.forEach(s -> methodsInStage.get(s).add(ref1));
+
+                }
+
                 if (e.isOptional()) {
                     optionalMethods.add(method);
                 } else {
@@ -161,6 +171,11 @@ public class ClassBuilder {
                 returnValue.put(ref, stage);
                 methodsInStage.computeIfAbsent(stage, s -> new LinkedHashSet<>())
                         .add(ref);
+                QName ref1 = ref.withNewName(ref.getName() + "_repeated");
+                returnValue.put(ref1, stage);
+                methodsInStage.computeIfAbsent(ref1.getName(), s -> new LinkedHashSet<>())
+                        .add(ref);
+                stages.forEach(s -> methodsInStage.get(s).add(ref1));
             } else if (lastElement) {
                 returnValue.put(ref, null);
             } else {
@@ -216,8 +231,11 @@ public class ClassBuilder {
             replace.with("scope", stage.substring(stage.indexOf('.') + 1));
             CLASS_INI.segment(os, "SCOPE_CLASS_START", replace);
             for (QName method : methodsInStage.get(stage)) {
-                outputMethod(os, stage, method, returnValue.get(method), terminalFunctions.contains(method));
+                outputMethod(os, stage, method, returnValue.get(method),
+                             terminalFunctions.contains(method) || stage.endsWith("_repeated"));
             }
+            if (!stage.endsWith("_repeated"))
+                CLASS_INI.segment(os, "SCOPE_CLASS_DELEGATE", replace);
             CLASS_INI.segment(os, "SCOPE_CLASS_END", replace);
         }
     }
@@ -234,10 +252,15 @@ public class ClassBuilder {
                 .with("method_upper", cxt.constName(method));
         String documentation = cxt.getDoc(method);
 
+        boolean isRepeated = method.getName().endsWith("_repeated");
+
         String type = cxt.getType(method);
         if (type == null) {
             if (method.getName().equals("_any")) {
                 outputMethod(os, "METHOD_COMMENT_ANY", documentation, isVoid, isTerminal, "METHOD_ANY_NO_SCOPE");
+            } else if (isRepeated) {
+                replace.with("type", method.getName());
+                outputMethod(os, "METHOD_COMMENT_SCOPE", documentation, isVoid, isTerminal, "METHOD_SCOPE_REPEATED");
             } else {
                 replace.with("type", cxt.camelcase(method));
                 outputMethod(os, "METHOD_COMMENT_SCOPE", documentation, isVoid, isTerminal, "METHOD_SCOPE");

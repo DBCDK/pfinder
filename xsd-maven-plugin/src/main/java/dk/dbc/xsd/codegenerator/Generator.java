@@ -185,15 +185,13 @@ public class Generator {
                             case "float":
                                 cxt.addType(name, "float");
                                 break;
-                            case "date":
-                                cxt.addType(name, "special:DATE");
-                                break;
                             case "boolean":
                                 cxt.addType(name, "boolean");
                                 break;
                             default:
-                                System.err.println("type = " + type);
-                                throw new AssertionError(name.toString());
+                                cxt.info("using String for: " + name + " (" + typeName.getName() + ")");
+                                cxt.addType(name, "String");
+                                break;
                         }
                     }
                 });

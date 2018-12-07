@@ -47,7 +47,7 @@ public class EnumBuilder {
     }
 
     public void build() throws IOException {
-        System.out.println("Building: " + className);
+        cxt.info("Building: " + className);
         try (JavaFileOutputStream os = new JavaFileOutputStream(cxt, className)) {
             output(os);
         }
