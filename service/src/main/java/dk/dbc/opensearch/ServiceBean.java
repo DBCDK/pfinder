@@ -66,7 +66,6 @@ import javax.xml.stream.XMLStreamException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static dk.dbc.opensearch.utils.MDCLog.mdc;
 import static javax.ws.rs.core.Response.Status.*;
 
 /**
@@ -174,7 +173,7 @@ public class ServiceBean {
     private Response processInputStream(HttpHeaders headers, HttpServletRequest httpRequest, InputStream is, RequestProvider requestProvider) {
         String peer = remoteIPAddress.ip(headers, httpRequest);
         try {
-            MDCLog mdc = mdc()
+            MDCLog mdc = MDCLog.mdc()
                     .withPeer(peer);
             StatisticsRecorder statistics = new StatisticsRecorder();
             RequestParser request;
