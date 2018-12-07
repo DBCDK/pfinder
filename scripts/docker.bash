@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# 
+# Run 'docker build' in current or every module dir that has a Dockerfile at the right location
+# building all dockerimages for this module/project
+#
+
 branch=`git rev-parse --abbrev-ref HEAD`
 if [ x$branch = xmaster ]; then
     branch=latest
