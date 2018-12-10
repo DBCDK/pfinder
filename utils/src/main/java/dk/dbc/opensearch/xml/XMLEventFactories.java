@@ -24,7 +24,7 @@ import javax.xml.stream.XMLOutputFactory;
 
 /**
  *
- * @author Morten Bøgeskov <mb@dbc.dk>
+ * @author Morten Bøgeskov (mb@dbc.dk)
  */
 public class XMLEventFactories {
 

@@ -37,24 +37,41 @@ import static dk.dbc.opensearch.xml.XMLElementFilter.isWanted;
 import static dk.dbc.opensearch.xml.XMLEventFactories.E;
 
 /**
+ * an {@link XMLEventWriter} for storing an element
+ * <p>
+ * First event to be added to this container needs to be a {@link StartElement},
+ * since this will be rewritten in {@link #toReader()} to contain all
+ * declarations for all used namespaces. It is possible to have more that just
+ * the one element in the container, however this will most likely fail
+ * regarding to namespaces. Misuse of this feature is NOT recommended.
  *
- * @author Morten Bøgeskov <mb@dbc.dk>
+ * @author Morten Bøgeskov (mb@dbc.dk)
  */
 public class XMLCacheElement implements XMLEventWriter {
 
     private final DefaultPrefix.Instance defaultPrefix;
     private final ArrayList<XMLEvent> events;
 
-    public static XMLCacheElement of(XMLEvent event, XMLEventReader r, DefaultPrefix defaultPrefix) throws XMLStreamException {
+    /**
+     * Construct an {@link XMLCacheElement} from a StartElement and remainder of
+     * a stream
+     *
+     * @param event         StartElement (tag opening)
+     * @param reader        stream of events after this
+     * @param defaultPrefix namespace prefix mapper
+     * @return a cached element
+     * @throws XMLStreamException if there's a semantic error in the input
+     */
+    public static XMLCacheElement of(StartElement event, XMLEventReader reader, DefaultPrefix defaultPrefix) throws XMLStreamException {
         XMLCacheElement cache = new XMLCacheElement(defaultPrefix);
         int level = 1;
         cache.add(event);
-        while(level > 0 && r.hasNext()) {
-            XMLEvent e = r.nextEvent();
+        while (level > 0 && reader.hasNext()) {
+            XMLEvent e = reader.nextEvent();
             cache.add(e);
-            if(e.isStartElement())
+            if (e.isStartElement())
                 level++;
-            if(e.isEndElement())
+            if (e.isEndElement())
                 level--;
         }
         return cache;
@@ -65,6 +82,11 @@ public class XMLCacheElement implements XMLEventWriter {
         this.events = new ArrayList<>();
     }
 
+    /**
+     * Convert into a cached reader
+     *
+     * @return a reader that encompasses the stores events
+     */
     public XMLCacheReader toReader() {
         XMLEvent[] eventsArray = events.toArray(new XMLEvent[events.size()]);
         if (eventsArray.length != 0)
@@ -119,6 +141,12 @@ public class XMLCacheElement implements XMLEventWriter {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    /**
+     * For a given event (Start/EndElement) fic the namespace prefix
+     *
+     * @param event event
+     * @return same event or namespace-prefix mapped
+     */
     private XMLEvent fixPrefix(XMLEvent event) {
         if (event.isStartElement())
             return fixStartElementPrefix(event.asStartElement());
@@ -127,6 +155,12 @@ public class XMLCacheElement implements XMLEventWriter {
         return event;
     }
 
+    /**
+     * Convert a StartElement to one with prefix normalization
+     *
+     * @param event an tag open event
+     * @return same or equivalent event
+     */
     private XMLEvent fixStartElementPrefix(StartElement event) {
         QName name = event.getName();
         String uri = name.getNamespaceURI();
@@ -142,6 +176,14 @@ public class XMLCacheElement implements XMLEventWriter {
         return event;
     }
 
+    /**
+     * Map namespaces of attributes to default namespaces
+     *
+     * @param src attribute iterator of attributes, that might need to have
+     *            namespace prefix changed
+     * @return optional empty if nothing is changed, otherwise an attribute
+     *         iterator
+     */
     private Optional<Iterator> fixAttributePrefix(Iterator<Attribute> src) {
         ArrayList<Attribute> attrs = new ArrayList<>();
         boolean fixed = false;
@@ -161,6 +203,12 @@ public class XMLCacheElement implements XMLEventWriter {
         return Optional.empty();
     }
 
+    /**
+     * Convert a EnvElement to one with prefix normalization
+     *
+     * @param event an tag clode event
+     * @return same or equivalent event
+     */
     private XMLEvent fixEndElementPrefix(EndElement event) {
         QName name = event.getName();
         String uri = name.getNamespaceURI();
@@ -171,6 +219,12 @@ public class XMLCacheElement implements XMLEventWriter {
         return event;
     }
 
+    /**
+     * Rebuild a StartElement to contain namespace declaration of all
+     *
+     * @param event
+     * @return
+     */
     private XMLEvent fixStartElement(XMLEvent event) {
         StartElement start = event.asStartElement();
         ArrayList<Namespace> namespaces = new ArrayList<>();

@@ -22,9 +22,7 @@ import java.io.InputStream;
 import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Map;
-import javax.xml.namespace.NamespaceContext;
 import javax.xml.stream.XMLEventReader;
-import javax.xml.stream.events.XMLEvent;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -37,7 +35,7 @@ import static org.junit.Assert.*;
 
 /**
  *
- * @author Morten Bøgeskov <mb@dbc.dk>
+ * @author Morten Bøgeskov (mb@dbc.dk)
  */
 public class XMLCacheElementTest {
 

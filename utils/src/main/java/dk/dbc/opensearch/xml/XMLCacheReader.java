@@ -18,13 +18,15 @@
  */
 package dk.dbc.opensearch.xml;
 
+import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.XMLEvent;
 import javax.xml.stream.util.EventReaderDelegate;
 
 /**
+ * A {@link XMLEventReader} implementation for an array or events
  *
- * @author Morten Bøgeskov <mb@dbc.dk>
+ * @author Morten Bøgeskov (mb@dbc.dk)
  */
 public class XMLCacheReader extends EventReaderDelegate {
 

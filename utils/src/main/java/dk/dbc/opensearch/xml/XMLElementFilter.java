@@ -18,18 +18,16 @@
  */
 package dk.dbc.opensearch.xml;
 
-import javax.xml.stream.XMLEventFactory;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.XMLEvent;
-import javax.xml.stream.util.EventReaderDelegate;
 
 import static dk.dbc.opensearch.xml.XMLEventFactories.I;
 import static javax.xml.stream.XMLStreamConstants.*;
 
 /**
  *
- * @author Morten Bøgeskov <mb@dbc.dk>
+ * @author Morten Bøgeskov (mb@dbc.dk)
  */
 public class XMLElementFilter {
 
@@ -55,13 +53,21 @@ public class XMLElementFilter {
      * <p>
      * Only events allowed Start-/EndElement and Characters
      *
-     * @param bitNo this bit to test
+     * @param event event to test if is wanted
      * @return if the bit is set
      */
     public static boolean isWanted(XMLEvent event) {
         return ( UNWANTED_EVENTS & maskOf(event.getEventType()) ) == 0;
     }
 
+    /**
+     * Make an XML event stream that contains only Start/EndElement and
+     * Character events
+     *
+     * @param reader input
+     * @return filtered reader
+     * @throws XMLStreamException if there's a problem constructing the reader
+     */
     public static XMLEventReader elementReader(XMLEventReader reader) throws XMLStreamException {
         return I.createFilteredReader(reader, XMLElementFilter::isWanted);
     }
