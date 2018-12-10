@@ -34,15 +34,14 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLEventReader;
-import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static dk.dbc.opensearch.xml.XMLEventFactories.I;
 import static javax.xml.XMLConstants.NULL_NS_URI;
-import static javax.xml.stream.XMLStreamConstants.*;
 
 /**
  *
@@ -53,13 +52,6 @@ public class CorepoRecordContent implements RecordContent {
     private static final Logger log = LoggerFactory.getLogger(CorepoRecordContent.class);
 
     private static final ObjectMapper O = makeObjectMapper();
-    private static final XMLInputFactory I = makeXMLInputFactory();
-    private static final int UNWANTED_EVENTS =
-            maskOf(PROCESSING_INSTRUCTION) | maskOf(COMMENT) | maskOf(SPACE) |
-            maskOf(START_DOCUMENT) | maskOf(END_DOCUMENT) |
-            maskOf(ENTITY_REFERENCE) | maskOf(ATTRIBUTE) |
-            maskOf(DTD) | maskOf(NAMESPACE) | maskOf(NOTATION_DECLARATION) |
-            maskOf(ENTITY_DECLARATION);
 
     private final HashMap<String, XMLCacheReader> rawRecords;
     private final HashMap<String, XMLCacheReader> formattedRecords;
@@ -123,7 +115,6 @@ public class CorepoRecordContent implements RecordContent {
     }
 
     /**
-     *
      * Parses corepo-xml extracting raw formats, and parsing adminData
      *
      * @param reader      XML parts from the response
@@ -200,36 +191,10 @@ public class CorepoRecordContent implements RecordContent {
         return "CorepoRecordContent{" + "rawRecords=" + rawRecords.keySet() + ", formattedRecords=" + formattedRecords.keySet() + ", recordStatus=" + recordStatus + ", creationDate=" + creationDate + ", objectsAvailable=" + objectsAvailable + ", primaryObjectIdentifier=" + primaryObjectIdentifier + '}';
     }
 
-    /**
-     * Convert a bit number into a bit mask
-     *
-     * @param bitNo the bit that should be set
-     * @return integer with the bit set
-     */
-    private static int maskOf(int bitNo) {
-        return 1 << bitNo;
-    }
-
-    /**
-     * Check if a bit is set in EVENT_FILTER
-     *
-     * @param bitNo this bit to test
-     * @return if the bit is set
-     */
-    private static boolean isWanted(int bitNo) {
-        return ( UNWANTED_EVENTS & maskOf(bitNo) ) == 0;
-    }
-
     private static ObjectMapper makeObjectMapper() {
         ObjectMapper o = new ObjectMapper();
         o.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         return o;
-    }
-
-    private static XMLInputFactory makeXMLInputFactory() {
-        synchronized (XMLInputFactory.class) {
-            return XMLInputFactory.newInstance();
-        }
     }
 
     /**

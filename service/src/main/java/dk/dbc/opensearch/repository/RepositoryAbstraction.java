@@ -54,6 +54,7 @@ public interface RepositoryAbstraction {
     SolrClient getSolrClient();
 
     /**
+     * Extract content for a given unit
      *
      * @param fetcher           web access module
      * @param recorder          timings for different actions
@@ -63,7 +64,7 @@ public interface RepositoryAbstraction {
      *                          (ordering of manifestations)
      * @param unitId            the unit to retrieve content for
      * @param openFormatFormats list of formats to get from openFormat service
-     * @return
+     * @return Content object representing this unit in the resultset
      * @throws IOException        When there's communication errors or JSON
      *                            response errors
      * @throws XMLStreamException If there's inconsistency in the supplied XML

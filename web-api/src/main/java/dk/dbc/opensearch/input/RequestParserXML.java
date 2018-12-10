@@ -18,16 +18,16 @@
  */
 package dk.dbc.opensearch.input;
 
+import dk.dbc.opensearch.xml.XMLElementFilter;
 import java.io.InputStream;
 import java.util.AbstractMap;
 import java.util.Map;
-import java.util.UUID;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLEventReader;
-import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.XMLEvent;
 
+import static dk.dbc.opensearch.xml.XMLEventFactories.I;
 import static javax.xml.stream.XMLStreamConstants.*;
 
 /**
@@ -36,37 +36,35 @@ import static javax.xml.stream.XMLStreamConstants.*;
  */
 public class RequestParserXML extends RequestParser {
 
-    private static final XMLInputFactory I = makeXMLInputFactory();
-    private static final int UNWANTED_EVENTS =
-            maskOf(PROCESSING_INSTRUCTION) | maskOf(COMMENT) | maskOf(SPACE) |
-            maskOf(START_DOCUMENT) | maskOf(END_DOCUMENT) |
-            maskOf(ENTITY_REFERENCE) | maskOf(ATTRIBUTE) |
-            maskOf(DTD) | maskOf(NAMESPACE) | maskOf(NOTATION_DECLARATION) |
-            maskOf(ENTITY_DECLARATION);
-
+//    private static final XMLInputFactory I = makeXMLInputFactory();
+//    private static final int UNWANTED_EVENTS =
+//            maskOf(PROCESSING_INSTRUCTION) | maskOf(COMMENT) | maskOf(SPACE) |
+//            maskOf(START_DOCUMENT) | maskOf(END_DOCUMENT) |
+//            maskOf(ENTITY_REFERENCE) | maskOf(ATTRIBUTE) |
+//            maskOf(DTD) | maskOf(NAMESPACE) | maskOf(NOTATION_DECLARATION) |
+//            maskOf(ENTITY_DECLARATION);
     public static final String OS_URI = "http://oss.dbc.dk/ns/opensearch";
     public static final String SOAP_URI = "http://schemas.xmlsoap.org/soap/envelope/";
 
-    /**
-     * Convert a bit number into a bit mask
-     *
-     * @param bitNo the bit that should be set
-     * @return integer with the bit set
-     */
-    private static int maskOf(int bitNo) {
-        return 1 << bitNo;
-    }
-
-    /**
-     * Check if a bit is set in EVENT_FILTER
-     *
-     * @param bitNo this bit to test
-     * @return if the bit is set
-     */
-    private static boolean isWanted(int bitNo) {
-        return ( UNWANTED_EVENTS & maskOf(bitNo) ) == 0;
-    }
-
+//    /**
+//     * Convert a bit number into a bit mask
+//     *
+//     * @param bitNo the bit that should be set
+//     * @return integer with the bit set
+//     */
+//    private static int maskOf(int bitNo) {
+//        return 1 << bitNo;
+//    }
+//
+//    /**
+//     * Check if a bit is set in EVENT_FILTER
+//     *
+//     * @param bitNo this bit to test
+//     * @return if the bit is set
+//     */
+//    private static boolean isWanted(int bitNo) {
+//        return ( UNWANTED_EVENTS & maskOf(bitNo) ) == 0;
+//    }
     public RequestParserXML(InputStream is) throws XMLStreamException {
         this(readOuterMost(is));
     }
@@ -76,9 +74,7 @@ public class RequestParserXML extends RequestParser {
     }
 
     private static Map.Entry<BaseRequest, OutputType> readOuterMost(InputStream is) throws XMLStreamException {
-        XMLEventReader reader = I.createFilteredReader(
-                I.createXMLEventReader(is),
-                e -> isWanted(e.getEventType()));
+        XMLEventReader reader = XMLElementFilter.elementReader(I.createXMLEventReader(is));
         XMLEvent event = reader.nextEvent();
         if (!event.isStartElement()) {
             throw new XMLStreamException("Expected tag as opening of request", event.getLocation());
@@ -162,10 +158,9 @@ public class RequestParserXML extends RequestParser {
                name.equals(qname.getLocalPart());
     }
 
-    private static XMLInputFactory makeXMLInputFactory() {
-        synchronized (XMLInputFactory.class) {
-            return XMLInputFactory.newInstance();
-        }
-    }
-
+//    private static XMLInputFactory makeXMLInputFactory() {
+//        synchronized (XMLInputFactory.class) {
+//            return XMLInputFactory.newInstance();
+//        }
+//    }
 }

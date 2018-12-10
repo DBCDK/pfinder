@@ -27,11 +27,10 @@ import java.util.regex.Pattern;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJBException;
 import javax.ejb.Singleton;
-import javax.xml.stream.XMLEventFactory;
 import javax.xml.stream.XMLEventWriter;
-import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 
+import static dk.dbc.opensearch.xml.XMLEventFactories.*;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
@@ -42,8 +41,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 public class IndexHtmlBean {
 
     private static final Pattern COMMENT = Pattern.compile("\\s*[#;].*");
-    private static final XMLEventFactory E = makeXMLEventFactory();
-    private static final XMLOutputFactory O = makeXMLOutputFactory();
 
     public static final IndexHtmlBean INDEX_HTML = new IndexHtmlBean();
 
@@ -113,18 +110,6 @@ public class IndexHtmlBean {
                 bos.write(buffer, 0, readBytes);
             }
             return new String(bos.toByteArray(), UTF_8);
-        }
-    }
-
-    private static XMLEventFactory makeXMLEventFactory() {
-        synchronized (XMLEventFactory.class) {
-            return XMLEventFactory.newInstance();
-        }
-    }
-
-    private static XMLOutputFactory makeXMLOutputFactory() {
-        synchronized (XMLOutputFactory.class) {
-            return XMLOutputFactory.newInstance();
         }
     }
 
