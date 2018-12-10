@@ -22,7 +22,7 @@ import dk.dbc.opensearch.solr.SolrQueryFields;
 import dk.dbc.opensearch.utils.StatisticsRecorder;
 import dk.dbc.opensearch.utils.Timing;
 import dk.dbc.opensearch.utils.UserMessage;
-import dk.dbc.opensearch.utils.UserMessageExecption;
+import dk.dbc.opensearch.utils.UserMessageException;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -129,6 +129,15 @@ public abstract class ResultSet implements Serializable {
     protected abstract String nameOfManifestationField();
 
     /**
+     * List all the fields required by this logic
+     * <p>
+     * Should contain all of Work-, Unit- and ManifestationField
+     *
+     * @return Collection of fields wanted from the SolR for work construction
+     */
+    protected abstract Collection<String> namesOfFieldsRequired();
+
+    /**
      * If all the work ids of the resultset are found
      *
      * @return true/false
@@ -176,6 +185,20 @@ public abstract class ResultSet implements Serializable {
     }
 
     /**
+     * Lookup work at a given position in the result set
+     *
+     * @param index position of work (starting at 1)
+     * @return id of work
+     */
+    public String workAtIndex(int index) {
+        log.debug("index = {}", index);
+        log.debug("worksExpanded.size() = {}", worksExpanded.size());
+        if (index - 1 >= worksExpanded.size())
+            throw new IllegalStateException("Asking for a work that isn't expanded");
+        return workOrder.get(index - 1);
+    }
+
+    /**
      * Get a collection of manifestations seen for a given unit
      *
      * @param unit The unit the manifestations belong to
@@ -212,6 +235,7 @@ public abstract class ResultSet implements Serializable {
         int last = Integer.min(start - 1 + step, workCount);
         List<String> worksInRange = workOrder.subList(first, last);
         ensureWorksAreExpanded(worksInRange, trackingId);
+        worksExpanded.addAll(worksInRange);
         return unmodifiableList(worksInRange);
     }
 
@@ -260,11 +284,11 @@ public abstract class ResultSet implements Serializable {
         Collection workValues = values.getOrDefault(field, EMPTY_LIST);
         if (workValues.isEmpty()) {
             log.error("SolrError no value for field: `{}' in: {}", field, values);
-            throw new UserMessageExecption(UserMessage.BACKEND_SOLR);
+            throw new UserMessageException(UserMessage.BACKEND_SOLR);
         }
         if (exactlyOne && workValues.size() != 1) {
             log.error("SolrError too many values for field: `{}' in: {}", field, values);
-            throw new UserMessageExecption(UserMessage.BACKEND_SOLR);
+            throw new UserMessageException(UserMessage.BACKEND_SOLR);
         }
         return workValues;
     }
@@ -378,7 +402,7 @@ public abstract class ResultSet implements Serializable {
      * @param worksInRange Collection of works the user wants
      * @param trackingId   The tracking id - added to SolR requests
      */
-    public void ensureWorksAreExpanded(List<String> worksInRange, String trackingId) {
+    protected void ensureWorksAreExpanded(List<String> worksInRange, String trackingId) {
         Set<String> worksWanted = new HashSet<>(worksInRange);
         worksWanted.removeAll(worksExpanded);
         if (worksWanted.isEmpty())
@@ -396,7 +420,6 @@ public abstract class ResultSet implements Serializable {
         expandWorksQuery(query, worksWanted);
         log.debug("Expanding works: {}", worksWanted);
         expandWorks(query);
-        worksExpanded.addAll(worksWanted);
     }
 
     /**
@@ -430,12 +453,12 @@ public abstract class ResultSet implements Serializable {
      */
     protected QueryResponse performQuery(SolrQuery query, QueryType queryType) {
         try {
-            log.debug("fetching: {}", query);
+            log.trace("fetching: {}", query);
             QueryResponse response;
             try (Timing timer = recorder.timer(queryType.getTimingName())) {
                 response = client.query(query, POST);
             }
-            log.debug("retrieved: {}", response);
+            log.trace("retrieved: {}", response);
             if (response.getStatus() != 0)
                 throw new SolrServerException(String.valueOf(response.getResponse().get("error")));
             return response;
@@ -444,7 +467,7 @@ public abstract class ResultSet implements Serializable {
             log.error("SolrError: {}: {}", logName, ex.getMessage());
             log.error("SolrError: {}: Query: {}", logName, query.getQuery());
             log.debug("SolrError: {}:", logName, ex);
-            throw new UserMessageExecption(UserMessage.BACKEND_SOLR);
+            throw new UserMessageException(UserMessage.BACKEND_SOLR);
         }
     }
 
@@ -526,7 +549,8 @@ public abstract class ResultSet implements Serializable {
      * @param query The query to set the field names upon
      */
     protected void setQueryFields(SolrQuery query) {
-        query.setFields(WORK_ID, UNIT_ID, MANIFESTATION_ID);
+        query.setFields();
+        namesOfFieldsRequired().forEach(query::addField);
     }
 
     /**

@@ -1,0 +1,9 @@
+
+
+foo: ---$HOME2---
+
+bar: ${WINDOWID}
+
+map:
+    one: 1
+    ${WINDOWID}: ${WINDOWID}

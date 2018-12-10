@@ -18,68 +18,20 @@
  */
 package dk.dbc.opensearch.input;
 
-import java.io.InputStream;
 import java.util.UUID;
-import javax.xml.namespace.QName;
-import javax.xml.stream.XMLEventReader;
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.events.XMLEvent;
-
-import static javax.xml.stream.XMLStreamConstants.*;
 
 /**
  *
  * @author DBC {@literal <dbc.dk>}
  */
-public class RequestParser {
+public abstract class RequestParser {
 
-    private static final XMLInputFactory I = makeXMLInputFactory();
-    private static final int UNWANTED_EVENTS =
-            maskOf(PROCESSING_INSTRUCTION) | maskOf(COMMENT) | maskOf(SPACE) |
-            maskOf(START_DOCUMENT) | maskOf(END_DOCUMENT) |
-            maskOf(ENTITY_REFERENCE) | maskOf(ATTRIBUTE) |
-            maskOf(DTD) | maskOf(NAMESPACE) | maskOf(NOTATION_DECLARATION) |
-            maskOf(ENTITY_DECLARATION);
+    private final BaseRequest request;
 
-    public static final String OS_URI = "http://oss.dbc.dk/ns/opensearch";
-    public static final String SOAP_URI = "http://schemas.xmlsoap.org/soap/envelope/";
-
-    /**
-     * Convert a bit number into a bit mask
-     *
-     * @param bitNo the bit that should be set
-     * @return integer with the bit set
-     */
-    private static int maskOf(int bitNo) {
-        return 1 << bitNo;
-    }
-
-    /**
-     * Check if a bit is set in EVENT_FILTER
-     *
-     * @param bitNo this bit to test
-     * @return if the bit is set
-     */
-    private static boolean isWanted(int bitNo) {
-        return ( UNWANTED_EVENTS & maskOf(bitNo) ) == 0;
-    }
-
-    private final XMLEventReader reader;
-    private BaseRequest request;
-
-    protected RequestParser(BaseRequest request) {
-        this.reader = null;
+    protected RequestParser(BaseRequest request, OutputType outputType) {
         this.request = request;
-        setDefaultOutputType(OutputType.JSON);
+        setDefaultOutputType(outputType);
         setDefaultTrackingId();
-    }
-
-    public RequestParser(InputStream is) throws XMLStreamException {
-        this.reader = I.createFilteredReader(
-                I.createXMLEventReader(is),
-                e -> isWanted(e.getEventType()));
-        readOuterMost();
     }
 
     public boolean isGetObjectRequest() {
@@ -114,21 +66,6 @@ public class RequestParser {
         return request;
     }
 
-    private void readOuterMost() throws XMLStreamException {
-        XMLEvent event = reader.nextEvent();
-        if (!event.isStartElement()) {
-            throw new XMLStreamException("Expected tag as opening of request", event.getLocation());
-        }
-        if (isOpen(event, SOAP_URI, "Envelope")) {
-            readSoapEnvelope();
-            setDefaultOutputType(OutputType.SOAP);
-        } else {
-            readRequest(event);
-            setDefaultOutputType(OutputType.XML);
-        }
-        setDefaultTrackingId();
-    }
-
     private void setDefaultOutputType(OutputType type) {
         OutputType outputType = request.getOutputType();
         if (outputType == null) {
@@ -142,77 +79,4 @@ public class RequestParser {
             request.setTrackingId(UUID.randomUUID().toString());
         }
     }
-
-    private void readSoapEnvelope() throws XMLStreamException {
-        XMLEvent event = reader.nextTag();
-        event = readSoapHeader(event);
-        if (isOpen(event, SOAP_URI, "Body")) {
-            event = reader.nextTag();
-            readRequest(event);
-        }
-        if (!isClose(reader.nextTag(), SOAP_URI, "Body")) {
-            throw new XMLStreamException("Expected Closing tag of SOAP Body", event.getLocation());
-        }
-        if (!isClose(reader.nextTag(), SOAP_URI, "Envelope")) {
-            throw new XMLStreamException("Expected Closing tag of SOAP Envelope", event.getLocation());
-        }
-        if (reader.hasNext()) { // This shouldn't happen... unpalanced xml should be cought by parser
-            throw new XMLStreamException("Expected EOT", reader.nextEvent().getLocation());
-        }
-    }
-
-    private XMLEvent readSoapHeader(XMLEvent event) throws XMLStreamException {
-        if (!isOpen(event, SOAP_URI, "Header")) {
-            return event;
-        }
-        int level = 1;
-        while (level > 0) {
-            switch (reader.nextEvent().getEventType()) {
-                case START_ELEMENT:
-                    level++;
-                    break;
-                case END_ELEMENT:
-                    level--;
-                    break;
-                default:
-                    break;
-            }
-        }
-        return reader.nextTag();
-    }
-
-    private void readRequest(XMLEvent event) throws XMLStreamException {
-        if (isOpen(event, OS_URI, "getObjectRequest")) {
-            request = GetObjectRequest.FACTORY.from(event.asStartElement(), reader);
-        } else if (isOpen(event, OS_URI, "infoRequest")) {
-            request = InfoRequest.FACTORY.from(event.asStartElement(), reader);
-        } else if (isOpen(event, OS_URI, "searchRequest")) {
-            request = SearchRequest.FACTORY.from(event.asStartElement(), reader);
-        } else {
-            throw new XMLStreamException("Expected OpenSearch getObjectRequest, infoRequest or searchRequest", event.getLocation());
-        }
-    }
-
-    private static boolean isOpen(XMLEvent element, String namespace, String name) {
-        if (!element.isStartElement())
-            return false;
-        QName qname = element.asStartElement().getName();
-        return namespace.equals(qname.getNamespaceURI()) &&
-               name.equals(qname.getLocalPart());
-    }
-
-    private static boolean isClose(XMLEvent element, String namespace, String name) {
-        if (!element.isEndElement())
-            return false;
-        QName qname = element.asEndElement().getName();
-        return namespace.equals(qname.getNamespaceURI()) &&
-               name.equals(qname.getLocalPart());
-    }
-
-    private static XMLInputFactory makeXMLInputFactory() {
-        synchronized (XMLInputFactory.class) {
-            return XMLInputFactory.newInstance();
-        }
-    }
-
 }

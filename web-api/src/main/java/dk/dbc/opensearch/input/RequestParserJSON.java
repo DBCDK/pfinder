@@ -39,7 +39,7 @@ public class RequestParserJSON extends RequestParser {
     private static final ObjectMapper O = makeObjectMapper();
 
     public RequestParserJSON(InputStream is) throws XMLStreamException {
-        super(readRequest(is));
+        super(readRequest(is), OutputType.JSON);
     }
 
     /**

@@ -1,0 +1,58 @@
+default-repository: $DEFAULT_REPOSITORY
+
+openagency-profile-url: "$OPEN_AGENCY_URL?action=openSearchProfile&profileVersion=3&outputType=json&agencyId={agencyId}&trackingId={trackingId}"
+
+repositories:
+    corepo:
+        aliases:
+            - $DEFAULT_REPOSITORY
+            - corepo
+        solr-url: "$COREPO_SOLR_URL"
+        solr-rules-location: classpath:solr-rules-corepo.yaml
+
+#badgerfish-rules-location: file:/tmp/badger-fish-rules.yaml
+   
+# as used by badgerfish output and InfoRequest  
+default-namespaces:
+    ac: "http://biblstandard.dk/ac/namespace/"
+    dbcaddi: "http://oss.dbc.dk/rdf/dbcaddi#"
+    dbcbib: "http://oss.dbc.dk/rdf/dbcbib#"
+    dc: "http://purl.org/dc/elements/1.1/"
+    dcmitype: "http://purl.org/dc/dcmitype/"
+    dcterms: "http://purl.org/dc/terms/"
+    dkabm: "http://biblstandard.dk/abm/namespace/dkabm/"
+    dkdcplus: "http://biblstandard.dk/abm/namespace/dkdcplus/"
+    docbook: "http://docbook.org/ns/docbook"
+    kml: "http://www.opengis.net/kml/2.2"
+    marcx: "info:lc/xmlns/marcxchange-v1"
+    mx: "http://www.loc.gov/MARC21/slim"
+    of: "http://oss.dbc.dk/ns/openformat"
+    ofo: "http://oss.dbc.dk/ns/openformatoutput"
+    os: "http://oss.dbc.dk/ns/opensearch"
+    oso: "http://oss.dbc.dk/ns/opensearchobjects"
+    oss: "http://oss.dbc.dk/ns/osstypes"
+    soap: "http://schemas.xmlsoap.org/soap/envelope/"
+    xs: "http://www.w3.org/2001/XMLSchema"
+    xsi: "http://www.w3.org/2001/XMLSchema-instance"
+
+# Configuration of timeout for each cache type
+j-cache:
+    profile: CREATED:5h:1000
+    profile_error: CREATED:1m:1000
+    resultset: ACCESSED:5m:10000
+
+x-forwarded-for: $X_FORWARDED_FOR
+
+http-client:
+    connect-timeout: 2500ms
+    read-timeout: 2m
+
+user-messages:
+    BACKEND_CONTENT_SERVICE: "Error retrieving record content"
+    BACKEND_SOLR: "Error performing search"
+    BAD_PROFILE: "An unknown profile is used"
+    BAD_RESPONSE: "Error from backend system"
+    INTERNAL_SERVER_ERROR: "Internal server error"
+    MALFORMED_REQUEST: "The request couldn't be decoded"
+    UNKNOWN_REPOSITORY: "The specified repository is unknown"
+    UNSUPPORTED_QUERY_LANGUAGE: "The query language defined is not supported"

@@ -19,9 +19,9 @@
 package dk.dbc.opensearch.solr.resultset;
 
 import dk.dbc.opensearch.solr.SolrQueryFields;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,38 +29,43 @@ import org.slf4j.LoggerFactory;
  *
  * @author DBC {@literal <dbc.dk>}
  */
-public class ResultSetWork extends ResultSet {
+public class ResultSetId extends ResultSet {
 
     private static final long serialVersionUID = -4788723847583007565L;
 
-    private static final Logger log = LoggerFactory.getLogger(ResultSetWork.class);
+    private static final Logger log = LoggerFactory.getLogger(ResultSetId.class);
+    private static final String ID = "id";
 
     private static final Collection<String> REQUIRED_FIELDS =
-            Collections.unmodifiableCollection(
-                    Arrays.asList(WORK_ID, UNIT_ID, MANIFESTATION_ID));
+            Collections.unmodifiableCollection(Collections.singleton(ID));
 
-    public ResultSetWork(SolrQueryFields solrQuery, boolean allObjects) {
+    public ResultSetId(SolrQueryFields solrQuery, boolean allObjects) {
         super(solrQuery, allObjects);
     }
 
     @Override
     protected String nameOfWorkField() {
-        return WORK_ID;
+        return ID;
     }
 
     @Override
     protected String nameOfUnitField() {
-        return UNIT_ID;
+        return ID;
     }
 
     @Override
     protected String nameOfManifestationField() {
-        return MANIFESTATION_ID;
+        return ID;
     }
 
     @Override
     protected Collection<String> namesOfFieldsRequired() {
         return REQUIRED_FIELDS;
+    }
+
+    @Override
+    protected void ensureWorksAreExpanded(List<String> worksInRange, String trackingId) {
+        // Work=unit=manifestation, whey're always expanded
     }
 
 }

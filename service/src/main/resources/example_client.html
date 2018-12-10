@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>OpenSearch example client</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body>
+        <form target="_blank" method="POST" accept-charset="utf-8">
+            <textarea name="req" rows=20 cols=90></textarea>
+            <br /> <br />
+            <select onChange="this.form.req.value = this.options[this.selectedIndex].value;">
+                <option value="">Pick a test-request</option>
+                @OPTIONS@
+            </select>
+            <input type="submit" value="Try me"/>
+            | Reuse tab <input type="checkbox" onClick="this.form.target = this.form.target === '_blank' ? 'opensearch_reuse' : '_blank';">
+        </form>
+        Parameters:
+        <ul>
+            <li>search
+                <dl>
+                    <dt></dt>
+                    <dd></dd>
+                    <dt>query:</dt><dd> cql-query, <a href="http://zing.z3950.org/cql/intro.html">A Gentle Introduction to cql</a></dd>
+                    <dt>queryLanguage:</dt><dd> cqleng or bestMatch - defaults to cqleng</dd>
+                    <dt>agency:</dt><dd> </dd>
+                    <dt>profile:</dt><dd> Name of search profile</dd>
+                    <dt>showAgency:</dt><dd> Show records as seen by this agency</dd>
+                    <dt>allObjects:</dt><dd> returns all objects in a collection</dd>
+                    <dt>authentication:</dt><dd> (currently partially supported)</dd>
+                    <dt>callback:</dt><dd> for json-callback</dd>
+                    <dt>collectionType:</dt><dd> manifestation or work or work-1 (defaults to work)</dd>
+                    <dt>facets:</dt><dd> number and list of facets (numberOfTerms, facetSort, facetMinCount, facetName, facetOffset)</dd>
+                    <dt>includeHoldingsCount:</dt><dd> boolean</dd>
+                    <dt>collapseHitsThreshold:</dt><dd> Obsolete. Ignored</dd>
+                    <dt>objectFormat:</dt><dd> dkabm, docbook, marcxchange, opensearchobject, briefWorkDisplay, bibliotekdkWorkDisplay, briefDisplayHtml, fullDisplayHtml, workDisplayHtml, briefDisplay, fullDisplay, refWorks, ris</dd>
+                    <dt>outputType:</dt><dd> <a href="badgerfish.html">(badgerfish) json</a>, xml</dd>
+                    <dt>relationData:</dt><dd> return relation as "type", "uri" or "full"</dd>
+                    <dt>repository:</dt><dd> for multiple repositories - normally not used</dd>
+                    <dt>source:</dt><dd> source of data (currently not supported)</dd>
+                    <dt>start:</dt><dd> First record counting from 1</dd>
+                    <dt>stepValue:</dt><dd> number of records</dd>
+                    <dt>userDefinedRanking:</dt><dd> </dd>
+                    <dt>sort:</dt><dd> acquisitionDate_ascending, ..., rank_creator, ... Use info operation to obtain the complete list</dd>
+                    <dt>userDefinedBoost:</dt><dd> </dd>
+                    <dt>queryDebug:</dt><dd> boolean for including debug-info in reply</dd>
+                    <dt>trackingId:</dt><dd> for debugging purposes</dd>
+                </dl>
+            </li>
+            <li>getObject
+                <dl>
+                    <dt>agency:</dt><dd> </dd>
+                    <dt>profile:</dt><dd> Name of search profile</dd>
+                    <dt>showAgency:</dt><dd> Show records as seen by this agency</dd>
+                    <dt>identifier:</dt><dd> Record PID of record</dd>
+                    <dt>localIdentifier:</dt><dd> Record ID of record</dd>
+                    <dt>objectFormat:</dt><dd> same as search-request above</dd>
+                    <dt>authentication:</dt><dd> (currently partially supported)</dd>
+                    <dt>callback:</dt><dd> for json-callback</dd>
+                    <dt>includeHoldingsCount:</dt><dd> boolean</dd>
+                    <dt>outputType:</dt><dd> <a href="badgerfish.html">(badgerfish) json</a>, xml</dd>
+                    <dt>relationData:</dt><dd> return relation as "type", "uri" or "full"</dd>
+                    <dt>repository:</dt><dd> for multiple repositories - normally not used</dd>
+                    <dt>trackingId:</dt><dd> for debugging purposes</dd>
+                </dl>
+            </li>
+            <li>info
+                <dl>
+                    <dt>agency:</dt><dd> </dd>
+                    <dt>profile:</dt><dd> Name of search profile</dd>
+                    <dt>callback:</dt><dd> for json-callback</dd>
+                    <dt>outputType:</dt><dd> <a href="badgerfish.html">(badgerfish) json</a>, xml</dd>
+                    <dt>trackingId:</dt><dd> for debugging purposes</dd>
+                </dl>
+            </li>
+        </ul>
+
+        <a href="opensearch.wsdl">The WSDL is here</a>
+
+
+        <p style="font-size:0.6em">Version: 5.1</p>
+    </body>
+</html>

@@ -57,7 +57,7 @@ public class RequestParserTest {
         System.out.println(name);
         String actual = "";
         try {
-            RequestParser request = new RequestParser(new FileInputStream(fileName));
+            RequestParserXML request = new RequestParserXML(new FileInputStream(fileName));
             if (request.isSearchRequest())
                 actual = request.asSearchRequest().toString();
         } catch (Exception ex) {

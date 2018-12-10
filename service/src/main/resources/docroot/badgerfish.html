@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>BadgerFish description</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body>
+<h2>Simple result with two records</h2><pre>&lt;result>
+  &lt;hitCount>20&lt;/hitCount>
+  &lt;collecion>
+    &lt;object>
+      &lt;title>Anders&lt;/title>
+    &lt;/object>
+    &lt;object>
+      &lt;title>Benny&lt;/title>
+    &lt;/object>
+  &lt;/collecion>
+&lt;/result></pre></pre><p>Tag content is put in $, repetitve tags in arrays:</p>{"result":{"hitcount":{"$":"20"},"collection":{"object":[{"title":{"$":"Anders"}},{"title":{"$":"Benny"}}]}}}<h2>Two records with attributes</h2><pre>&lt;result>
+  &lt;hitCount>20&lt;/hitCount>
+  &lt;collecion>
+    &lt;object>
+      &lt;title lingo="danishName">Anders&lt;/title>
+    &lt;/object>
+    &lt;object>
+      &lt;title lingo="englishName">Bart&lt;/title>
+    &lt;/object>
+  &lt;/collecion>
+&lt;/result></pre></pre><p>Attributes are prefixed wih @ and placed as a (sub)-tag value:</p>{"result":{"hitcount":{"$":"20"},"collection":{"object":[{"title":{"$":"Anders","@lingo":{"$":"danishName"}}},{"title":{"$":"Bart","@lingo":{"$":"englishName"}}}]}}}<h2>Two records with attributes and namespace</h2><pre>&lt;result xmlns:dc="http://purl.org/dc/elements/1.1/">
+  &lt;hitCount>20&lt;/hitCount>
+  &lt;collecion>
+    &lt;object>
+      &lt;dc:title lingo="danishName">Anders&lt;/title>
+    &lt;/object>
+    &lt;object>
+      &lt;dc:title lingo="englishName">Bart&lt;/title>
+    &lt;/object>
+  &lt;/collecion>
+&lt;/result></pre></pre><p>Namespace-prefix is put in @ and @namespaces are added the end:</p>{"result":{"hitcount":{"$":"20"},"collection":{"object":[{"title":{"$":"Anders","@lingo":{"$":"danishName"},"@":"dc"}},{"title":{"$":"Bart","@lingo":{"$":"englishName"},"@":"dc"}}]}},"@namespaces":{"dc":"http:\/\/purl.org\/dc\/elements\/1.1\/"}}<h2>Two records with attributes and namespace and default namespace</h2><pre>&lt;result xmlns="http://oss.dbc.dk/ns/opensearch" xmlns:dc="http://purl.org/dc/elements/1.1/">
+  &lt;hitCount>20&lt;/hitCount>
+  &lt;collecion>
+    &lt;object>
+      &lt;dc:title lingo="danishName">Anders&lt;/title>
+    &lt;/object>
+    &lt;object>
+      &lt;dc:title lingo="englishName">Bart&lt;/title>
+    &lt;/object>
+  &lt;/collecion>
+&lt;/result></pre></pre><p>Default namespace is put in @namespaces as $:</p>{"result":{"hitcount":{"$":"20"},"collection":{"object":[{"title":{"$":"Anders","@lingo":{"$":"danishName"},"@":"dc"}},{"title":{"$":"Bart","@lingo":{"$":"englishName"},"@":"dc"}}]}},"@namespaces":{"$":"http:\/\/oss.dbc.dk\/ns\/opensearch","dc":"http:\/\/purl.org\/dc\/elements\/1.1\/"}}<h2>Two records with attributes containing namespace</h2><pre>&lt;result xmlns:xsi="http://www.w3.org\/2001/XMLSchema-instance" xmlns:dc="http://purl.org/dc/elements/1.1/">
+  &lt;hitCount>20&lt;/hitCount>
+  &lt;collecion>
+    &lt;object>
+      &lt;dc:title xsi:lingo="danishName">Anders&lt;/title>
+    &lt;/object>
+    &lt;object>
+      &lt;dc:title xsi:lingo="englishName">Bart&lt;/title>
+    &lt;/object>
+  &lt;/collecion>
+&lt;/result></pre></pre><p>Attribute namespace is added in @lingo:</p>{"result":{"hitcount":{"$":"20"},"collection":{"object":[{"title":{"$":"Anders","@lingo":{"$":"danishName","@":"xsi"},"@":"dc"}},{"title":{"$":"Bart","@lingo":{"$":"englishName","@":"xsi"},"@":"dc"}}]}},"@namespaces":{"xsi":"http:\/\/www.w3.org\\\/2001\/XMLSchema-instance","dc":"http:\/\/purl.org\/dc\/elements\/1.1\/"}}
+    </body>
+</html>

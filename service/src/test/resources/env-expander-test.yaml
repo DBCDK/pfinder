@@ -1,0 +1,25 @@
+
+longMap:
+    literal: 42
+    n: null
+    e: 
+    bad: 33${LONG_BAD}
+    short: $SHORT
+    long: ${LONG}
+    str: "$SHORT"
+
+
+longValue: null
+longValueObject: null
+
+bn0: null
+bn1:
+bt0: 1
+bt1: yes
+bt2: true
+bf0: 0
+bf1: no
+bf2: false
+bf3: 
+bf4: null
+
