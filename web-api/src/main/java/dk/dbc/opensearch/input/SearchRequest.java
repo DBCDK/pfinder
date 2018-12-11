@@ -129,7 +129,7 @@ public class SearchRequest extends CommonRequest {
     }
 
     public boolean getAllObjectsOrDefault() {
-        return allObjects == null ? false : allObjects;
+        return allObjects != null && allObjects;
     }
 
     public void setAllObjects(Boolean allObjects) {

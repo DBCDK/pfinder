@@ -68,7 +68,7 @@ public class FieldSpec implements Serializable {
      * @return the nested query to use
      */
     public FlatQueryNested nestedQueryNode(int i, FlatQuery nested) {
-        return new FlatQueryNested(String.format(query, i), nested, filterQuery);
+        return new FlatQueryNested(String.format(query, i), filterQuery);
     }
 
     /**

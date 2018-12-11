@@ -50,7 +50,7 @@ public class QueryBuilder {
     }
 
     private void buildQueryTop(FlatQuery query) {
-        if (( query instanceof FlatQueryOr ) &&
+        if (query instanceof FlatQueryOr &&
             // All nodes from the top or node  are extracted into filter-queries
             ( (FlatQueryOr) query ).ors().isEmpty()) {
             buffer.append("*:*");

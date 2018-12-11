@@ -110,7 +110,7 @@ public class HttpFetcher {
          * @param name  request name for statistics
          * @return InputStream and throws runtime exception in case of an error
          */
-        public java.io.InputStream request(StatisticsRecorder stats, String name) {
+        public InputStream request(StatisticsRecorder stats, String name) {
             return request(MediaType.APPLICATION_JSON_TYPE, stats, name);
         }
 

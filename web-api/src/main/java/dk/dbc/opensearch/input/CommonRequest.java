@@ -42,11 +42,6 @@ public class CommonRequest extends BaseRequest {
     public CommonRequest() {
     }
 
-    @Override
-    public void validate(Location location) throws XMLStreamException {
-        super.validate(location);
-    }
-
     //
     // Setters and getters
     //

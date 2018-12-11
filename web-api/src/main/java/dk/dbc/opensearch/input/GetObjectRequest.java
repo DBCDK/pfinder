@@ -67,7 +67,7 @@ public class GetObjectRequest extends CommonRequest {
             agencyAndLocalIdentifier == null)
             throw new XMLStreamException("one of identifier, localIdentifier or agencyAndLocalIdentifier is required");
         if (identifier != null && ( localIdentifier != null || agencyAndLocalIdentifier != null ) ||
-            ( localIdentifier != null && agencyAndLocalIdentifier != null ))
+            localIdentifier != null && agencyAndLocalIdentifier != null)
             throw new XMLStreamException("only one of identifier, localIdentifier or agencyAndLocalIdentifier is allowed");
     }
 

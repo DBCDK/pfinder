@@ -68,16 +68,14 @@ public class ClassBuilder {
         methodsInStage.put(className, new LinkedHashSet<>());
         Set<QName> terminalFunctions = buildTree(e, className, returnValue, methodsInStage, stages, tags);
 
-        if (false) {
-            System.out.println("returnValue = ");
-            returnValue.entrySet().forEach(System.out::println);
-            System.out.println("methodsInStage = ");
-            methodsInStage.entrySet().forEach(System.out::println);
-            System.out.println("tags = ");
-            tags.forEach(System.out::println);
-            System.out.println("terminalFunctions = ");
-            terminalFunctions.forEach(System.out::println);
-        }
+        cxt.debug("returnValue = ");
+        returnValue.entrySet().forEach(d -> cxt.debug(d.toString()));
+        cxt.debug("methodsInStage = ");
+        methodsInStage.entrySet().forEach(d -> cxt.debug(d.toString()));
+        cxt.debug("tags = ");
+        tags.forEach(d -> cxt.debug(d.toString()));
+        cxt.debug("terminalFunctions = ");
+        terminalFunctions.forEach(d -> cxt.debug(d.toString()));
 
         try (JavaFileOutputStream os = new JavaFileOutputStream(cxt, className)) {
             output(os, returnValue, methodsInStage, tags, terminalFunctions);

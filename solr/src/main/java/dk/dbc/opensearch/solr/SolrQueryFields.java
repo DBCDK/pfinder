@@ -115,9 +115,9 @@ public class SolrQueryFields implements Serializable {
             return false;
         }
         SolrQueryFields other = (SolrQueryFields) obj;
-        return ( Objects.equals(this.query, other.query) &&
-                 Objects.equals(this.nestedQueries, other.nestedQueries) &&
-                 Objects.equals(this.filterQueries, other.filterQueries) );
+        return Objects.equals(this.query, other.query) &&
+               Objects.equals(this.nestedQueries, other.nestedQueries) &&
+               Objects.equals(this.filterQueries, other.filterQueries);
     }
 
     @Override
