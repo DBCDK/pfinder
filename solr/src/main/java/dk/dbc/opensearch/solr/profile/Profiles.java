@@ -118,13 +118,23 @@ public class Profiles implements Serializable {
                                           s -> s.relation.stream()
                                                   .filter(r -> r.rdfLabel != null)
                                                   .map(r -> r.rdfLabel)
-                                                  .collect(Collectors.toSet())));
+                                                  .collect(Collectors.toSet()),
+                                          Profiles::setUnion
+                ));
         Set<String> relationCollectionIdentifiers = Stream
                 .concat(searchCollectionIdentifiers.stream(),
                         allowedRelations.keySet().stream())
                 .collect(Collectors.toSet());
 
         return new Entry(searchCollectionIdentifiers, relationCollectionIdentifiers, allowedRelations);
+    }
+
+    private static <T> Set<T> setUnion(Set<T>... sets) {
+        HashSet<T> r = new HashSet<>();
+        for (Set<T> set : sets) {
+            r.addAll(set);
+        }
+        return r;
     }
 
     /**
