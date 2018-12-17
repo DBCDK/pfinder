@@ -196,7 +196,10 @@ public class HttpFetcher {
             log.debug("Fetching: (POST) {}", uri);
             try (final Timing timer = stats.timer(name)) {
                 is = client.target(uri)
-                        .request().accept(acceptType).header("User-Agent", userAgent).post(entity, InputStream.class);
+                        .request()
+                        .accept(acceptType)
+                        .header("User-Agent", userAgent)
+                        .post(entity, InputStream.class);
             } catch (ClientErrorException | ServerErrorException ex) {
                 log.error("Error fetching resource: {}: {}", uri, ex.getMessage());
                 log.debug("Error fetching resource: ", ex);
