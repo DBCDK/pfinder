@@ -127,7 +127,7 @@ public class SearchProcessorBean {
         String trackingId = request.getTrackingId();
         RepositorySettings repoSettings = getRepoSettings();
         ResultSetKey key = ResultSetKey.of(request);
-        getResultSet(key, repoSettings, trackingId);
+        resultSet = getResultSet(key, repoSettings, trackingId);
 
         int start = request.getStartOrDefault();
         int step = request.getStepValueOrDefault();
@@ -170,14 +170,15 @@ public class SearchProcessorBean {
      * <p>
      * If no resultset exists, a dummy is set in the map to lock the slot, and a
      * new is generated.
-     *
+     * <p>
      * The resultset needs to be stored again if modified (most likely always)
      *
-     * @param key The resultset key
+     * @param key          The resultset key
      * @param repoSettings the repository descriptor
-     * @param trackingId the tracking id for nested http calls
+     * @param trackingId   the tracking id for nested http calls
+     * @return resultSet the resultset in question
      */
-    private void getResultSet(ResultSetKey key, RepositorySettings repoSettings, String trackingId) {
+    private ResultSet getResultSet(ResultSetKey key, RepositorySettings repoSettings, String trackingId) {
         if (resultSetCache.putIfAbsent(key, EMPTY_RESULT_SET)) {
             Profiles profiles = oaProfiles.getProfileFor(
                     key.getAgencyId(), repoSettings.getName(),
@@ -187,6 +188,7 @@ public class SearchProcessorBean {
         } else {
             resultSet = resultSetCache.get(key);
         }
+        return resultSet;
     }
 
     private List<String> getOpenFormatFormats(RepositorySettings repoSettings) {
