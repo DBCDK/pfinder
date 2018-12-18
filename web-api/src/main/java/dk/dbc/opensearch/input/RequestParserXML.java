@@ -36,35 +36,9 @@ import static javax.xml.stream.XMLStreamConstants.*;
  */
 public class RequestParserXML extends RequestParser {
 
-//    private static final XMLInputFactory I = makeXMLInputFactory();
-//    private static final int UNWANTED_EVENTS =
-//            maskOf(PROCESSING_INSTRUCTION) | maskOf(COMMENT) | maskOf(SPACE) |
-//            maskOf(START_DOCUMENT) | maskOf(END_DOCUMENT) |
-//            maskOf(ENTITY_REFERENCE) | maskOf(ATTRIBUTE) |
-//            maskOf(DTD) | maskOf(NAMESPACE) | maskOf(NOTATION_DECLARATION) |
-//            maskOf(ENTITY_DECLARATION);
     public static final String OS_URI = "http://oss.dbc.dk/ns/opensearch";
     public static final String SOAP_URI = "http://schemas.xmlsoap.org/soap/envelope/";
 
-//    /**
-//     * Convert a bit number into a bit mask
-//     *
-//     * @param bitNo the bit that should be set
-//     * @return integer with the bit set
-//     */
-//    private static int maskOf(int bitNo) {
-//        return 1 << bitNo;
-//    }
-//
-//    /**
-//     * Check if a bit is set in EVENT_FILTER
-//     *
-//     * @param bitNo this bit to test
-//     * @return if the bit is set
-//     */
-//    private static boolean isWanted(int bitNo) {
-//        return ( UNWANTED_EVENTS & maskOf(bitNo) ) == 0;
-//    }
     public RequestParserXML(InputStream is) throws XMLStreamException {
         this(readOuterMost(is));
     }
@@ -158,9 +132,4 @@ public class RequestParserXML extends RequestParser {
                name.equals(qname.getLocalPart());
     }
 
-//    private static XMLInputFactory makeXMLInputFactory() {
-//        synchronized (XMLInputFactory.class) {
-//            return XMLInputFactory.newInstance();
-//        }
-//    }
 }
