@@ -126,29 +126,29 @@ public class SearchProcessorBean {
     private void compute() {
         String trackingId = request.getTrackingId();
         RepositorySettings repoSettings = getRepoSettings();
-        RepositoryAbstraction abstraction = repoSettings.abstraction();
         ResultSetKey key = ResultSetKey.of(request);
-        getResultSet(key, repoSettings, trackingId, abstraction);
+        getResultSet(key, repoSettings, trackingId);
 
         int start = request.getStartOrDefault();
         int step = request.getStepValueOrDefault();
-        resultSet.fetchWorks(abstraction.getSolrClient(),
+        resultSet.fetchWorks(repoSettings.abstraction().getSolrClient(),
                              timings, start, step,
                              trackingId);
         log.trace("resultSet = {}", resultSet);
 
         resultSetCache.put(key, resultSet);
 
-        fetchRecordsAndFormatThem(step, start, repoSettings, abstraction, trackingId);
+        fetchRecordsAndFormatThem(step, start, repoSettings, trackingId);
     }
 
-    private void fetchRecordsAndFormatThem(int step, int start, RepositorySettings repoSettings, RepositoryAbstraction abstraction, String trackingId) {
+    private void fetchRecordsAndFormatThem(int step, int start, RepositorySettings repoSettings, String trackingId) {
         for (int i = 0 ; i < step ; i++) {
             int index = start + i;
             if (index > resultSet.getHitCount())
                 break;
             String work = resultSet.workAtIndex(index);
             List<String> units = resultSet.unitsForWork(work);
+            RepositoryAbstraction abstraction = repoSettings.abstraction();
             boolean formatThisUnit = true;
             boolean formatMoreThanOne = formatMoreThanOneUnit();
             for (String unit : units) {
@@ -165,13 +165,25 @@ public class SearchProcessorBean {
         }
     }
 
-    private void getResultSet(ResultSetKey key, RepositorySettings repoSettings, String trackingId, RepositoryAbstraction abstraction) {
+    /**
+     * This produces a resultset for the result-set-key.
+     * <p>
+     * If no resultset exists, a dummy is set in the map to lock the slot, and a
+     * new is generated.
+     *
+     * The resultset needs to be stored again if modified (most likely always)
+     *
+     * @param key The resultset key
+     * @param repoSettings the repository descriptor
+     * @param trackingId the tracking id for nested http calls
+     */
+    private void getResultSet(ResultSetKey key, RepositorySettings repoSettings, String trackingId) {
         if (resultSetCache.putIfAbsent(key, EMPTY_RESULT_SET)) {
             Profiles profiles = oaProfiles.getProfileFor(
                     key.getAgencyId(), repoSettings.getName(),
                     timings, trackingId, repoSettings.getSolrRules());
             Profile profile = profiles.getProfile(key.getProfiles());
-            resultSet = abstraction.resultSetFor(key, profile);
+            resultSet = repoSettings.abstraction().resultSetFor(key, profile);
         } else {
             resultSet = resultSetCache.get(key);
         }
