@@ -142,9 +142,8 @@ public class SearchProcessorBean {
     }
 
     private void fetchRecordsAndFormatThem(int step, int start, RepositorySettings repoSettings, String trackingId) {
-        for (int i = 0 ; i < step ; i++) {
-            int index = start + i;
-            if (index > resultSet.getHitCount())
+        for (int index = start ; index < start + step ; index++) {
+            if (index > resultSet.getHitCount()) // Hitcount is dynamic depending of the progress of the work structure build
                 break;
             String work = resultSet.workAtIndex(index);
             List<String> units = resultSet.unitsForWork(work);
