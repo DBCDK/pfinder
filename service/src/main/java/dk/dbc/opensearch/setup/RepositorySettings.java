@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.Set;
 import javax.ejb.EJBException;
 import javax.xml.namespace.QName;
+import org.apache.solr.client.solrj.SolrServerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -159,8 +160,12 @@ public class RepositorySettings {
             });
         }
 
-        repositoryAbstraction = new CorepoRepositoryAbstraction(settings.getDefaultPrefix(), this);
-
+        try {
+            repositoryAbstraction = new CorepoRepositoryAbstraction(settings.getDefaultPrefix(), this);
+        } catch (SolrServerException | IOException ex) {
+            log.error("Error creating repositoryAbstraction: {}", ex.getMessage());
+            throw new EJBException("Error creating repositoryAbstraction: ", ex);
+        }
     }
 
     private SolrRules makeSolrRules(String... paths) {
