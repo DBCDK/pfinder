@@ -19,13 +19,14 @@
 package dk.dbc.opensearch.repository;
 
 import dk.dbc.opensearch.xml.XMLCacheReader;
+import java.io.Serializable;
 import java.util.List;
 
 /**
  *
  * @author DBC {@literal <dbc.dk>}
  */
-public interface RecordContent {
+public interface RecordContent extends Serializable {
 
     /**
      * For user output

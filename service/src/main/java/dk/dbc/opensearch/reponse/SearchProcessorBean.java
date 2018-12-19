@@ -20,6 +20,7 @@ package dk.dbc.opensearch.reponse;
 
 import dk.dbc.opensearch.cache.HttpFetcher;
 import dk.dbc.opensearch.cache.OpenAgencyProfiles;
+import dk.dbc.opensearch.cache.RecordKey;
 import dk.dbc.opensearch.cache.ResultSetKey;
 import dk.dbc.opensearch.input.CollectionType;
 import dk.dbc.opensearch.input.SearchRequest;
@@ -43,10 +44,12 @@ import dk.dbc.opensearch.utils.UserMessageException;
 import dk.dbc.opensearch.xml.XMLCacheReader;
 import fish.payara.cdi.jsr107.impl.NamedCache;
 import java.io.IOException;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -84,6 +87,10 @@ public class SearchProcessorBean {
     @NamedCache(cacheName = "resultset", managementEnabled = true)
     Cache<ResultSetKey, ResultSet> resultSetCache;
 
+    @Inject
+    @NamedCache(cacheName = "records", managementEnabled = true)
+    Cache<RecordKey, RecordContent> recordCache;
+
     @Resource(type = ManagedExecutorService.class)
     ExecutorService es;
 
@@ -91,7 +98,7 @@ public class SearchProcessorBean {
     private StatisticsRecorder timings;
     private MDCLog mdc;
     private ResultSet resultSet;
-    private HashMap<String, Future<RecordContent>> recordFecthing;
+    private HashMap<String, Future<Map.Entry<RecordKey, RecordContent>>> recordFecthing;
 
     public Root.Scope<Root.EntryPoint> builder(SearchRequest request, StatisticsRecorder timings, MDCLog mdc) {
         this.request = request;
@@ -154,11 +161,16 @@ public class SearchProcessorBean {
                 List<String> openFormatFormatsForThisUnit =
                         formatThisUnit ? getOpenFormatFormats(repoSettings) : EMPTY_LIST;
 
-                Future recordContent = es.submit(() -> abstraction.recordContent(
-                        fetcher, timings, trackingId,
-                        resultSet, request.getShowAgencyOrDefault(), unit,
-                        openFormatFormatsForThisUnit));
-                recordFecthing.put(unit, recordContent);
+                RecordKey recordKey = abstraction.makeRecordKey(resultSet, request.getShowAgencyOrDefault(), unit);
+                RecordContent cachedContent = recordCache.get(recordKey);
+                Future<Map.Entry<RecordKey, RecordContent>> future = es.submit(() ->
+                        new AbstractMap.SimpleEntry(
+                                recordKey,
+                                abstraction.recordContent(
+                                        cachedContent, fetcher, timings, trackingId,
+                                        resultSet, request.getShowAgencyOrDefault(), unit,
+                                        openFormatFormatsForThisUnit)));
+                recordFecthing.put(unit, future);
                 formatThisUnit = formatMoreThanOne;
             }
         }
@@ -250,10 +262,9 @@ public class SearchProcessorBean {
         boolean formatMoreThanOne = formatMoreThanOneUnit();
         for (String unit : units) {
             log.trace("outputting unit: {}", unit);
-            Future<RecordContent> future = recordFecthing.get(unit);
             try {
                 boolean showContent = formatCurrent;
-                RecordContent content = future.get();
+                RecordContent content = recordContentForUnit(unit);
                 objects.object(object -> object.
                         _any_repeated(o -> outputObjects(o, content, showContent))
                         .identifier(content.getObjectsAvailable().get(0))
@@ -277,6 +288,22 @@ public class SearchProcessorBean {
             }
             formatCurrent = formatMoreThanOne;
         }
+    }
+
+    /**
+     * Fetch record content for a unit, and ensure it's in the cache.
+     *
+     * @param unit which future to get
+     * @return content
+     * @throws InterruptedException async error
+     * @throws ExecutionException   async error
+     */
+    private RecordContent recordContentForUnit(String unit) throws InterruptedException, ExecutionException {
+        Future<Map.Entry<RecordKey, RecordContent>> future = recordFecthing.get(unit);
+        Map.Entry<RecordKey, RecordContent> entry = future.get();
+        RecordContent content = entry.getValue();
+        recordCache.put(entry.getKey(), content);
+        return content;
     }
 
     private boolean formatMoreThanOneUnit() {

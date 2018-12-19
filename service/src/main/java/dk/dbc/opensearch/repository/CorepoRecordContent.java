@@ -49,6 +49,7 @@ import static javax.xml.XMLConstants.NULL_NS_URI;
  */
 public class CorepoRecordContent implements RecordContent {
 
+    private static final long serialVersionUID = 6682581762166407934L;
     private static final Logger log = LoggerFactory.getLogger(CorepoRecordContent.class);
 
     private static final ObjectMapper O = makeObjectMapper();

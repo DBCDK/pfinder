@@ -19,12 +19,14 @@
 package dk.dbc.opensearch.repository;
 
 import dk.dbc.opensearch.cache.HttpFetcher;
+import dk.dbc.opensearch.cache.RecordKey;
 import dk.dbc.opensearch.cache.ResultSetKey;
 import dk.dbc.opensearch.solr.profile.Profile;
 import dk.dbc.opensearch.solr.resultset.ResultSet;
 import dk.dbc.opensearch.utils.StatisticsRecorder;
 import java.io.IOException;
 import java.util.List;
+import javax.cache.Cache;
 import javax.xml.stream.XMLStreamException;
 import org.apache.solr.client.solrj.SolrClient;
 
@@ -56,6 +58,7 @@ public interface RepositoryAbstraction {
     /**
      * Extract content for a given unit
      *
+     * @param cachedContent     cached entry for this record
      * @param fetcher           web access module
      * @param recorder          timings for different actions
      * @param trackingId        trackingId for sending to other services
@@ -69,7 +72,10 @@ public interface RepositoryAbstraction {
      *                            response errors
      * @throws XMLStreamException If there's inconsistency in the supplied XML
      */
-    RecordContent recordContent(HttpFetcher fetcher, StatisticsRecorder recorder, String trackingId,
+    RecordContent recordContent(RecordContent cachedContent,
+                                HttpFetcher fetcher, StatisticsRecorder recorder, String trackingId,
                                 ResultSet resultSet, int showAgencyId, String unitId,
                                 List<String> openFormatFormats) throws IOException, XMLStreamException;
+
+    RecordKey makeRecordKey(ResultSet resultSet, int showAgencyId, String unitId);
 }

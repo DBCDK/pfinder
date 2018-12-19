@@ -49,6 +49,7 @@ j-cache:
     profile: CREATED:5h:1000
     profile_error: CREATED:1m:1000
     resultset: ACCESSED:5m:10000
+    records: ACCESSED:2m:10000
 
 x-forwarded-for: $X_FORWARDED_FOR
 
