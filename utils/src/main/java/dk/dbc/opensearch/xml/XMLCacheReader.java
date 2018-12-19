@@ -18,19 +18,31 @@
  */
 package dk.dbc.opensearch.xml;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import javax.xml.stream.XMLEventReader;
+import javax.xml.stream.XMLEventWriter;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.XMLEvent;
 import javax.xml.stream.util.EventReaderDelegate;
+
+import static dk.dbc.opensearch.xml.XMLElementFilter.elementReader;
+import static dk.dbc.opensearch.xml.XMLEventFactories.*;
 
 /**
  * A {@link XMLEventReader} implementation for an array or events
  *
  * @author Morten Bøgeskov (mb@dbc.dk)
  */
-public class XMLCacheReader extends EventReaderDelegate {
+public class XMLCacheReader extends EventReaderDelegate implements Serializable {
 
-    private final XMLEvent[] events;
+    private static final long serialVersionUID = -5468666206156869952L;
+
+    private XMLEvent[] events;
     private int pos;
 
     public XMLCacheReader(XMLEvent[] events) {
@@ -66,4 +78,48 @@ public class XMLCacheReader extends EventReaderDelegate {
             return events[pos];
         return null;
     }
+
+    private void writeObject(ObjectOutputStream s) throws IOException {
+        try {
+            s.writeInt(events.length);
+            byte[] xml = toBytes(events);
+            s.writeInt(xml.length);
+            s.write(xml);
+        } catch (XMLStreamException ex) {
+            throw new IOException("Cannot serialize XMLEvents", ex);
+        }
+    }
+
+    private void readObject(ObjectInputStream s) throws IOException {
+        try {
+            events = new XMLEvent[s.readInt()];
+            byte[] xml = new byte[s.readInt()];
+            s.readFully(xml);
+            fromBytes(xml, events);
+            pos = 0;
+        } catch (XMLStreamException ex) {
+            throw new IOException("Cannot serialize XMLEvents", ex);
+        }
+    }
+
+    private static byte[] toBytes(XMLEvent[] events) throws XMLStreamException, IOException {
+        try (ByteArrayOutputStream w = new ByteArrayOutputStream()) {
+            XMLEventWriter wr = O.createXMLEventWriter(w);
+            for (XMLEvent event : events) {
+                wr.add(event);
+            }
+            wr.close();
+            return w.toByteArray();
+        }
+    }
+
+    private static void fromBytes(byte[] xml, XMLEvent[] events) throws XMLStreamException, IOException {
+        try (ByteArrayInputStream bis = new ByteArrayInputStream(xml)) {
+            XMLEventReader r = elementReader(I.createXMLEventReader(bis));
+            for (int i = 0 ; i < events.length ; i++) {
+                events[i] = r.nextEvent();
+            }
+        }
+    }
+
 }

@@ -44,6 +44,9 @@ import static dk.dbc.opensearch.xml.XMLEventFactories.E;
  * declarations for all used namespaces. It is possible to have more that just
  * the one element in the container, however this will most likely fail
  * regarding to namespaces. Misuse of this feature is NOT recommended.
+ * <p>
+ * The {@link XMLCacheReader} does not support unmatched elements when
+ * serializing
  *
  * @author Morten Bøgeskov (mb@dbc.dk)
  */
