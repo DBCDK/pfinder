@@ -42,6 +42,7 @@ import java.util.Set;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 import org.apache.solr.client.solrj.SolrClient;
+import org.apache.solr.client.solrj.SolrServerException;
 
 /**
  *
@@ -55,7 +56,7 @@ public class CorepoRepositoryAbstraction implements RepositoryAbstraction {
     private final SolrRules solrRules;
     private final Map<QName, String> knownFormats;
 
-    public CorepoRepositoryAbstraction(DefaultPrefix defaultPrefix, RepositorySettings repositorySettings) {
+    public CorepoRepositoryAbstraction(DefaultPrefix defaultPrefix, RepositorySettings repositorySettings) throws SolrServerException, IOException {
         this.defaultPrefix = defaultPrefix;
         this.solrRules = repositorySettings.getSolrRules();
         this.solrClient = Solr.client(repositorySettings.getSolrUrl());
