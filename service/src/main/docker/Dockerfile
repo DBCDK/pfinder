@@ -10,6 +10,7 @@ LABEL  \
       CLUSTER_NAME="Name of the stage the application is deployed into (required)" \
       CONTEXT_ROOT="context-root of application without leading slash (default: /)" \
       COREPO_SOLR_URL="address of corpeo-solr (required)" \
+      COREPO_CONTENT_SERVICE_URL="address of corpeo-content-service (required)" \
       DEFAULT_REPOSITORY="The default repository to search in (required)" \
       OPEN_AGENCY_URL="address of open-agency webservice (required)" \
       X_FORWARDED_FOR="Comma seperated list of host, host-range or network, where trusted proxies are located (for acquiring remote host ip)"
