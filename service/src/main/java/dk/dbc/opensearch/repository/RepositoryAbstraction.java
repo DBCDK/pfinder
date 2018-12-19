@@ -26,7 +26,6 @@ import dk.dbc.opensearch.solr.resultset.ResultSet;
 import dk.dbc.opensearch.utils.StatisticsRecorder;
 import java.io.IOException;
 import java.util.List;
-import javax.cache.Cache;
 import javax.xml.stream.XMLStreamException;
 import org.apache.solr.client.solrj.SolrClient;
 
@@ -77,5 +76,14 @@ public interface RepositoryAbstraction {
                                 ResultSet resultSet, int showAgencyId, String unitId,
                                 List<String> openFormatFormats) throws IOException, XMLStreamException;
 
+    /**
+     * Make a records cache key for a unit from a resultset
+     *
+     * @param resultSet    the resultset knowing about the unit expansion
+     * @param showAgencyId which agency a resultset should be show as
+     *                     (ordering of manifestations)
+     * @param unitId       the unit to retrieve content for
+     * @return unique key for this unit
+     */
     RecordKey makeRecordKey(ResultSet resultSet, int showAgencyId, String unitId);
 }

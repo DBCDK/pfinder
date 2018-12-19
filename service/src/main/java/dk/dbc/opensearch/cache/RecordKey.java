@@ -19,6 +19,7 @@
 package dk.dbc.opensearch.cache;
 
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
@@ -37,7 +38,8 @@ public class RecordKey implements Serializable {
     public RecordKey(String repository, int showAgencyId, Set<String> manifestations) {
         this.repository = repository;
         this.showAgencyId = showAgencyId;
-        this.manifestations = manifestations;
+        // Quirk see: https://github.com/DBCDK/hazelcast-quirks
+        this.manifestations = new HashSet<>(manifestations);
     }
 
     public String getRepository() {
