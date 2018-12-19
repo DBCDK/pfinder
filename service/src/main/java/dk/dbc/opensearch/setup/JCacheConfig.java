@@ -81,7 +81,7 @@ public class JCacheConfig {
         }
     }
 
-    private void setupCache(Config cacheConfigs, String name, String rule) {
+    private static void setupCache(Config cacheConfigs, String name, String rule) {
         CacheSimpleConfig config = cacheConfigs.getCacheConfig(name);
         if (config == null) {
             log.info("Setting up cache: {} with rule: {}", name, rule);
@@ -98,7 +98,7 @@ public class JCacheConfig {
      * @param rule   ${ExpiryPolicyType}:\d+(time-unit(ms|s|m|h)):${MaxEntries}
      * @return configuration
      */
-    private void cacheConfig(CacheSimpleConfig config, String rule) {
+    private static void cacheConfig(CacheSimpleConfig config, String rule) {
         String[] split = rule.split(":", 3);
         config.setExpiryPolicyFactoryConfig(
                 new ExpiryPolicyFactoryConfig(
