@@ -18,14 +18,18 @@
  */
 package dk.dbc.opensearch.solr;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.solr.client.solrj.SolrClient;
+import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.CloudSolrClient;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
+import org.apache.solr.client.solrj.request.CollectionAdminRequest;
+import org.apache.solr.client.solrj.response.CollectionAdminResponse;
 
 /**
  *
@@ -41,13 +45,17 @@ public class Solr {
      * Create a solr client
      * <p>
      * The URL parameter can be of zookeeper type:
-     * zk://[host,host,...][/chroot]/collection
-     * or web type: http://host[:port]/solr/collection
+     * zk://[host,host,...][/chroot]/(collection|alias)
+     * or web type: http://host[:port]/solr/(collection|alias)
      *
      * @param solrUrl SolR collection location
      * @return SolrClient
+     * @throws SolrServerException If there's a problem getting aliases list
+     *                             (for zk:// urls)
+     * @throws IOException         If there's a problem getting aliases list
+     *                             (for zk:// urls)
      */
-    public static SolrClient client(String solrUrl) {
+    public static SolrClient client(String solrUrl) throws SolrServerException, IOException {
 
         Matcher zkMatcher = ZK.matcher(solrUrl);
         if (zkMatcher.matches()) {
@@ -57,7 +65,11 @@ public class Solr {
                 zkChroot = Optional.of(zkMatcher.group(2));
             }
             CloudSolrClient solrClient = new CloudSolrClient.Builder(zkHosts, zkChroot).build();
-            solrClient.setDefaultCollection(zkMatcher.group(3));
+            String collectionName = zkMatcher.group(3);
+            CollectionAdminRequest.ListAliases request = new CollectionAdminRequest.ListAliases();
+            CollectionAdminResponse response = request.process(solrClient);
+            collectionName = response.getAliases().getOrDefault(collectionName, collectionName);
+            solrClient.setDefaultCollection(collectionName);
             return solrClient;
         } else {
             return new HttpSolrClient.Builder(solrUrl)
