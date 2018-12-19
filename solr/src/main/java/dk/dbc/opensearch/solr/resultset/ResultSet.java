@@ -549,7 +549,7 @@ public abstract class ResultSet implements Serializable {
 
     private int trimTo2Digits(int base) {
         int digits = (int) Math.floor(Math.log10(base)) - 1;
-        int trim = Integer.max(1, (int) Math.pow(10, digits - 1));
+        int trim = Integer.max(1, (int) Math.pow(10, digits));
         return ( base + trim / 2 ) / trim * trim;
     }
 
