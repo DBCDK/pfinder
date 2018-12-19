@@ -29,12 +29,10 @@ public class FlatQueryNested extends FlatQuery {
     private static final long serialVersionUID = -7224083879492100687L;
 
     private final String query;
-    private final FlatQuery nested;
     private final String filterQuery;
 
-    public FlatQueryNested(String query, FlatQuery nested, String filterQuery) {
+    public FlatQueryNested(String query, String filterQuery) {
         this.query = query;
-        this.nested = nested;
         this.filterQuery = filterQuery;
     }
 

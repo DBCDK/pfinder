@@ -50,7 +50,7 @@ public class ResponseTest {
 
         String string = new String(os.toByteArray(), StandardCharsets.UTF_8);
         System.out.println("string = " + string);
-        assertThat(string, containsString("<xs:Envelope xmlns:xs=\"http://www.w3.org/2001/XMLSchema\"><xs:Body><"));
+        assertThat(string, containsString("<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\"><SOAP-ENV:Body><"));
         assertThat(string, containsString("more>false</"));
         assertThat(string, containsString("object><myrecord></myrecord><"));
         assertThat(string, containsString("identifier>foo-bar:bug</"));
@@ -65,7 +65,7 @@ public class ResponseTest {
 
         String string = new String(os.toByteArray(), StandardCharsets.UTF_8);
         System.out.println("string = " + string);
-        assertThat(string, not(containsString("<xs:Envelope xmlns:xs=\"http://www.w3.org/2001/XMLSchema\"><xs:Body><")));
+        assertThat(string, not(containsString("<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\"><SOAP-ENV:Body><")));
         assertThat(string, containsString("more>false</"));
         assertThat(string, containsString("object><myrecord></myrecord><"));
         assertThat(string, containsString("identifier>foo-bar:bug</"));
@@ -100,7 +100,7 @@ public class ResponseTest {
                                         .object(object -> object
                                                 ._any(record())
                                                 .identifier("foo-bar:bug")
-                                                .creationDate(new Date())
+                                                .creationDate(new Date().toString())
                                         )
                                 )
                         )

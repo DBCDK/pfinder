@@ -9,6 +9,15 @@ repositories:
             - corepo
         solr-url: "$COREPO_SOLR_URL"
         solr-rules-location: classpath:solr-rules-corepo.yaml
+        content-service-url: "$COREPO_CONTENT_SERVICE_URL/rest/opensearch/unit?unit={unit}&pids={manifestations}&agencyId={agency}&trackingId={trackingId}"
+        raw-formats:
+            # Syntax is format name -> namespace {SPACE} root-tag
+            dkabm: "http://biblstandard.dk/abm/namespace/dkabm/ record"
+            marcxchange: "info:lc/xmlns/marcxchange-v1 record"
+            docbook: "http://docbook.org/ns/docbook article"
+            opensearchobject: "http://oss.dbc.dk/ns/openformatoutput object"
+        solr-formats:
+
 
 #badgerfish-rules-location: file:/tmp/badger-fish-rules.yaml
    
@@ -31,7 +40,7 @@ default-namespaces:
     os: "http://oss.dbc.dk/ns/opensearch"
     oso: "http://oss.dbc.dk/ns/opensearchobjects"
     oss: "http://oss.dbc.dk/ns/osstypes"
-    soap: "http://schemas.xmlsoap.org/soap/envelope/"
+    SOAP-ENV: "http://schemas.xmlsoap.org/soap/envelope/"
     xs: "http://www.w3.org/2001/XMLSchema"
     xsi: "http://www.w3.org/2001/XMLSchema-instance"
 

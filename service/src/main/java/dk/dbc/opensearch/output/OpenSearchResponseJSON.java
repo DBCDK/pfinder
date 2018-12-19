@@ -25,13 +25,10 @@ import java.io.OutputStream;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.xml.stream.XMLStreamException;
-import org.slf4j.LoggerFactory;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class OpenSearchResponseJSON extends OpenSearchResponse {
-
-    private static final org.slf4j.Logger log = LoggerFactory.getLogger(OpenSearchResponseJSON.class);
 
     private final BadgerFishSingle badgerFishSingle;
 

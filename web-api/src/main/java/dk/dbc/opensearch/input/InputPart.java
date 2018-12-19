@@ -27,5 +27,5 @@ import javax.xml.stream.XMLStreamException;
  */
 public interface InputPart {
 
-    public void validate(Location openLocation) throws XMLStreamException;
+    void validate(Location openLocation) throws XMLStreamException;
 }

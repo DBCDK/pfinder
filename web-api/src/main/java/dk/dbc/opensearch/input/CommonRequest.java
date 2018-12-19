@@ -42,11 +42,6 @@ public class CommonRequest extends BaseRequest {
     public CommonRequest() {
     }
 
-    @Override
-    public void validate(Location location) throws XMLStreamException {
-        super.validate(location);
-    }
-
     //
     // Setters and getters
     //
@@ -108,6 +103,10 @@ public class CommonRequest extends BaseRequest {
 
     public Integer getShowAgency() {
         return showAgency;
+    }
+
+    public int getShowAgencyOrDefault() {
+        return showAgency == null ? getAgency() : showAgency;
     }
 
     public void setShowAgency(Integer showAgency) {

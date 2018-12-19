@@ -75,6 +75,8 @@ public abstract class ResultSet implements Serializable {
     public static final String UNIT_ID = "rec.unitId";
     public static final String MANIFESTATION_ID = "rec.manifestationId";
 
+    public static ResultSet EMPTY_RESULT_SET = new ResultSetEmpty();
+
     private static final int SOLR_CLOUD_MAX_ROWS = 10000;
 
     // The reason for the List is that we need the units in the order they appear
@@ -96,6 +98,18 @@ public abstract class ResultSet implements Serializable {
 
     private transient SolrClient client;
     private transient StatisticsRecorder recorder;
+
+    private ResultSet() {
+        this.workToUnits = EMPTY_MAP;
+        this.unitToManifestations = EMPTY_MAP;
+        this.workOrder = EMPTY_LIST;
+        this.worksExpanded = EMPTY_SET;
+        this.solrQuery = null;
+        this.allObjects = false;
+        this.complete = true;
+        this.hitCount = -1;
+        this.solrHitCount = -1;
+    }
 
     public ResultSet(SolrQueryFields solrQuery, boolean allObjects) {
         this.workToUnits = new HashMap<>();
@@ -191,8 +205,6 @@ public abstract class ResultSet implements Serializable {
      * @return id of work
      */
     public String workAtIndex(int index) {
-        log.debug("index = {}", index);
-        log.debug("worksExpanded.size() = {}", worksExpanded.size());
         if (index - 1 >= worksExpanded.size())
             throw new IllegalStateException("Asking for a work that isn't expanded");
         return workOrder.get(index - 1);
@@ -572,6 +584,34 @@ public abstract class ResultSet implements Serializable {
     @Override
     public String toString() {
         return "ResultSet{" + "workToUnits=" + workToUnits + ", unitToManifestations=" + unitToManifestations + ", workOrder=" + workOrder + ", worksExpanded=" + worksExpanded + ", solrQuery=" + solrQuery + ", allObjects=" + allObjects + ", complete=" + complete + ", hitCount=" + hitCount + ", solrHitCount=" + solrHitCount + '}';
+    }
+
+    private static class ResultSetEmpty extends ResultSet {
+
+        private static final long serialVersionUID = 6883130859461573712L;
+
+        private ResultSetEmpty() {
+        }
+
+        @Override
+        protected String nameOfWorkField() {
+            return "";
+        }
+
+        @Override
+        protected String nameOfUnitField() {
+            return "";
+        }
+
+        @Override
+        protected String nameOfManifestationField() {
+            return "";
+        }
+
+        @Override
+        protected Collection<String> namesOfFieldsRequired() {
+            return EMPTY_LIST;
+        }
     }
 
 }

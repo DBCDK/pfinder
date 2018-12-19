@@ -20,19 +20,22 @@ package dk.dbc.opensearch.setup;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
-import dk.dbc.opensearch.solr.Solr;
+import dk.dbc.opensearch.repository.RepositoryAbstraction;
+import dk.dbc.opensearch.repository.CorepoRepositoryAbstraction;
 import dk.dbc.opensearch.solr.SolrRules;
 import dk.dbc.opensearch.solr.config.SolrConfig;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import javax.ejb.EJBException;
-import org.apache.solr.client.solrj.SolrClient;
+import javax.xml.namespace.QName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static dk.dbc.opensearch.setup.Config.openInputStream;
+import static java.util.Collections.EMPTY_MAP;
 
 /**
  *
@@ -42,11 +45,12 @@ public class RepositorySettings {
 
     private static final Logger log = LoggerFactory.getLogger(RepositorySettings.class);
 
-    private static final ConcurrentHashMap<String, SolrClient> SOLR_CLIENTS = new ConcurrentHashMap<>();
-
     private Set<String> aliases;
+    private String contentServiceUrl;
     private String solrUrl;
     private String solrRulesLocation;
+    private Map<String, String> rawFormats;
+    private Map<String, Object> solrFormats;
 
     public Set<String> getAliases() {
         return aliases;
@@ -56,16 +60,44 @@ public class RepositorySettings {
         this.aliases = aliases;
     }
 
+    public String getContentServiceUrl() {
+        return contentServiceUrl;
+    }
+
+    public void setContentServiceUrl(String contentServiceUrl) {
+        this.contentServiceUrl = contentServiceUrl;
+    }
+
+    public Map<String, String> getRawFormats() {
+        return rawFormats;
+    }
+
+    public Map<String, String> getRawFormatsOrDefault() {
+        return rawFormats == null ? EMPTY_MAP : rawFormats;
+    }
+
+    public void setRawFormats(Map<String, String> rawFormats) {
+        this.rawFormats = rawFormats;
+    }
+
+    public Map<String, Object> getSolrFormats() {
+        return solrFormats;
+    }
+
+    public Map<String, Object> getSolrFormatsOrDefault() {
+        return solrFormats == null ? EMPTY_MAP : solrFormats;
+    }
+
+    public void setSolrFormats(Map<String, Object> solrFormats) {
+        this.solrFormats = solrFormats;
+    }
+
     public String getSolrUrl() {
         return solrUrl;
     }
 
     public void setSolrUrl(String solrUrl) {
         this.solrUrl = solrUrl;
-    }
-
-    public SolrClient solrClient() {
-        return SOLR_CLIENTS.get(solrUrl);
     }
 
     public String getSolrRulesLocation() {
@@ -86,6 +118,8 @@ public class RepositorySettings {
      */
     private SolrRules solrRules;
     private String name;
+    private HashMap<QName, String> knownFormatsProcessed;
+    private RepositoryAbstraction repositoryAbstraction;
 
     public SolrRules getSolrRules() {
         return solrRules;
@@ -95,18 +129,38 @@ public class RepositorySettings {
         return name;
     }
 
-    void validateAndProcess(String name) {
+    public Map<QName, String> getKnownFormatsByQName() {
+        return knownFormatsProcessed;
+    }
+
+    public RepositoryAbstraction abstraction() {
+        return repositoryAbstraction;
+    }
+
+    void validateAndProcess(Settings settings, String name) {
         this.name = name;
-        if (solrUrl == null || solrUrl.isEmpty())
-            throw new IllegalArgumentException("Required parameter solrUrl is missing from configuration.yaml (" + name + ")");
         if (aliases == null || aliases.isEmpty())
             throw new IllegalArgumentException("Required parameter aliases is missing from configuration.yaml (" + name + ")");
+        if (contentServiceUrl == null || contentServiceUrl.isEmpty())
+            throw new IllegalArgumentException("Required parameter contentServiceUrl is missing from configuration.yaml (" + name + ")");
+        if (solrUrl == null || solrUrl.isEmpty())
+            throw new IllegalArgumentException("Required parameter solrUrl is missing from configuration.yaml (" + name + ")");
         if (solrRulesLocation == null || solrRulesLocation.isEmpty())
             throw new IllegalArgumentException("Required parameter solrRules is missing from configuration.yaml (" + name + ")");
 
-        SOLR_CLIENTS.computeIfAbsent(solrUrl, Solr::client);
-
         this.solrRules = makeSolrRules(solrRulesLocation, "classpath:solr-rules-" + name + ".yaml");
+
+        knownFormatsProcessed = new HashMap<>();
+        if (rawFormats != null) {
+            rawFormats.forEach((formatName, formatRootElement) -> {
+                int i = formatRootElement.lastIndexOf(' ');
+                QName qname = new QName(formatRootElement.substring(0, i), formatRootElement.substring(i + 1));
+                knownFormatsProcessed.put(qname, formatName);
+            });
+        }
+
+        repositoryAbstraction = new CorepoRepositoryAbstraction(settings.getDefaultPrefix(), this);
+
     }
 
     private SolrRules makeSolrRules(String... paths) {

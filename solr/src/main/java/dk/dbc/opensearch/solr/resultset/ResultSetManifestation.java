@@ -22,8 +22,6 @@ import dk.dbc.opensearch.solr.SolrQueryFields;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * This is a special case where a work is generated for each unit
@@ -35,8 +33,6 @@ import org.slf4j.LoggerFactory;
 public class ResultSetManifestation extends ResultSet {
 
     private static final long serialVersionUID = 5462049649430313069L;
-
-    private static final Logger log = LoggerFactory.getLogger(ResultSetManifestation.class);
 
     private static final Collection<String> REQUIRED_FIELDS =
             Collections.unmodifiableCollection(

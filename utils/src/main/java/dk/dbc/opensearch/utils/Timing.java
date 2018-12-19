@@ -25,5 +25,5 @@ package dk.dbc.opensearch.utils;
 public interface Timing extends AutoCloseable {
 
     @Override
-    public void close();
+    void close();
 }

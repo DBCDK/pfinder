@@ -33,7 +33,6 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.TimeUnit;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.ejb.EJBException;
@@ -58,26 +57,22 @@ public class Config {
     ExecutorService es;
 
     private BadgerFishSingle badgerFishSingle;
-    private Settings config;
+    private Settings settings;
     private Client client;
 
     @PostConstruct
     public void init() {
         log.info("Creating Config");
-        this.config = readConfiguration();
-        this.badgerFishSingle = makeBadgerFishSingle(); // uses config
+        this.settings = readConfiguration();
+        this.badgerFishSingle = makeBadgerFishSingle(settings);
         this.client = ClientBuilder.newBuilder()
-                .connectTimeout(config.getHttpClient().connectTimeoutMS(), TimeUnit.MILLISECONDS)
-                .readTimeout(config.getHttpClient().readTimeoutMS(), TimeUnit.MILLISECONDS)
-                .executorService(es)
                 .build();
-
     }
 
     @Produces
     @ApplicationScoped
     public Settings getConfiguration() {
-        return config;
+        return settings;
     }
 
     @Produces
@@ -92,7 +87,7 @@ public class Config {
         return client;
     }
 
-    private Settings readConfiguration() {
+    private static Settings readConfiguration() {
         try (InputStream is = openInputStream(System.getenv("CONFIG_FILE"),
                                               "classpath:settings.yaml")) {
             YAMLMapper mapper = EnvExpander.YAML_MAPPER.copy();
@@ -112,9 +107,9 @@ public class Config {
         }
     }
 
-    private BadgerFishSingle makeBadgerFishSingle() {
+    private static BadgerFishSingle makeBadgerFishSingle(Settings settings) {
         try (InputStream is = openInputStream(System.getenv("BADGERFISH_RULES_LOCATION"),
-                                              config.getBadgerfishRulesLocation(),
+                                              settings.getBadgerfishRulesLocation(),
                                               "classpath:opensearch-badgerfish-rules.yaml")) {
             BadgerFishSingle repeated = BadgerFishSingle.from(is);
             log.debug("repeated = {}", repeated);
@@ -153,7 +148,7 @@ public class Config {
         throw new FileNotFoundException("Locate file from:" + Arrays.toString(paths));
     }
 
-    static class DashedPropertyNamingStrategy extends PropertyNamingStrategy {
+    public static class DashedPropertyNamingStrategy extends PropertyNamingStrategy {
 
         public DashedPropertyNamingStrategy() {
         }
