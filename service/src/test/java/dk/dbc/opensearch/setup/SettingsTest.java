@@ -42,7 +42,11 @@ public class SettingsTest {
                                             "X_FORWARDED_FOR=",
                                             "OPEN_AGENCY_URL=http://localhost/oa",
                                             "COREPO_SOLR_URL=http://localhost/co/so",
-                                            "COREPO_CONTENT_SERVICE_URL=http://localhost/co/co");
+                                            "COREPO_CONTENT_SERVICE_URL=http://localhost/co/co",
+                                            "CACHE_EXPIRE_profile=CREATED:5h:1000",
+                                            "CACHE_EXPIRE_profile_error=CREATED:1m:1000",
+                                            "CACHE_EXPIRE_resultset=ACCESSED:5m:10000",
+                                            "CACHE_EXPIRE_records=ACCESSED:2m:10000");
 
         YAMLMapper mapper = ExpandingDeserializer.objectMapperOf(new EnvExpander() {
             @Override
