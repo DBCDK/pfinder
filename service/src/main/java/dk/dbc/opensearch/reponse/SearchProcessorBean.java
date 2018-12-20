@@ -44,12 +44,10 @@ import dk.dbc.opensearch.utils.UserMessageException;
 import dk.dbc.opensearch.xml.XMLCacheReader;
 import fish.payara.cdi.jsr107.impl.NamedCache;
 import java.io.IOException;
-import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -98,7 +96,7 @@ public class SearchProcessorBean {
     private StatisticsRecorder timings;
     private MDCLog mdc;
     private ResultSet resultSet;
-    private HashMap<String, Future<Map.Entry<RecordKey, RecordContent>>> recordFecthing;
+    private HashMap<String, Future<RecordContent>> recordFecthing;
 
     public Root.Scope<Root.EntryPoint> builder(SearchRequest request, StatisticsRecorder timings, MDCLog mdc) {
         this.request = request;
@@ -163,13 +161,14 @@ public class SearchProcessorBean {
 
                 RecordKey recordKey = abstraction.makeRecordKey(resultSet, request.getShowAgencyOrDefault(), unit);
                 RecordContent cachedContent = recordCache.get(recordKey);
-                Future<Map.Entry<RecordKey, RecordContent>> future = es.submit(() ->
-                        new AbstractMap.SimpleEntry(
-                                recordKey,
-                                abstraction.recordContent(
-                                        cachedContent, fetcher, timings, trackingId,
-                                        resultSet, request.getShowAgencyOrDefault(), unit,
-                                        openFormatFormatsForThisUnit)));
+                Future<RecordContent> future = es.submit(() -> {
+                    RecordContent recordContent = abstraction.recordContent(
+                            cachedContent, fetcher, timings, trackingId,
+                            resultSet, request.getShowAgencyOrDefault(), unit,
+                            openFormatFormatsForThisUnit);
+                    recordCache.put(recordKey, recordContent);
+                    return recordContent;
+                });
                 recordFecthing.put(unit, future);
                 formatThisUnit = formatMoreThanOne;
             }
@@ -264,7 +263,7 @@ public class SearchProcessorBean {
             log.trace("outputting unit: {}", unit);
             try {
                 boolean showContent = formatCurrent;
-                RecordContent content = recordContentForUnit(unit);
+                RecordContent content = recordFecthing.get(unit).get();
                 objects.object(object -> object.
                         _any_repeated(o -> outputObjects(o, content, showContent))
                         .identifier(content.getObjectsAvailable().get(0))
@@ -288,22 +287,6 @@ public class SearchProcessorBean {
             }
             formatCurrent = formatMoreThanOne;
         }
-    }
-
-    /**
-     * Fetch record content for a unit, and ensure it's in the cache.
-     *
-     * @param unit which future to get
-     * @return content
-     * @throws InterruptedException async error
-     * @throws ExecutionException   async error
-     */
-    private RecordContent recordContentForUnit(String unit) throws InterruptedException, ExecutionException {
-        Future<Map.Entry<RecordKey, RecordContent>> future = recordFecthing.get(unit);
-        Map.Entry<RecordKey, RecordContent> entry = future.get();
-        RecordContent content = entry.getValue();
-        recordCache.put(entry.getKey(), content);
-        return content;
     }
 
     private boolean formatMoreThanOneUnit() {
