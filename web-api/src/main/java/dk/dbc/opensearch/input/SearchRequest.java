@@ -220,6 +220,10 @@ public class SearchRequest extends CommonRequest {
         return queryDebug;
     }
 
+    public Boolean getQueryDebugOrDefault() {
+        return queryDebug != null && queryDebug;
+    }
+
     public void setQueryDebug(boolean queryDebug) {
         this.queryDebug = queryDebug;
     }
