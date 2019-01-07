@@ -45,7 +45,10 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.ExecutorService;
+import javax.annotation.Resource;
 import javax.ejb.Stateless;
+import javax.enterprise.concurrent.ManagedExecutorService;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
@@ -55,6 +58,8 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.container.AsyncResponse;
+import javax.ws.rs.container.Suspended;
 import javax.ws.rs.core.CacheControl;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
@@ -99,6 +104,9 @@ public class ServiceBean {
     @Inject
     SearchProcessorBean searchProcessor;
 
+    @Resource(type = ManagedExecutorService.class)
+    ExecutorService mes;
+
     @GET
     public Response index(@Context UriInfo context, @Context HttpHeaders headers, @Context HttpServletRequest httpRequest) {
         String peer = remoteIPAddress.ip(headers, httpRequest);
@@ -113,7 +121,7 @@ public class ServiceBean {
                         .cacheControl(cacheControl)
                         .build();
             } else {
-                return badRequest("Support for uri parameters not implemented yet");
+                return Response.status(BAD_REQUEST).entity("Support for uri parameters not implemented yet").build();
             }
         }
     }
@@ -130,7 +138,7 @@ public class ServiceBean {
 
     @POST
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    public Response post(@FormParam("req") String req, @Context HttpHeaders headers, @Context HttpServletRequest httpRequest) {
+    public void post(@Suspended AsyncResponse response, @FormParam("req") String req, @Context HttpHeaders headers, @Context HttpServletRequest httpRequest) {
         try (ByteArrayInputStream bis = new ByteArrayInputStream(req.getBytes(StandardCharsets.UTF_8))) {
             try (BufferedInputStream is = new BufferedInputStream(bis, 1024)) {
                 is.mark(1024);
@@ -142,14 +150,14 @@ public class ServiceBean {
                     throw new IOException("Empty request");
                 is.reset();
                 if (c == '{')
-                    return processInputStream(headers, httpRequest, is, RequestParserJSON::new);
+                    processInputStream(response, headers, httpRequest, is, RequestParserJSON::new);
                 else
-                    return processInputStream(headers, httpRequest, is, RequestParserXML::new);
+                    processInputStream(response, headers, httpRequest, is, RequestParserXML::new);
             }
         } catch (IOException ex) {
             log.error("post (form): {}", ex.getMessage());
             log.debug("post (form): ", ex);
-            return Response.serverError().build();
+            response.resume(Response.serverError().build());
         }
     }
 
@@ -158,19 +166,28 @@ public class ServiceBean {
                "application/soap+xml"})
     @Produces({MediaType.APPLICATION_XML,
                MediaType.APPLICATION_JSON})
-    public Response postXML(InputStream is, @Context HttpHeaders headers, @Context HttpServletRequest httpRequest) {
-        return processInputStream(headers, httpRequest, is, RequestParserXML::new);
+    public void postXML(@Suspended AsyncResponse response, InputStream is, @Context HttpHeaders headers, @Context HttpServletRequest httpRequest) {
+        processInputStream(response, headers, httpRequest, is, RequestParserXML::new);
     }
 
     @POST
     @Consumes({MediaType.APPLICATION_JSON})
     @Produces({MediaType.APPLICATION_XML,
                MediaType.APPLICATION_JSON})
-    public Response postJSON(InputStream is, @Context HttpHeaders headers, @Context HttpServletRequest httpRequest) {
-        return processInputStream(headers, httpRequest, is, RequestParserJSON::new);
+    public void postJSON(@Suspended AsyncResponse response, InputStream is, @Context HttpHeaders headers, @Context HttpServletRequest httpRequest) {
+        processInputStream(response, headers, httpRequest, is, RequestParserJSON::new);
     }
 
-    private Response processInputStream(HttpHeaders headers, HttpServletRequest httpRequest, InputStream is, RequestProvider requestProvider) {
+    /**
+     *
+     * @param resp            Suspended response
+     * @param headers         Request headers (containing X-Forwarded-For)
+     * @param httpRequest     Request information (containing remote IP)
+     * @param is              The data to process
+     * @param requestProvider The mapper from InputStream to RequestParser
+     *                        object
+     */
+    private void processInputStream(AsyncResponse resp, HttpHeaders headers, HttpServletRequest httpRequest, InputStream is, RequestProvider requestProvider) {
         String peer = remoteIPAddress.ip(headers, httpRequest);
         try {
             MDCLog mdc = MDCLog.mdc()
@@ -182,23 +199,29 @@ public class ServiceBean {
             }
             Root.Scope<Root.EntryPoint> builder = requestBuilder(request, statistics, mdc);
             if (builder == null)
-                return badRequest("Don't know how to handle request");
+                throw new BadRequestException("Don't know how to handle request");
             OpenSearchResponse response = responseWriter(request, builder, mdc);
             if (response == null)
-                return badRequest("Don't know how to handle outputType");
+                throw new BadRequestException("Don't know how to handle outputType");
 
             // This returns immetiately
             // Output writer runs in same thread after this methods has returned
             // This means we've got to delegate the output of statistics
             // to after output in completed, hence, passing the timer on to
             // the response processor
-            return response.build(statistics);
+            mes.submit(() -> resp.resume(response.build(statistics)));
+        } catch (BadRequestException ex) {
+            resp.resume(Response.status(BAD_REQUEST).entity(ex.getMessage()).build());
         } catch (UserMessageException ex) {
-            return Response.status(INTERNAL_SERVER_ERROR).entity(ex.getMessage()).build();
+            resp.resume(Response.status(INTERNAL_SERVER_ERROR).entity(ex.getMessage()).build());
+        } catch (RuntimeException ex) {
+            log.error("Internal Error: {}", ex.getMessage());
+            log.debug("Internal Error: ", ex);
+            resp.resume(Response.status(INTERNAL_SERVER_ERROR).entity("Internal server error").build());
         } catch (XMLStreamException ex) {
             log.error("Error processing request: {}", ex.getMessage());
             log.debug("Error processing request: ", ex);
-            return Response.status(BAD_REQUEST).entity(ex.getMessage()).build();
+            resp.resume(Response.status(BAD_REQUEST).entity(ex.getMessage()).build());
         }
     }
 
@@ -237,10 +260,13 @@ public class ServiceBean {
         }
     }
 
-    private static Response badRequest(String message) {
-        return Response.status(BAD_REQUEST)
-                .entity(message)
-                .build();
+    private static class BadRequestException extends RuntimeException {
+
+        private static final long serialVersionUID = -869485303588931966L;
+
+        public BadRequestException(String string) {
+            super(string);
+        }
     }
 
     @FunctionalInterface
