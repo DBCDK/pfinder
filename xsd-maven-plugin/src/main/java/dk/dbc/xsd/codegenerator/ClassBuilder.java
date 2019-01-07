@@ -205,6 +205,9 @@ public class ClassBuilder {
         CLASS_INI.segment(os, "TOP", replace);
         outputRootClass(os, returnValue, methodsInStage, terminalFunctions);
         CLASS_INI.segment(os, "ROOT_CLASS_END", replace);
+        if (methodsInStage.get(className).size() > 1 ||
+            !terminalFunctions.contains(methodsInStage.get(className).iterator().next()))
+            CLASS_INI.segment(os, "ROOT_CLASS_END_NOT_VOID", replace);
         if (methodsInStage.size() > 1) {
             CLASS_INI.segment(os, "SCOPE_CLASSES_START", replace);
             outputStageClass(os, returnValue, methodsInStage, terminalFunctions);
@@ -232,8 +235,12 @@ public class ClassBuilder {
                 outputMethod(os, stage, method, returnValue.get(method),
                              terminalFunctions.contains(method) || stage.endsWith("_repeated"));
             }
-            if (!stage.endsWith("_repeated"))
+            if (!stage.endsWith("_repeated")) {
                 CLASS_INI.segment(os, "SCOPE_CLASS_DELEGATE", replace);
+                if (methodsInStage.get(stage).size() > 1 ||
+                    !terminalFunctions.contains(methodsInStage.get(stage).iterator().next()))
+                    CLASS_INI.segment(os, "SCOPE_CLASS_DELEGATE_NOT_VOID", replace);
+            }
             CLASS_INI.segment(os, "SCOPE_CLASS_END", replace);
         }
     }
