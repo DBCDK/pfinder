@@ -18,16 +18,12 @@
  */
 package dk.dbc.opensearch.output;
 
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Locale;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.CacheControl;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.StreamingOutput;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,7 +31,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author DBC {@literal <dbc.dk>}
  */
-public class ResourceStreamingOutput implements StreamingOutput {
+public class ResourceStreamingOutput {
 
     private static final Logger log = LoggerFactory.getLogger(ResourceStreamingOutput.class);
 
@@ -54,29 +50,10 @@ public class ResourceStreamingOutput implements StreamingOutput {
         log.info("GET /{}", path);
         CacheControl cacheControl = new CacheControl();
         cacheControl.setMaxAge(600);
-        return Response.ok(new ResourceStreamingOutput(is))
+        return Response.ok(is)
                 .type(MIME_TYPES.getOrDefault(extension, MediaType.TEXT_PLAIN))
                 .cacheControl(cacheControl)
                 .build();
-    }
-
-    private final InputStream is;
-
-    private ResourceStreamingOutput(InputStream is) {
-        this.is = is;
-    }
-
-    @Override
-    public void write(OutputStream os) throws IOException, WebApplicationException {
-        byte[] buffer = new byte[4096];
-        for (;;) {
-            int bytesRead = is.read(buffer);
-            if (bytesRead <= 0)
-                break;
-            os.write(buffer, 0, bytesRead);
-        }
-        os.flush();
-        is.close();
     }
 
     private static HashMap<String, String> makeMimetypes() {
