@@ -33,10 +33,15 @@ public class ResultSetWork extends ResultSet {
 
     private static final Collection<String> REQUIRED_FIELDS =
             Collections.unmodifiableCollection(
-                    Arrays.asList(WORK_ID, UNIT_ID, MANIFESTATION_ID));
+                    Arrays.asList(ID, WORK_ID, UNIT_ID, MANIFESTATION_ID));
 
-    public ResultSetWork(SolrQueryFields solrQuery, boolean allObjects) {
-        super(solrQuery, allObjects);
+    public ResultSetWork(SolrQueryFields solrQuery, boolean allObjects, boolean queryDebug) {
+        super(solrQuery, allObjects, queryDebug);
+    }
+
+    @Override
+    protected String nameOfIdField() {
+        return ID;
     }
 
     @Override

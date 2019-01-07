@@ -4,24 +4,24 @@
     "solr": {
         "default:myQuery": {
             "records": [
-                { "rec.workId": "work:1", "rec.unitId": "unit:1", "rec.manifestationId": "m:2"},
-                { "rec.workId": "work:1", "rec.unitId": "unit:1", "rec.manifestationId": "m:1"},
-                { "rec.workId": "work:7", "rec.unitId": "unit:6", "rec.manifestationId": "m:4"},
-                { "rec.workId": "work:1", "rec.unitId": "unit:2", "rec.manifestationId": "m:7"},
-                { "rec.workId": "work:3", "rec.unitId": "unit:3", "rec.manifestationId": "m:5"}
+                { "id": "1", "rec.workId": "work:1", "rec.unitId": "unit:1", "rec.manifestationId": "m:2"},
+                { "id": "2", "rec.workId": "work:1", "rec.unitId": "unit:1", "rec.manifestationId": "m:1"},
+                { "id": "3", "rec.workId": "work:7", "rec.unitId": "unit:6", "rec.manifestationId": "m:4"},
+                { "id": "4", "rec.workId": "work:1", "rec.unitId": "unit:2", "rec.manifestationId": "m:7"},
+                { "id": "5", "rec.workId": "work:3", "rec.unitId": "unit:3", "rec.manifestationId": "m:5"}
             ]
         },
         "rec.workId:(work\\:1 OR work\\:7 OR work\\:3)" : {
             "records": [
-                { "rec.workId": "work:1", "rec.unitId": "unit:1", "rec.manifestationId": "m:2"},
-                { "rec.workId": "work:1", "rec.unitId": "unit:1", "rec.manifestationId": "m:1"},
-                { "rec.workId": "work:7", "rec.unitId": "unit:6", "rec.manifestationId": "m:4"},
-                { "rec.workId": "work:7", "rec.unitId": "unit:6", "rec.manifestationId": "m:9"},
-                { "rec.workId": "work:7", "rec.unitId": "unit:9", "rec.manifestationId": "m:8"},
-                { "rec.workId": "work:7", "rec.unitId": "unit:9", "rec.manifestationId": "m:7"},
-                { "rec.workId": "work:7", "rec.unitId": "unit:11", "rec.manifestationId": "m:14"},
-                { "rec.workId": "work:1", "rec.unitId": "unit:2", "rec.manifestationId": "m:7"},
-                { "rec.workId": "work:3", "rec.unitId": "unit:3", "rec.manifestationId": "m:5"}
+                { "id": "6", "rec.workId": "work:1", "rec.unitId": "unit:1", "rec.manifestationId": "m:2"},
+                { "id": "7", "rec.workId": "work:1", "rec.unitId": "unit:1", "rec.manifestationId": "m:1"},
+                { "id": "8", "rec.workId": "work:7", "rec.unitId": "unit:6", "rec.manifestationId": "m:4"},
+                { "id": "9", "rec.workId": "work:7", "rec.unitId": "unit:6", "rec.manifestationId": "m:9"},
+                { "id": "a", "rec.workId": "work:7", "rec.unitId": "unit:9", "rec.manifestationId": "m:8"},
+                { "id": "b", "rec.workId": "work:7", "rec.unitId": "unit:9", "rec.manifestationId": "m:7"},
+                { "id": "c", "rec.workId": "work:7", "rec.unitId": "unit:11", "rec.manifestationId": "m:14"},
+                { "id": "d", "rec.workId": "work:1", "rec.unitId": "unit:2", "rec.manifestationId": "m:7"},
+                { "id": "e", "rec.workId": "work:3", "rec.unitId": "unit:3", "rec.manifestationId": "m:5"}
             ]
         }
     },

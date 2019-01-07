@@ -74,6 +74,7 @@ public abstract class ResultSet implements Serializable {
     public static final String WORK_ID = "rec.workId";
     public static final String UNIT_ID = "rec.unitId";
     public static final String MANIFESTATION_ID = "rec.manifestationId";
+    public static final String ID = "id";
 
     public static ResultSet EMPTY_RESULT_SET = new ResultSetEmpty();
 
@@ -89,8 +90,10 @@ public abstract class ResultSet implements Serializable {
     // expensive and we need access to work-ids by position anyway.
     private final List<String> workOrder;
     private final Set<String> worksExpanded;
+    private final Map<String, String> unitExplain;
     private final SolrQueryFields solrQuery;
     private final boolean allObjects;
+    private final boolean queryDebug;
     private boolean complete;
     // Estimated number of works until complete, then exact number of works
     private long hitCount;
@@ -104,22 +107,33 @@ public abstract class ResultSet implements Serializable {
         this.unitToManifestations = EMPTY_MAP;
         this.workOrder = EMPTY_LIST;
         this.worksExpanded = EMPTY_SET;
+        this.unitExplain = EMPTY_MAP;
         this.solrQuery = null;
         this.allObjects = false;
+        this.queryDebug = false;
         this.complete = true;
         this.hitCount = -1;
         this.solrHitCount = -1;
     }
 
-    public ResultSet(SolrQueryFields solrQuery, boolean allObjects) {
+    public ResultSet(SolrQueryFields solrQuery, boolean allObjects, boolean queryDebug) {
         this.workToUnits = new HashMap<>();
         this.unitToManifestations = new HashMap<>();
         this.workOrder = new ArrayList<>();
         this.worksExpanded = new HashSet<>();
+        this.unitExplain = new HashMap<>();
         this.solrQuery = solrQuery;
         this.allObjects = allObjects;
+        this.queryDebug = queryDebug;
         this.complete = false;
     }
+
+    /**
+     * Supply the name of the field representing a record id in the SolR
+     *
+     * @return A field name
+     */
+    protected abstract String nameOfIdField();
 
     /**
      * Supply the name of the field representing a work in the SolR
@@ -221,6 +235,16 @@ public abstract class ResultSet implements Serializable {
     }
 
     /**
+     * Get the SOlR explain for the first hit for this unit
+     *
+     * @param unit The unit to get explain for
+     * @return Explanation
+     */
+    public String explainForUnit(String unit) {
+        return unitExplain.getOrDefault(unit, "No explanation");
+    }
+
+    /**
      * Fill in work structure and expand the wanted works
      * <p>
      * This is the main entry point for the class
@@ -271,14 +295,17 @@ public abstract class ResultSet implements Serializable {
     /**
      * The entrypoint for inherited classes to register results
      *
-     * @param doc The document as returned from SolR
+     * @param doc        The document as returned from SolR
+     * @param explainMap The SolR explain for the result
      */
-    protected void registerManifestation(SolrDocument doc) {
+    protected void registerManifestation(SolrDocument doc, Map<String, String> explainMap) {
         Map<String, Collection<Object>> values = doc.getFieldValuesMap();
+        String id = extractValue(values, nameOfIdField(), true).iterator().next();
+        String explain = explainMap.getOrDefault(id, "queryDebug not enabled when search performed");
         String work = extractValue(values, nameOfWorkField(), true).iterator().next();
         String unit = extractValue(values, nameOfUnitField(), true).iterator().next();
         Collection<String> manifestations = extractValue(values, nameOfManifestationField(), false);
-        manifestations.forEach(manifestation -> registerManifestation(work, unit, manifestation));
+        manifestations.forEach(manifestation -> registerManifestation(work, unit, manifestation, explain));
         // At this point you could record the values from the doc, for mapping into solr-formats
         // It could be done on manifestation or unit level.
     }
@@ -313,11 +340,12 @@ public abstract class ResultSet implements Serializable {
      * @param work          The id of the work
      * @param unit          The id of the unit
      * @param manifestation The id of the manifestation
+     * @param explain       The SolR explain for the result
      */
-    private void registerManifestation(String work, String unit, String manifestation) {
+    private void registerManifestation(String work, String unit, String manifestation, String explain) {
         log.trace("registering: {}/{}/{}", work, unit, manifestation);
         Set<String> manifestationsInUnit = unitToManifestations
-                .computeIfAbsent(unit, u -> registerUnit(work, unit));
+                .computeIfAbsent(unit, u -> registerUnit(work, unit, explain));
         manifestationsInUnit.add(manifestation);
     }
 
@@ -332,10 +360,11 @@ public abstract class ResultSet implements Serializable {
      * @param unit The id of the unit
      * @return A new empty set of manifestations
      */
-    private Set<String> registerUnit(String work, String unit) {
+    private Set<String> registerUnit(String work, String unit, String explain) {
         List<String> unitsInWork = workToUnits
                 .computeIfAbsent(work, this::registerWork);
         unitsInWork.add(unit);
+        unitExplain.put(unit, explain);
         return new HashSet<>();
     }
 
@@ -396,9 +425,11 @@ public abstract class ResultSet implements Serializable {
         if (!firstRun)
             filterOutSeenWorks(query);
         query.setStart(0);
+        query.setShowDebugInfo(queryDebug);
         QueryResponse response = performQuery(query, QueryType.BUILD_WORK);
         SolrDocumentList resultList = response.getResults();
-        resultList.forEach(this::registerManifestation);
+        Map<String, String> explainMap = queryDebug ? response.getExplainMap() : EMPTY_MAP;
+        resultList.forEach(result -> registerManifestation(result, explainMap));
         long rowsFound = resultList.getNumFound();
         int rowsFetched = resultList.size();
         if (firstRun)
@@ -447,9 +478,10 @@ public abstract class ResultSet implements Serializable {
         boolean allFetched = false;
         while (!allFetched) {
             query.setStart(start);
+            query.setShowDebugInfo(false);
             QueryResponse response = performQuery(query, QueryType.EXPAND_WORK);
             SolrDocumentList resultList = response.getResults();
-            resultList.forEach(this::registerManifestation);
+            resultList.forEach(result -> registerManifestation(result, EMPTY_MAP));
             start += resultList.size();
             allFetched = resultList.getNumFound() == start;
         }
@@ -591,6 +623,11 @@ public abstract class ResultSet implements Serializable {
         private static final long serialVersionUID = 6883130859461573712L;
 
         private ResultSetEmpty() {
+        }
+
+        @Override
+        protected String nameOfIdField() {
+            return "";
         }
 
         @Override

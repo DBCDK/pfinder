@@ -31,13 +31,16 @@ public class ResultSetId extends ResultSet {
 
     private static final long serialVersionUID = -4788723847583007565L;
 
-    private static final String ID = "id";
-
     private static final Collection<String> REQUIRED_FIELDS =
             Collections.unmodifiableCollection(Collections.singleton(ID));
 
     public ResultSetId(SolrQueryFields solrQuery, boolean allObjects) {
-        super(solrQuery, allObjects);
+        super(solrQuery, allObjects, false);
+    }
+
+    @Override
+    protected String nameOfIdField() {
+        return ID;
     }
 
     @Override
