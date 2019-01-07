@@ -414,7 +414,7 @@ public abstract class ResultSet implements Serializable {
      * Find work ids until enough are seen
      * <p>
      * Register the SolR documents retrieved using
-     * {@link #registerManifestation(org.apache.solr.common.SolrDocument)}
+     * {@link #registerManifestation(org.apache.solr.common.SolrDocument, java.util.Map) }
      *
      * @param query    The SolR query
      * @param firstRun If this is the initial query and
@@ -469,7 +469,7 @@ public abstract class ResultSet implements Serializable {
      * Find all unit/manifestations for a group of works
      * <p>
      * Register the SolR documents retrieved using
-     * {@link #registerManifestation(org.apache.solr.common.SolrDocument)}
+     * {@link #registerManifestation(org.apache.solr.common.SolrDocument, java.util.Map) }
      *
      * @param query The SolR query (limited to the works needed to be expanded)
      */

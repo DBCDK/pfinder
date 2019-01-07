@@ -62,7 +62,7 @@ public class OpenAgencyProfiles {
      * @param trackingId Track which HTTP requests are produced by an enduser
      *                   request
      * @param solrRules  Rules for the SolR identified by "repository"
-     * @return
+     * @return Profiles object for the agency
      */
     @CacheResult(cacheName = "profile",
                  exceptionCacheName = "profile_error",
