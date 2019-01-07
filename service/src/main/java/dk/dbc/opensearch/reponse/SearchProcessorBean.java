@@ -20,6 +20,7 @@ package dk.dbc.opensearch.reponse;
 
 import dk.dbc.opensearch.cache.HttpFetcher;
 import dk.dbc.opensearch.cache.OpenAgencyProfiles;
+import dk.dbc.opensearch.cache.RecordKey;
 import dk.dbc.opensearch.cache.ResultSetKey;
 import dk.dbc.opensearch.input.CollectionType;
 import dk.dbc.opensearch.input.SearchRequest;
@@ -83,6 +84,10 @@ public class SearchProcessorBean {
     @Inject
     @NamedCache(cacheName = "resultset", managementEnabled = true)
     Cache<ResultSetKey, ResultSet> resultSetCache;
+
+    @Inject
+    @NamedCache(cacheName = "records", managementEnabled = true)
+    Cache<RecordKey, RecordContent> recordCache;
 
     @Resource(type = ManagedExecutorService.class)
     ExecutorService es;
@@ -154,11 +159,17 @@ public class SearchProcessorBean {
                 List<String> openFormatFormatsForThisUnit =
                         formatThisUnit ? getOpenFormatFormats(repoSettings) : EMPTY_LIST;
 
-                Future recordContent = es.submit(() -> abstraction.recordContent(
-                        fetcher, timings, trackingId,
-                        resultSet, request.getShowAgencyOrDefault(), unit,
-                        openFormatFormatsForThisUnit));
-                recordFecthing.put(unit, recordContent);
+                RecordKey recordKey = abstraction.makeRecordKey(resultSet, request.getShowAgencyOrDefault(), unit);
+                RecordContent cachedContent = recordCache.get(recordKey);
+                Future<RecordContent> future = es.submit(() -> {
+                    RecordContent recordContent = abstraction.recordContent(
+                            cachedContent, fetcher, timings, trackingId,
+                            resultSet, request.getShowAgencyOrDefault(), unit,
+                            openFormatFormatsForThisUnit);
+                    recordCache.put(recordKey, recordContent);
+                    return recordContent;
+                });
+                recordFecthing.put(unit, future);
                 formatThisUnit = formatMoreThanOne;
             }
         }
@@ -250,10 +261,9 @@ public class SearchProcessorBean {
         boolean formatMoreThanOne = formatMoreThanOneUnit();
         for (String unit : units) {
             log.trace("outputting unit: {}", unit);
-            Future<RecordContent> future = recordFecthing.get(unit);
             try {
                 boolean showContent = formatCurrent;
-                RecordContent content = future.get();
+                RecordContent content = recordFecthing.get(unit).get();
                 objects.object(object -> object.
                         _any_repeated(o -> outputObjects(o, content, showContent))
                         .identifier(content.getObjectsAvailable().get(0))

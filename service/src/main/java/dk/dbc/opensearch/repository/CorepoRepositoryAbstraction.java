@@ -19,6 +19,7 @@
 package dk.dbc.opensearch.repository;
 
 import dk.dbc.opensearch.cache.HttpFetcher;
+import dk.dbc.opensearch.cache.RecordKey;
 import dk.dbc.opensearch.cache.ResultSetKey;
 import dk.dbc.opensearch.input.CollectionType;
 import dk.dbc.opensearch.setup.RepositorySettings;
@@ -43,6 +44,8 @@ import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrServerException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -50,15 +53,19 @@ import org.apache.solr.client.solrj.SolrServerException;
  */
 public class CorepoRepositoryAbstraction implements RepositoryAbstraction {
 
+    private static final Logger log = LoggerFactory.getLogger(CorepoRepositoryAbstraction.class);
+
     private final DefaultPrefix defaultPrefix;
+    private final SolrRules solrRules;
+    private final String repository;
     private final SolrClient solrClient;
     private final String contentUriTemplate;
-    private final SolrRules solrRules;
     private final Map<QName, String> knownFormats;
 
     public CorepoRepositoryAbstraction(DefaultPrefix defaultPrefix, RepositorySettings repositorySettings) throws SolrServerException, IOException {
         this.defaultPrefix = defaultPrefix;
         this.solrRules = repositorySettings.getSolrRules();
+        this.repository = repositorySettings.getName();
         this.solrClient = Solr.client(repositorySettings.getSolrUrl());
         this.contentUriTemplate = repositorySettings.getContentServiceUrl();
         this.knownFormats = repositorySettings.getKnownFormatsByQName();
@@ -87,19 +94,28 @@ public class CorepoRepositoryAbstraction implements RepositoryAbstraction {
     }
 
     @Override
-    public RecordContent recordContent(HttpFetcher fetcher, StatisticsRecorder recorder, String trackingId,
+    public RecordContent recordContent(RecordContent recordContent,
+                                       HttpFetcher fetcher, StatisticsRecorder recorder, String trackingId,
                                        ResultSet resultSet, int showAgencyId, String unitId,
                                        List<String> openFormatFormats) throws IOException, XMLStreamException {
-        Set<String> manifestations = resultSet.manifestationsForUnit(unitId);
-        try (InputStream is = fetcher.get(contentUriTemplate, trackingId)
-                .with("agency", String.format(Locale.ROOT, "%06d", showAgencyId))
-                .with("unit", unitId)
-                .with("manifestations", String.join(",", manifestations))
-                .request(recorder, "corepo-content-service")) {
-            CorepoRecordContent recordContent = new CorepoRecordContent(is, knownFormats, defaultPrefix);
-            //! TODO openFormatFormats
-            return recordContent;
+        if (recordContent == null) {
+            Set<String> manifestations = resultSet.manifestationsForUnit(unitId);
+            try (InputStream is = fetcher.get(contentUriTemplate, trackingId)
+                    .with("agency", String.format(Locale.ROOT, "%06d", showAgencyId))
+                    .with("unit", unitId)
+                    .with("manifestations", String.join(",", manifestations))
+                    .request(recorder, "corepo-content-service")) {
+                recordContent = new CorepoRecordContent(is, knownFormats, defaultPrefix);
+            }
         }
+        //! TODO openFormatFormats
+        return recordContent;
+    }
+
+    @Override
+    public RecordKey makeRecordKey(ResultSet resultSet, int showAgencyId, String unitId) {
+        Set<String> manifestations = resultSet.manifestationsForUnit(unitId);
+        return new RecordKey(repository, showAgencyId, manifestations);
     }
 
 }

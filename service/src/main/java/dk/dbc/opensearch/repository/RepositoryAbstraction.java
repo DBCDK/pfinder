@@ -19,6 +19,7 @@
 package dk.dbc.opensearch.repository;
 
 import dk.dbc.opensearch.cache.HttpFetcher;
+import dk.dbc.opensearch.cache.RecordKey;
 import dk.dbc.opensearch.cache.ResultSetKey;
 import dk.dbc.opensearch.solr.profile.Profile;
 import dk.dbc.opensearch.solr.resultset.ResultSet;
@@ -56,6 +57,7 @@ public interface RepositoryAbstraction {
     /**
      * Extract content for a given unit
      *
+     * @param cachedContent     cached entry for this record
      * @param fetcher           web access module
      * @param recorder          timings for different actions
      * @param trackingId        trackingId for sending to other services
@@ -69,7 +71,19 @@ public interface RepositoryAbstraction {
      *                            response errors
      * @throws XMLStreamException If there's inconsistency in the supplied XML
      */
-    RecordContent recordContent(HttpFetcher fetcher, StatisticsRecorder recorder, String trackingId,
+    RecordContent recordContent(RecordContent cachedContent,
+                                HttpFetcher fetcher, StatisticsRecorder recorder, String trackingId,
                                 ResultSet resultSet, int showAgencyId, String unitId,
                                 List<String> openFormatFormats) throws IOException, XMLStreamException;
+
+    /**
+     * Make a records cache key for a unit from a resultset
+     *
+     * @param resultSet    the resultset knowing about the unit expansion
+     * @param showAgencyId which agency a resultset should be show as
+     *                     (ordering of manifestations)
+     * @param unitId       the unit to retrieve content for
+     * @return unique key for this unit
+     */
+    RecordKey makeRecordKey(ResultSet resultSet, int showAgencyId, String unitId);
 }
