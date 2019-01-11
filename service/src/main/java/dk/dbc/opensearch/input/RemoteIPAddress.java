@@ -60,6 +60,7 @@ public class RemoteIPAddress {
         } else {
             this.allowedProxyIpRanges = Arrays.stream(xForwardedFor.split(","))
                     .map(String::trim)
+                    .filter(s -> !s.isEmpty())
                     .map(RemoteIPAddress::ipRange)
                     .collect(Collectors.toList());
         }
