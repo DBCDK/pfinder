@@ -278,7 +278,7 @@ public class SearchProcessorBean {
                                 objectsAvailable.identifier(objectAvailable);
                             }
                         })
-                        .queryResultExplanation("No explain")
+                        ._delegate(objectsAvailable -> outputExplain(objectsAvailable, unit))
                 );
             } catch (InterruptedException | ExecutionException ex) {
                 log.error("Error fetching async record content: {}", ex.getMessage());
@@ -293,14 +293,19 @@ public class SearchProcessorBean {
         return request.getCollectionTypeOrDefault() != CollectionType.WORK1;
     }
 
-    private void outputObjects(Object.Stage._any_repeated objectInstance, RecordContent content, boolean showContent) throws IOException, XMLStreamException {
+    private void outputObjects(Object.Stage._any_repeated object, RecordContent content, boolean showContent) throws IOException, XMLStreamException {
         if (showContent) {
             for (String format : request.getObjectFormatOrDerault()) {
                 XMLCacheReader reader = content.getRawFormat(format);
                 if (reader != null)
-                    objectInstance._any(reader);
+                    object._any(reader);
             }
         }
+    }
+
+    private void outputExplain(Object.Stage.ObjectsAvailable explainStage, String unit) throws XMLStreamException, IOException {
+        if (request.getQueryDebugOrDefault())
+            explainStage.queryResultExplanation(resultSet.explainForUnit(unit));
     }
 
 }

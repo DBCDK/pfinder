@@ -3,11 +3,11 @@
     "solr": {
         "default:myQuery": {
             "records": [
-                { "rec.workId": "work:1", "rec.unitId": "unit:1", "rec.manifestationId": ["m:2", "m:22"] },
-                { "rec.workId": "work:1", "rec.unitId": "unit:1", "rec.manifestationId": "m:1"},
-                { "rec.workId": "work:7", "rec.unitId": "unit:6", "rec.manifestationId": "m:4"},
-                { "rec.workId": "work:1", "rec.unitId": "unit:2", "rec.manifestationId": "m:7"},
-                { "rec.workId": "work:3", "rec.unitId": "unit:3", "rec.manifestationId": "m:5"}
+                { "id": "1", "rec.workId": "work:1", "rec.unitId": "unit:1", "rec.manifestationId": ["m:2", "m:22"] },
+                { "id": "2", "rec.workId": "work:1", "rec.unitId": "unit:1", "rec.manifestationId": "m:1"},
+                { "id": "3", "rec.workId": "work:7", "rec.unitId": "unit:6", "rec.manifestationId": "m:4"},
+                { "id": "4", "rec.workId": "work:1", "rec.unitId": "unit:2", "rec.manifestationId": "m:7"},
+                { "id": "5", "rec.workId": "work:3", "rec.unitId": "unit:3", "rec.manifestationId": "m:5"}
             ]
         }
     },

@@ -83,9 +83,9 @@ public class CorepoRepositoryAbstraction implements RepositoryAbstraction {
                 throw new UserMessageException(UserMessage.UNSUPPORTED_QUERY_LANGUAGE);
         }
         if (key.getCollectionType() == CollectionType.MANIFESTATION)
-            return new ResultSetManifestation(solrQuery, key.getAllObjects());
+            return new ResultSetManifestation(solrQuery, key.getAllObjects(), key.getQueryDebug());
         else
-            return new ResultSetWork(solrQuery, key.getAllObjects());
+            return new ResultSetWork(solrQuery, key.getAllObjects(), key.getQueryDebug());
     }
 
     @Override

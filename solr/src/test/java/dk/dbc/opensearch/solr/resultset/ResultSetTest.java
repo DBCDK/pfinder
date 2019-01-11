@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -39,6 +40,7 @@ import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.params.SolrParams;
+import org.apache.solr.common.util.SimpleOrderedMap;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -101,7 +103,7 @@ public class ResultSetTest {
         System.out.println(name);
 
         SolrQueryFields queryFields = SolrQueryFields.fromCQL(solrRules, query, profiles.getProfile(Arrays.asList("test")));
-        ResultSet resultSet = new ResultSetWork(queryFields, allObjects);
+        ResultSet resultSet = new ResultSetWork(queryFields, allObjects, false);
 
         List<String> workList = resultSet.fetchWorks(mockedClient(solr), new StatisticsRecorder(),
                                                      start, step, "tracking-id-test");
@@ -147,6 +149,9 @@ public class ResultSetTest {
                     docs.setStart((long) (int) json.getOrDefault("start", 1));
                     docs.setNumFound((long) (int) json.getOrDefault("numFound", records.size()));
                     records.forEach(record -> docs.add(new SolrDocument(record)));
+                    HashMap<String, String> explainMap = new HashMap<>();
+                    records.forEach(record -> explainMap.put((String) record.getOrDefault("id", "what!"), "no explain"));
+                    when(resp.getExplainMap()).thenReturn(explainMap);
                     return resp;
                 });
         return client;

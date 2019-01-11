@@ -36,10 +36,15 @@ public class ResultSetManifestation extends ResultSet {
 
     private static final Collection<String> REQUIRED_FIELDS =
             Collections.unmodifiableCollection(
-                    Arrays.asList(UNIT_ID, MANIFESTATION_ID));
+                    Arrays.asList(ID, UNIT_ID, MANIFESTATION_ID));
 
-    public ResultSetManifestation(SolrQueryFields solrQuery, boolean allObjects) {
-        super(solrQuery, allObjects);
+    public ResultSetManifestation(SolrQueryFields solrQuery, boolean allObjects, boolean queryDebug) {
+        super(solrQuery, allObjects, queryDebug);
+    }
+
+    @Override
+    protected String nameOfIdField() {
+        return ID;
     }
 
     @Override

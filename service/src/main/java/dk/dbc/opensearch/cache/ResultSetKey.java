@@ -32,13 +32,14 @@ import java.util.Objects;
  */
 public class ResultSetKey implements Serializable {
 
-    private static final long serialVersionUID = 7388581403133101704L;
+    private static final long serialVersionUID = 4730986523908008899L;
 
     private final Integer agencyId;
     private final Boolean allObjects;
     private final CollectionType collectionType;
     private final List<String> profiles;
     private final String query;
+    private final Boolean queryDebug;
     private final String queryLanguage;
     private final String repository;
     private final List<String> sort;
@@ -55,6 +56,7 @@ public class ResultSetKey implements Serializable {
         this.collectionType = req.getCollectionTypeOrDefault();
         this.profiles = req.getProfilesOrDefault();
         this.query = req.getQuery();
+        this.queryDebug = req.getQueryDebugOrDefault();
         this.queryLanguage = req.getQueryLanguageOrDefault();
         this.repository = req.getRepository();
         this.sort = req.getSort();
@@ -80,6 +82,10 @@ public class ResultSetKey implements Serializable {
 
     public String getQuery() {
         return query;
+    }
+
+    public Boolean getQueryDebug() {
+        return queryDebug;
     }
 
     public String getQueryLanguage() {
@@ -110,6 +116,7 @@ public class ResultSetKey implements Serializable {
         hash = 59 * hash + Objects.hashCode(this.collectionType);
         hash = 59 * hash + Objects.hashCode(this.profiles);
         hash = 59 * hash + Objects.hashCode(this.query);
+        hash = 59 * hash + Objects.hashCode(this.queryDebug);
         hash = 59 * hash + Objects.hashCode(this.queryLanguage);
         hash = 59 * hash + Objects.hashCode(this.repository);
         hash = 59 * hash + Objects.hashCode(this.sort);
@@ -130,6 +137,7 @@ public class ResultSetKey implements Serializable {
                Objects.equals(this.collectionType, other.collectionType) &&
                Objects.equals(this.profiles, other.profiles) &&
                Objects.equals(this.query, other.query) &&
+               Objects.equals(this.queryDebug, other.queryDebug) &&
                Objects.equals(this.queryLanguage, other.queryLanguage) &&
                Objects.equals(this.repository, other.repository) &&
                Objects.equals(this.sort, other.sort) &&
