@@ -46,6 +46,7 @@ public class RemoteIPAddress {
 
     private static final Logger log = LoggerFactory.getLogger(RemoteIPAddress.class);
 
+    private static final long IPV4_MAX = 0xffffffffL;
     private List<IPRange> allowedProxyIpRanges;
 
     @Inject
@@ -88,46 +89,46 @@ public class RemoteIPAddress {
     }
 
     private boolean inIpRange(String peer) {
-        int ip = ipOf(peer);
+        long ip = ipOf(peer);
         return allowedProxyIpRanges.stream().anyMatch(i -> i.isInRange(ip));
     }
 
     private static IPRange ipRange(String hosts) {
         if (hosts.contains("-")) {
             String[] parts = hosts.split("-", 2);
-            int ipMin = ipOf(parts[0]);
-            int ipMax = ipOf(parts[1]);
+            long ipMin = ipOf(parts[0]);
+            long ipMax = ipOf(parts[1]);
             return new IPRange(ipMin, ipMax);
         } else if (hosts.contains("/")) {
             String[] parts = hosts.split("/", 2);
-            int ip = ipOf(parts[0]);
-            int net = Integer.MAX_VALUE << ( 32 - Integer.parseInt(parts[1]) );
+            long ip = ipOf(parts[0]);
+            long net = ( IPV4_MAX << ( 32 - Integer.parseInt(parts[1]) ) ) & IPV4_MAX;
             return new IPRange(ip & net, ip | ~net);
         } else {
-            int ip = ipOf(hosts);
+            long ip = ipOf(hosts);
             return new IPRange(ip, ip);
         }
     }
 
-    private static int ipOf(String addr1) {
-        if (addr1.contains(".")) {
-            return Arrays.stream(addr1.split("\\.")).mapToInt(Integer::parseUnsignedInt).reduce(0, (l, r) -> ( l << 8 ) + r);
+    private static long ipOf(String addr) {
+        if (addr.contains(".")) {
+            return Arrays.stream(addr.split("\\.")).mapToInt(Integer::parseUnsignedInt).reduce(0, (l, r) -> ( l << 8 ) + r);
         } else {
-            return Integer.MAX_VALUE;
+            return IPV4_MAX;
         }
     }
 
     private static class IPRange {
 
-        private final int min;
-        private final int max;
+        private final long min;
+        private final long max;
 
-        private IPRange(int min, int max) {
+        private IPRange(long min, long max) {
             this.min = min;
             this.max = max;
         }
 
-        private boolean isInRange(int ip) {
+        private boolean isInRange(long ip) {
             return ip >= min && ip <= max;
         }
 
