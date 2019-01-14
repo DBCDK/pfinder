@@ -6,7 +6,8 @@ ENV APPLICATION_NAME="opensearch6" \
     CACHE_EXPIRE_profile=CREATED:5h:1000 \
     CACHE_EXPIRE_profile_error=CREATED:1m:1000 \
     CACHE_EXPIRE_resultset=ACCESSED:5m:10000 \
-    CACHE_EXPIRE_records=ACCESSED:2m:10000
+    CACHE_EXPIRE_records=ACCESSED:2m:10000 \
+    CONTEXT_ROOT=/
 
 LABEL  \
       BADGERFISH_RULES_LOCATION="Uri of badgerfish rules YAML file (optional - mostly for debugging)" \
@@ -20,4 +21,4 @@ LABEL  \
       X_FORWARDED_FOR="Comma seperated list of host, host-range or network, where trusted proxies are located (for acquiring remote host ip)"
 
 ADD config.d/* config.d/
-ADD *.war wars/ROOT.war
+ADD *.war wars/
