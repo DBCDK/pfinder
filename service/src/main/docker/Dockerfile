@@ -1,4 +1,4 @@
-FROM docker.dbc.dk/payara5-micro:os
+FROM docker.dbc.dk/payara5-micro:latest
 MAINTAINER osteam@dbc.dk
 
 ENV APPLICATION_NAME="opensearch6" \
@@ -20,5 +20,5 @@ LABEL  \
       OPEN_AGENCY_URL="address of open-agency webservice (required)" \
       X_FORWARDED_FOR="Comma seperated list of host, host-range or network, where trusted proxies are located (for acquiring remote host ip)"
 
-ADD config.d/* config.d/
-ADD *.war wars/
+#ADD *.war wars/
+COPY opensearch-service-1.0-SNAPSHOT.war app.json deployments/
