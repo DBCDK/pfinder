@@ -1,3 +1,12 @@
 {
-    "appName": "opensearch6"
+    "appName": "opensearch6",
+    "hazelcast": {
+        "clusterName": "opensearch6-${CLUSTER_NAME}",
+        "cacheConfig": {
+            "*": {
+                "timeout": "${CACHE_TIMEOUT}",
+                "timeUnit": "Seconds"
+            }
+        }
+    }
 }

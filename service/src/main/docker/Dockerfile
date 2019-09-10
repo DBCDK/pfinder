@@ -11,6 +11,7 @@ ENV APPLICATION_NAME="opensearch6" \
 
 LABEL  \
       BADGERFISH_RULES_LOCATION="Uri of badgerfish rules YAML file (optional - mostly for debugging)" \
+      CACHE_TIMEOUT="hazelcast cache timout (required)" \
       CACHE_EXPIRE_x="Rule for cache, syntax 'policy:(number)unit:(max)'. Policy is one of: CREATED, MODIFIED, TOUCHED, ACCESSED or ETERNAL. Unis is one of: 'ms', 's', 'm' or 'h'. max is max count of cache entries" \
       CLUSTER_NAME="Name of the stage the application is deployed into (required)" \
       CONTEXT_ROOT="context-root of application without leading slash (default: /)" \
